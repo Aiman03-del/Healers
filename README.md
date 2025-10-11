@@ -1,8 +1,8 @@
-# 🎵 AudioVibe - Music Streaming Application
+# 🎵 Healers - Music Streaming Application
 
-A modern, feature-rich music streaming web application built with React, Firebase, and Tailwind CSS. AudioVibe provides a seamless music listening experience with playlist management, user authentication, and an intuitive audio player.
+A modern, feature-rich music streaming web application built with React, Firebase, and Tailwind CSS. Healers provides a seamless music listening experience with playlist management, user authentication, and an intuitive audio player.
 
-![AudioVibe](https://img.shields.io/badge/version-1.0.0-blue)
+![Healers](https://img.shields.io/badge/version-1.0.0-blue)
 ![React](https://img.shields.io/badge/React-19.1.0-61dafb)
 ![Firebase](https://img.shields.io/badge/Firebase-11.10.0-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
@@ -73,8 +73,8 @@ A modern, feature-rich music streaming web application built with React, Firebas
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/yourusername/audiovibe-app.git
-cd audiovibe-app
+git clone https://github.com/yourusername/healers-app.git
+cd healers-app
 ```
 
 ### Step 2: Install Dependencies
@@ -107,7 +107,7 @@ The application will be available at `http://localhost:5173`
 
 ## 🏗️ Backend Setup
 
-AudioVibe requires a backend API server. The backend should provide the following endpoints:
+Healers requires a backend API server. The backend should provide the following endpoints:
 
 ### Required API Endpoints
 
@@ -142,7 +142,7 @@ AudioVibe requires a backend API server. The backend should provide the followin
 ## 📁 Project Structure
 
 ```
-audiovibe-app/
+healers-app/
 ├── src/
 │   ├── assets/           # Static assets (images, audio)
 │   ├── components/       # Reusable components
@@ -308,5 +308,5 @@ For any questions or suggestions, please reach out:
 
 ---
 
-Made with ❤️ by AudioVibe Team
+Made with ❤️ by Healers Team
 # Healers

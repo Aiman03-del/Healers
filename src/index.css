@@ -1,0 +1,26 @@
+@import "tailwindcss";
+@plugin "daisyui";
+
+/* Custom animations for Navbar */
+@keyframes shimmer {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.animate-shimmer {
+  animation: shimmer 8s ease-in-out infinite;
+}
+
+/* Shine animation for song cards */
+@keyframes shine {
+  0% {
+    background-position: -200% center;
+  }
+  100% {
+    background-position: 200% center;
+  }
+}
