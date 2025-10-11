@@ -1,6 +1,6 @@
-import { useState, useEffect } from 'react';
-import { FaDownload, FaTimes } from 'react-icons/fa';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useEffect } from "react";
+import { FaDownload, FaTimes } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
 
 const InstallPWA = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -16,15 +16,15 @@ const InstallPWA = () => {
       setShowInstall(true);
     };
 
-    window.addEventListener('beforeinstallprompt', handler);
+    window.addEventListener("beforeinstallprompt", handler);
 
     // Check if app is already installed
-    if (window.matchMedia('(display-mode: standalone)').matches) {
+    if (window.matchMedia("(display-mode: standalone)").matches) {
       setShowInstall(false);
     }
 
     return () => {
-      window.removeEventListener('beforeinstallprompt', handler);
+      window.removeEventListener("beforeinstallprompt", handler);
     };
   }, []);
 
@@ -39,8 +39,8 @@ const InstallPWA = () => {
     // Wait for the user to respond to the prompt
     const { outcome } = await deferredPrompt.userChoice;
 
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
+    if (outcome === "accepted") {
+      console.log("User accepted the install prompt");
     }
 
     // Clear the deferredPrompt
@@ -51,15 +51,16 @@ const InstallPWA = () => {
   const handleDismiss = () => {
     setShowInstall(false);
     // Remember dismissal for 7 days
-    localStorage.setItem('installPromptDismissed', Date.now().toString());
+    localStorage.setItem("installPromptDismissed", Date.now().toString());
   };
 
   // Check if user dismissed recently
   useEffect(() => {
-    const dismissed = localStorage.getItem('installPromptDismissed');
+    const dismissed = localStorage.getItem("installPromptDismissed");
     if (dismissed) {
       const dismissedTime = parseInt(dismissed);
-      const daysSinceDismissal = (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
+      const daysSinceDismissal =
+        (Date.now() - dismissedTime) / (1000 * 60 * 60 * 24);
       if (daysSinceDismissal < 7) {
         setShowInstall(false);
       }
@@ -82,9 +83,11 @@ const InstallPWA = () => {
                   <FaDownload className="text-2xl" />
                 </div>
                 <div className="flex-1">
-                  <h3 className="font-bold text-lg mb-1">Install Healers App</h3>
+                  <h3 className="font-bold text-lg mb-1">
+                    Install Healers App
+                  </h3>
                   <p className="text-sm text-white/90">
-                    মোবাইলে অ্যাপ ইনস্টল করুন এবং অফলাইনেও ব্যবহার করুন!
+                    Install the app on your phone and use it offline!
                   </p>
                 </div>
               </div>
@@ -118,4 +121,3 @@ const InstallPWA = () => {
 };
 
 export default InstallPWA;
-
