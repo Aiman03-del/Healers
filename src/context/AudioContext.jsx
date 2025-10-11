@@ -118,8 +118,15 @@ export function AudioProvider({ children }) {
   };
 
   const playQueue = (songs) => {
+    if (!songs || songs.length === 0) return;
     setQueue(songs);
     setCurrentIndex(0);
+    setCurrentSong(songs[0]);
+    audio.src = songs[0].audio;
+    audio.loop = loopMode === 1;
+    audio.volume = volume;
+    audio.play();
+    setIsPlaying(true);
   };
 
   // 🆕 Shuffle helpers
@@ -136,6 +143,12 @@ export function AudioProvider({ children }) {
     const shuffled = shuffleArray(songs);
     setQueue(shuffled);
     setCurrentIndex(0);
+    setCurrentSong(shuffled[0]);
+    audio.src = shuffled[0].audio;
+    audio.loop = loopMode === 1;
+    audio.volume = volume;
+    audio.play();
+    setIsPlaying(true);
   };
 
   useEffect(() => {

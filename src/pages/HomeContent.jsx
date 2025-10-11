@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
 import { FaPause, FaPlay, FaMusic, FaFire, FaClock, FaRandom, FaHeart, FaStar } from "react-icons/fa";
 import { BiSolidPlaylist } from "react-icons/bi";
@@ -10,6 +11,7 @@ import { SearchBar } from "../components/features/search";
 import { AddToPlaylistModal } from "../components/features/playlists";
 
 function HomeContent() {
+  const navigate = useNavigate();
   const { playSong, currentSong, isPlaying, pauseSong, queue, setQueue, currentIndex } = useAudio();
   const [songs, setSongs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -26,6 +28,7 @@ function HomeContent() {
   const [trendingSongs, setTrendingSongs] = useState([]);
   const [newReleases, setNewReleases] = useState([]);
   const [forYouSongs, setForYouSongs] = useState([]);
+  const [trendingPlaylists, setTrendingPlaylists] = useState([]);
   const [isPersonalized, setIsPersonalized] = useState(false);
 
   useEffect(() => {
@@ -65,6 +68,19 @@ function HomeContent() {
       }
     };
     fetchNewReleases();
+  }, []);
+
+  // Fetch trending public playlists
+  useEffect(() => {
+    const fetchTrendingPlaylists = async () => {
+      try {
+        const res = await get("/api/playlists/public/trending?limit=6");
+        setTrendingPlaylists(res.data.playlists || []);
+      } catch {
+        setTrendingPlaylists([]);
+      }
+    };
+    fetchTrendingPlaylists();
   }, []);
 
   // Fetch personalized recommendations ("For You")
@@ -502,6 +518,87 @@ function HomeContent() {
         </div>
       ) : (
         <>
+          {/* Trending Public Playlists Section */}
+          {trendingPlaylists.length > 0 && !search && (
+            <motion.section
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <FaFire className="text-2xl text-orange-400" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Trending Playlists</h2>
+                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold">
+                  Hot 🔥
+                </span>
+              </div>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4">
+                {trendingPlaylists.map((playlist, idx) => (
+                  <motion.div
+                    key={playlist._id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.15, delay: idx * 0.03 }}
+                    whileHover={{ scale: 1.05, y: -4 }}
+                    onClick={() => navigate(`/public/playlist/${playlist._id}`)}
+                    className="relative group cursor-pointer"
+                  >
+                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
+                      
+                      {/* Cover Image */}
+                      <div className="relative w-full aspect-square">
+                        {playlist.firstSongCover ? (
+                          <img 
+                            src={playlist.firstSongCover} 
+                            alt={playlist.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full bg-gradient-to-br from-purple-700 via-fuchsia-700 to-pink-700 flex items-center justify-center">
+                            <BiSolidPlaylist className="text-5xl text-white/80" />
+                          </div>
+                        )}
+                        
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                        
+                        {/* Play count badge */}
+                        {playlist.playCount > 0 && (
+                          <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
+                            <FaFire className="text-xs" />
+                            {playlist.playCount}
+                          </div>
+                        )}
+                        
+                        {/* Song count */}
+                        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                          <span className="text-white text-xs font-semibold flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
+                            <FaMusic className="text-xs" />
+                            {playlist.songs?.length || 0}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-3">
+                        <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+                          {playlist.name}
+                        </h3>
+                        {playlist.description && (
+                          <p className="text-xs text-purple-200 truncate mt-1">
+                            {playlist.description}
+                          </p>
+                        )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.section>
+          )}
+
           {/* For You Section (Personalized Recommendations) */}
           {forYouSongs.length > 0 && !search && (
             <motion.section
