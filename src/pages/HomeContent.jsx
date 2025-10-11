@@ -528,8 +528,9 @@ function HomeContent() {
               <div className="flex items-center gap-3 mb-4">
                 <FaFire className="text-2xl text-orange-400" />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Trending Playlists</h2>
-                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold">
-                  Hot 🔥
+                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold flex items-center gap-1">
+                  <FaFire className="text-xs" />
+                  Hot
                 </span>
               </div>
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4">

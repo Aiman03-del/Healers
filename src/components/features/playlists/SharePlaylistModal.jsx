@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
 import useAxios from "../../../hooks/useAxios";
-import { FaTimes, FaGlobe, FaLock, FaUserPlus, FaLink, FaCheck, FaEnvelope } from "react-icons/fa";
+import { FaTimes, FaGlobe, FaLock, FaUserPlus, FaLink, FaCheck, FaEnvelope, FaInfoCircle } from "react-icons/fa";
 import { BiSolidPlaylist } from "react-icons/bi";
 
 const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
@@ -38,8 +38,8 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
       setIsPublic(newIsPublic);
       toast.success(
         newIsPublic 
-          ? "🌍 Playlist is now public!" 
-          : "🔒 Playlist is now private"
+          ? "Playlist is now public!" 
+          : "Playlist is now private"
       );
       if (onUpdate) onUpdate();
     } catch (error) {
@@ -51,7 +51,7 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
   const handleSendInvite = async (e) => {
     e.preventDefault();
     if (!inviteEmail.trim()) {
-      toast.error("⚠️ Please enter an email address");
+      toast.error("Please enter an email address");
       return;
     }
     
@@ -60,11 +60,11 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
       await post(`/api/playlists/${playlist._id}/invite`, {
         toUserEmail: inviteEmail.trim(),
       });
-      toast.success("✅ Invitation sent successfully!");
+      toast.success("Invitation sent successfully!");
       setInviteEmail("");
     } catch (error) {
       const errorMsg = error.response?.data?.error || "Failed to send invitation";
-      toast.error(`❌ ${errorMsg}`);
+      toast.error(errorMsg);
     }
     setSending(false);
   };
@@ -73,7 +73,7 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
   const handleCopyLink = () => {
     const publicLink = `${window.location.origin}/public/playlist/${playlist._id}`;
     navigator.clipboard.writeText(publicLink);
-    toast.success("🔗 Link copied to clipboard!");
+    toast.success("Link copied to clipboard!");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -230,8 +230,9 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
             </form>
             
             <div className="p-3 rounded-lg bg-blue-500/10 border border-blue-500/30">
-              <p className="text-xs text-blue-200">
-                💡 Invited users will receive a real-time notification and can access this playlist
+              <p className="text-xs text-blue-200 flex items-start gap-2">
+                <FaInfoCircle className="flex-shrink-0 mt-0.5" />
+                <span>Invited users will receive a real-time notification and can access this playlist</span>
               </p>
             </div>
           </div>

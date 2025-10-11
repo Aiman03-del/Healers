@@ -22,8 +22,8 @@ const MyPlaylists = () => {
     if (!user?.uid) return;
     setLoading(true);
     try {
-      const res = await get(`/api/playlists/user/${user.uid}`);
-      setPlaylists(res.data);
+    const res = await get(`/api/playlists/user/${user.uid}`);
+    setPlaylists(res.data);
     } catch (error) {
       toast.error("Failed to fetch playlists");
       setPlaylists([]);
@@ -43,19 +43,19 @@ const MyPlaylists = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!form.name.trim()) {
-      toast.error("⚠️ Please enter a playlist name");
+      toast.error("Please enter a playlist name");
       return;
     }
     try {
-      await post('/api/playlists', {
-        ...form,
-        userId: user.uid,
-      });
-      toast.success("✅ Playlist created successfully!");
-      setForm({ name: '', description: '' });
-      fetchPlaylists();
+    await post('/api/playlists', {
+      ...form,
+      userId: user.uid,
+    });
+      toast.success("Playlist created successfully!");
+    setForm({ name: '', description: '' });
+    fetchPlaylists();
     } catch (error) {
-      toast.error("❌ Failed to create playlist");
+      toast.error("Failed to create playlist");
     }
   };
 
@@ -123,7 +123,7 @@ const MyPlaylists = () => {
               <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
                 <BiSolidPlaylist className="text-3xl sm:text-4xl md:text-5xl text-yellow-300 flex-shrink-0" />
                 <span>My Playlists</span>
-              </h1>
+        </h1>
               
               {/* Subtitle - Responsive */}
               <p className="text-purple-100 text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 max-w-2xl">
@@ -205,39 +205,39 @@ const MyPlaylists = () => {
                 <label className="block text-xs sm:text-sm font-semibold text-purple-200 mb-1 sm:mb-2">
                   Playlist Name *
                 </label>
-                <input
-                  type="text"
-                  name="name"
+          <input
+            type="text"
+            name="name"
                   placeholder="e.g., My Favorite Songs"
                   className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                  value={form.name}
-                  onChange={handleChange}
-                  required
-                />
+            value={form.name}
+            onChange={handleChange}
+            required
+          />
               </div>
               <div>
                 <label className="block text-xs sm:text-sm font-semibold text-purple-200 mb-1 sm:mb-2">
                   Description (Optional)
                 </label>
                 <textarea
-                  name="description"
+            name="description"
                   placeholder="What's this playlist about?"
                   className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
-                  value={form.description}
-                  onChange={handleChange}
+            value={form.description}
+            onChange={handleChange}
                   rows="3"
-                />
+          />
               </div>
               <motion.button
-                type="submit"
+            type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base rounded-lg shadow-lg transition-all duration-150 flex items-center justify-center gap-2"
-              >
+          >
                 <FaPlus />
                 Create Playlist
               </motion.button>
-            </form>
+        </form>
           </div>
         </motion.div>
 
@@ -255,8 +255,8 @@ const MyPlaylists = () => {
             </h2>
             <div className="text-purple-300 text-xs sm:text-sm">
               {playlists.length} {playlists.length === 1 ? 'playlist' : 'playlists'}
-            </div>
-          </div>
+                  </div>
+                  </div>
 
           {loading ? (
             // Loading skeleton - Responsive grid
@@ -274,12 +274,12 @@ const MyPlaylists = () => {
               animate={{ opacity: 1, scale: 1 }}
               className="bg-gradient-to-br from-gray-900 via-purple-900/50 to-fuchsia-900/50 rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 text-center border border-purple-500/20"
             >
-              <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🎵</div>
+              <BiSolidPlaylist className="text-6xl sm:text-7xl md:text-8xl text-purple-400/50 mx-auto mb-3 sm:mb-4" />
               <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">No Playlists Yet</h3>
               <p className="text-purple-200 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
                 Create your first playlist to start organizing your music!
               </p>
-              <button
+                  <button
                 onClick={() => document.querySelector('input[name="name"]').focus()}
                 className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold rounded-lg shadow-lg transition-all inline-flex items-center gap-2"
               >
@@ -433,9 +433,9 @@ const MyPlaylists = () => {
                             >
                               <FaTrashAlt className="text-xs sm:text-sm" />
                             </motion.button>
-                          </div>
-                        </div>
-                      </div>
+                </div>
+              </div>
+            </div>
 
                       {/* Shine effect on hover - Enhanced */}
                       <motion.div

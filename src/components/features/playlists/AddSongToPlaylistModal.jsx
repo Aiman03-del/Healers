@@ -183,9 +183,9 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
     try {
       const res = await put(`/api/playlists/${playlistId}/add`, { songId });
       if (res.data.message === "Already added" || res.data.message === "Song already in playlist") {
-        toast.error("⚠️ Song already in this playlist");
+        toast.error("Song already in this playlist");
       } else {
-        toast.success("✅ Song added to playlist!");
+        toast.success("Song added to playlist!");
         
         // Update local state to remove the added song from available songs
         setExistingSongIds(prev => [...prev, songId]);
@@ -197,7 +197,7 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
       }
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Failed to add song";
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(errorMessage);
     }
     setAdding(null);
   };

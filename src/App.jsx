@@ -138,7 +138,7 @@ function App() {
             letterSpacing: "0.01em",
           },
           success: {
-            icon: "🎉",
+            icon: "✓",
             style: {
               background:
                 theme === THEMES.LIGHT
@@ -148,7 +148,7 @@ function App() {
             },
           },
           error: {
-            icon: "⚠️",
+            icon: "✗",
             style: {
               background:
                 theme === THEMES.LIGHT

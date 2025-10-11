@@ -138,7 +138,7 @@ export const PlaylistDetails = () => {
     try {
       const res = await put(`/api/playlists/${playlist._id}/add`, { songId });
       if (res.data.message === "Already added") {
-        toast.error("⚠️ Song already in playlist");
+        toast.error("Song already in playlist");
       } else {
         toast.success("Added to playlist");
         // Optionally update UI if needed
@@ -148,7 +148,7 @@ export const PlaylistDetails = () => {
         }));
       }
     } catch {
-      toast.error("❌ Failed to add song");
+      toast.error("Failed to add song");
     }
     setAddingSongId(null);
   };
@@ -392,7 +392,7 @@ export const PlaylistDetails = () => {
         
         {(!playlist.songs || playlist.songs.length === 0) ? (
           <div className="text-center py-12">
-            <div className="text-6xl mb-4">🎵</div>
+            <FaMusic className="text-6xl text-purple-400/50 mx-auto mb-4" />
             <p className={`text-lg font-semibold mb-2 ${textMain}`}>No songs yet</p>
             <p className={`${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
               Click the "Add Song" button above to get started!

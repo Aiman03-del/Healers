@@ -48,7 +48,7 @@ const NotificationCenter = () => {
 
     // Listen for new notifications
     socket.on("notification:new", (notification) => {
-      console.log("🔔 New notification received:", notification);
+      console.log("New notification received:", notification);
       setNotifications(prev => [notification, ...prev]);
       setUnreadCount(prev => prev + 1);
       

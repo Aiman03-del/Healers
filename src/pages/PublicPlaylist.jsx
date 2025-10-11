@@ -34,7 +34,7 @@ const PublicPlaylist = () => {
 
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
-    toast.success("🔗 Link copied to clipboard!");
+    toast.success("Link copied to clipboard!");
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -47,7 +47,7 @@ const PublicPlaylist = () => {
     document.body.appendChild(downloadAnchorNode);
     downloadAnchorNode.click();
     downloadAnchorNode.remove();
-    toast.success("📥 Playlist downloaded!");
+    toast.success("Playlist downloaded!");
   };
 
   const handlePlayAll = () => {
@@ -97,7 +97,7 @@ const PublicPlaylist = () => {
     return (
       <MainLayout>
         <div className="max-w-5xl mx-auto py-20 px-4 text-center">
-          <div className="text-6xl mb-4">🎵</div>
+          <BiSolidPlaylist className="text-6xl text-purple-400/50 mx-auto mb-4" />
           <h1 className="text-2xl font-bold text-white mb-2">Playlist Not Found</h1>
           <p className="text-purple-200">This playlist doesn't exist or is not public.</p>
         </div>

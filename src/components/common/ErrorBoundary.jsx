@@ -33,7 +33,11 @@ class ErrorBoundary extends React.Component {
         <div className="min-h-screen bg-gradient-to-br from-purple-900 via-fuchsia-900 to-black flex items-center justify-center px-4">
           <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-purple-500/30">
             <div className="text-center">
-              <div className="text-6xl mb-4">😵</div>
+              <div className="text-6xl text-red-400 mb-4">
+                <svg className="mx-auto w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
               <h1 className="text-3xl font-bold text-white mb-2">
                 Oops! Something went wrong
               </h1>
