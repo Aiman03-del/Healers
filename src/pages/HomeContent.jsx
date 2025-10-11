@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useAudio } from "../context/AudioContext";
 import { FaPause, FaPlay, FaMusic, FaFire, FaClock, FaRandom, FaHeart, FaStar } from "react-icons/fa";
+import { BiSolidPlaylist } from "react-icons/bi";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from '../context/AuthContext';
 import toast from "react-hot-toast";
@@ -329,8 +330,24 @@ function HomeContent() {
               </motion.div>
             </motion.button>
 
-            {/* ❤️ Like Button */}
-            <div className="absolute bottom-3 right-3 z-30">
+            {/* Action Buttons Container */}
+            <div className="absolute bottom-3 right-3 z-30 flex items-center gap-2">
+              {/* Add to Playlist Button */}
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="rounded-full p-2.5 shadow-xl border-2 bg-white/90 backdrop-blur-sm border-white/60 text-purple-600 hover:text-purple-700 hover:bg-white transition-all duration-150"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setPlaylistModal({ open: true, songId: song._id });
+                }}
+                aria-label="Add to Playlist"
+                title="Add to Playlist"
+              >
+                <BiSolidPlaylist className="text-base" />
+              </motion.button>
+
+              {/* ❤️ Like Button */}
               <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.95 }}

@@ -3,8 +3,11 @@ import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import useAxios from "../hooks/useAxios";
-import { FaTrashAlt, FaRegSadTear, FaCheckCircle } from "react-icons/fa";
+import { FaTrashAlt, FaRegSadTear, FaCheckCircle, FaPlay, FaMusic, FaPlus, FaFolder, FaEdit, FaEye, FaClock, FaFire } from "react-icons/fa";
+import { BiSolidPlaylist } from "react-icons/bi";
+import { MdPlaylistPlay } from "react-icons/md";
 import { MainLayout } from '../components/layout';
+import { motion, AnimatePresence } from "framer-motion";
 
 const MyPlaylists = () => {
   const { user } = useAuth();
@@ -12,11 +15,20 @@ const MyPlaylists = () => {
   const { get, post, del } = useAxios();
   const [playlists, setPlaylists] = useState([]);
   const [form, setForm] = useState({ name: '', description: '' });
+  const [loading, setLoading] = useState(true);
+  const [hoveredCard, setHoveredCard] = useState(null);
 
   const fetchPlaylists = async () => {
     if (!user?.uid) return;
-    const res = await get(`/api/playlists/user/${user.uid}`);
-    setPlaylists(res.data);
+    setLoading(true);
+    try {
+      const res = await get(`/api/playlists/user/${user.uid}`);
+      setPlaylists(res.data);
+    } catch (error) {
+      toast.error("Failed to fetch playlists");
+      setPlaylists([]);
+    }
+    setLoading(false);
   };
 
   useEffect(() => {
@@ -30,37 +42,46 @@ const MyPlaylists = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    await post('/api/playlists', {
-      ...form,
-      userId: user.uid,
-    });
-    setForm({ name: '', description: '' });
-    fetchPlaylists();
+    if (!form.name.trim()) {
+      toast.error("⚠️ Please enter a playlist name");
+      return;
+    }
+    try {
+      await post('/api/playlists', {
+        ...form,
+        userId: user.uid,
+      });
+      toast.success("✅ Playlist created successfully!");
+      setForm({ name: '', description: '' });
+      fetchPlaylists();
+    } catch (error) {
+      toast.error("❌ Failed to create playlist");
+    }
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = async (id, name) => {
     toast(
       (t) => (
         <span className="flex items-center gap-2">
-          Are you sure you want to delete this playlist?
+          Delete "{name}"?
           <button
             onClick={async () => {
               toast.dismiss(t.id);
               try {
                 await del(`/api/playlists/${id}?uid=${user.uid}`);
-                toast(<span className="flex items-center gap-2"><FaCheckCircle className="text-green-500" />Deleted!</span>);
+                toast.success(<span className="flex items-center gap-2"><FaCheckCircle className="text-green-500" />Deleted!</span>);
                 fetchPlaylists();
               } catch {
                 toast.error(<span className="flex items-center gap-2"><FaRegSadTear className="text-red-400" />Not authorized!</span>);
               }
             }}
-            className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"
+            className="ml-2 sm:ml-4 px-2 sm:px-3 py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 transition"
           >
             Yes
           </button>
           <button
             onClick={() => toast.dismiss(t.id)}
-            className="ml-2 px-3 py-1 bg-gray-700 text-white rounded hover:bg-gray-800 transition"
+            className="ml-1 sm:ml-2 px-2 sm:px-3 py-1 bg-gray-700 text-white text-xs sm:text-sm rounded hover:bg-gray-800 transition"
           >
             No
           </button>
@@ -70,86 +91,402 @@ const MyPlaylists = () => {
     );
   };
 
+  // Calculate stats
+  const totalSongs = playlists.reduce((acc, pl) => acc + (pl.songs?.length || 0), 0);
+  const totalPlays = playlists.reduce((acc, pl) => acc + (pl.playCount || 0), 0);
+
   return (
     <MainLayout>
-      <div className="min-h-screen bg-gradient-to-br from-purple-900 via-gray-900 to-black p-6 text-white">
-        <div className="max-w-5xl mx-auto">
-        <h1 className="text-3xl font-extrabold mb-8 text-center text-transparent bg-clip-text bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 drop-shadow-lg">
-          📁 My Playlists
-        </h1>
-        <form
-          onSubmit={handleSubmit}
-          className="space-y-4 max-w-lg mx-auto mb-10 bg-white/10 backdrop-blur-xl rounded-2xl shadow-xl p-8 border border-purple-700/30"
+      <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-32 md:pb-32 px-2 sm:px-4 lg:px-6">
+        {/* Hero Banner - Responsive */}
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+          className="mt-4 sm:mt-6 md:mt-10 relative bg-gradient-to-br from-purple-900 via-fuchsia-900 to-pink-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
         >
-          <input
-            type="text"
-            name="name"
-            placeholder="Playlist Name"
-            className="w-full p-3 rounded-lg bg-white/20 border border-purple-400 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            value={form.name}
-            onChange={handleChange}
-            required
-          />
-          <input
-            type="text"
-            name="description"
-            placeholder="Description"
-            className="w-full p-3 rounded-lg bg-white/20 border border-purple-400 text-white focus:ring-2 focus:ring-purple-500 focus:outline-none"
-            value={form.description}
-            onChange={handleChange}
-          />
-          <button
-            type="submit"
-            className="w-full bg-gradient-to-r from-purple-600 to-pink-500 hover:from-pink-600 hover:to-purple-700 transition px-4 py-3 rounded-lg text-white font-bold shadow-lg"
-          >
-            ➕ Create Playlist
-          </button>
-        </form>
-        <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {playlists.map((pl) => (
-            <div
-              key={pl._id}
-              className="relative group p-0 rounded-3xl shadow-2xl bg-gradient-to-br from-purple-800 via-gray-900 to-gray-800 border-2 border-purple-700/40 hover:scale-105 hover:shadow-2xl transition-all duration-200 cursor-pointer overflow-hidden"
-              onClick={() => navigate(`/playlist/${pl._id}`)}
+          {/* Background patterns and overlays */}
+          <div className="absolute inset-0 bg-black/20" />
+          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iYSIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJNLS41IDM5LjVoNDEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4wNSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')] opacity-30" />
+          
+          {/* Floating circles decoration */}
+          <div className="absolute top-10 right-10 w-32 h-32 sm:w-48 sm:h-48 bg-yellow-300/10 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-10 left-10 w-32 h-32 sm:w-48 sm:h-48 bg-pink-300/10 rounded-full blur-3xl animate-pulse delay-75" />
+          
+          <div className="relative px-4 sm:px-6 md:px-12 py-8 sm:py-10 md:py-16">
+            <motion.div
+              initial={{ opacity: 0, x: -10 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ duration: 0.3, delay: 0.1 }}
             >
-              {/* Decorative gradient bar */}
-              <div className="h-2 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500" />
-              <div className="p-6 flex flex-col h-full">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-700 via-pink-700 to-blue-700 flex items-center justify-center shadow-lg">
-                    <span className="text-2xl font-bold text-white">{pl.name?.[0]?.toUpperCase() || "P"}</span>
+              {/* Title - Responsive text sizes */}
+              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+                <BiSolidPlaylist className="text-3xl sm:text-4xl md:text-5xl text-yellow-300 flex-shrink-0" />
+                <span>My Playlists</span>
+              </h1>
+              
+              {/* Subtitle - Responsive */}
+              <p className="text-purple-100 text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 max-w-2xl">
+                Create and manage your personalized music collections
+              </p>
+              
+              {/* Stats Cards - Responsive grid */}
+              <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20"
+                >
+                  <FaFolder className="text-yellow-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">{playlists.length}</div>
+                    <div className="text-purple-200 text-xs sm:text-sm truncate">Playlists</div>
                   </div>
-                  <div className="flex-1">
-                    <h2 className="font-bold text-xl text-white truncate">{pl.name}</h2>
-                    <p className="text-xs text-purple-200 truncate">{pl.description}</p>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20"
+                >
+                  <FaMusic className="text-pink-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">{totalSongs}</div>
+                    <div className="text-purple-200 text-xs sm:text-sm truncate">Songs</div>
                   </div>
-                </div>
-                <div className="flex-1" />
-                <div className="flex justify-end items-center mt-4 gap-2">
-                  <button
-                    onClick={e => {
-                      e.stopPropagation();
-                      handleDelete(pl._id);
-                    }}
-                    className="text-red-400 hover:text-red-300 text-lg font-semibold transition p-2 rounded-full hover:bg-red-900/30 cursor-pointer"
-                    title="Delete"
-                  >
-                    <FaTrashAlt />
-                  </button>
-                </div>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20"
+                >
+                  <FaFire className="text-orange-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">{totalPlays}</div>
+                    <div className="text-purple-200 text-xs sm:text-sm truncate">Plays</div>
+                  </div>
+                </motion.div>
+                
+                <motion.div 
+                  whileHover={{ scale: 1.05, y: -2 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20 col-span-2 sm:col-span-1"
+                >
+                  <FaClock className="text-blue-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <div className="min-w-0">
+                    <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">
+                      {playlists.length > 0 ? new Date(playlists[0].createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
+                    </div>
+                    <div className="text-purple-200 text-xs sm:text-sm truncate">Latest</div>
+                  </div>
+                </motion.div>
               </div>
-              {/* Hover overlay effect */}
-              <div className="absolute inset-0 rounded-3xl bg-gradient-to-br from-purple-900/80 via-fuchsia-900/60 to-black/80 opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none" />
+            </motion.div>
+          </div>
+        </motion.div>
+
+        {/* Create Playlist Form - Responsive */}
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3, delay: 0.2 }}
+          className="max-w-full sm:max-w-2xl lg:max-w-3xl mx-auto"
+        >
+          <div className="bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 border border-purple-500/20 backdrop-blur-sm">
+            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 sm:mb-6">
+              <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
+                <FaPlus className="text-white text-base sm:text-lg md:text-xl" />
+              </div>
+              <div className="flex-1 min-w-0">
+                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">Create New Playlist</h2>
+                <p className="text-purple-200 text-xs sm:text-sm">Add a name and description for your playlist</p>
+              </div>
             </div>
-          ))}
-          {playlists.length === 0 && (
-            <div className="col-span-full text-center text-purple-200 py-10 text-lg">
-              No playlists found. Create your first playlist!
+            
+            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-purple-200 mb-1 sm:mb-2">
+                  Playlist Name *
+                </label>
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="e.g., My Favorite Songs"
+                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                />
+              </div>
+              <div>
+                <label className="block text-xs sm:text-sm font-semibold text-purple-200 mb-1 sm:mb-2">
+                  Description (Optional)
+                </label>
+                <textarea
+                  name="description"
+                  placeholder="What's this playlist about?"
+                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                  value={form.description}
+                  onChange={handleChange}
+                  rows="3"
+                />
+              </div>
+              <motion.button
+                type="submit"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base rounded-lg shadow-lg transition-all duration-150 flex items-center justify-center gap-2"
+              >
+                <FaPlus />
+                Create Playlist
+              </motion.button>
+            </form>
+          </div>
+        </motion.div>
+
+        {/* Playlists Grid - Ultra Responsive */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.3, delay: 0.3 }}
+          className="max-w-full sm:max-w-7xl mx-auto"
+        >
+          <div className="flex items-center justify-between mb-4 sm:mb-6">
+            <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
+              <MdPlaylistPlay className="text-purple-400 text-2xl sm:text-3xl" />
+              <span>Your Collection</span>
+            </h2>
+            <div className="text-purple-300 text-xs sm:text-sm">
+              {playlists.length} {playlists.length === 1 ? 'playlist' : 'playlists'}
+            </div>
+          </div>
+
+          {loading ? (
+            // Loading skeleton - Responsive grid
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              {[...Array(6)].map((_, i) => (
+                <div key={i} className="animate-pulse">
+                  <div className="bg-gray-800/50 rounded-xl sm:rounded-2xl h-64 sm:h-72 md:h-80" />
+                </div>
+              ))}
+            </div>
+          ) : playlists.length === 0 ? (
+            // Empty state - Responsive
+            <motion.div
+              initial={{ opacity: 0, scale: 0.95 }}
+              animate={{ opacity: 1, scale: 1 }}
+              className="bg-gradient-to-br from-gray-900 via-purple-900/50 to-fuchsia-900/50 rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 text-center border border-purple-500/20"
+            >
+              <div className="text-4xl sm:text-5xl md:text-6xl mb-3 sm:mb-4">🎵</div>
+              <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">No Playlists Yet</h3>
+              <p className="text-purple-200 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
+                Create your first playlist to start organizing your music!
+              </p>
+              <button
+                onClick={() => document.querySelector('input[name="name"]').focus()}
+                className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold rounded-lg shadow-lg transition-all inline-flex items-center gap-2"
+              >
+                <FaPlus />
+                Create Your First Playlist
+              </button>
+            </motion.div>
+          ) : (
+            // Playlist cards grid - Ultra responsive
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-4 2xl:grid-cols-5 gap-3 sm:gap-4 md:gap-5 lg:gap-6">
+              <AnimatePresence>
+                {playlists.map((pl, index) => (
+                  <motion.div
+                    key={pl._id}
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    transition={{ duration: 0.2, delay: index * 0.03 }}
+                    className="relative group"
+                    onMouseEnter={() => setHoveredCard(pl._id)}
+                    onMouseLeave={() => setHoveredCard(null)}
+                  >
+                    <motion.div
+                      whileHover={{ y: -6, scale: 1.02 }}
+                      transition={{ duration: 0.2, ease: "easeOut" }}
+                      className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/40 overflow-hidden border border-purple-500/20 hover:border-purple-400/50 transition-all duration-200 cursor-pointer h-full flex flex-col"
+                      onClick={() => navigate(`/playlist/${pl._id}`)}
+                    >
+                      {/* 3D Glow effect on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/20 group-hover:via-fuchsia-500/20 group-hover:to-pink-500/20 rounded-xl sm:rounded-2xl transition-all duration-200 pointer-events-none" />
+                      
+                      {/* Decorative top gradient bar */}
+                      <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500" />
+                      
+                      <div className="p-3 sm:p-4 md:p-5 flex flex-col flex-1">
+                        {/* Album Cover / Playlist Image */}
+                        <div className="relative mb-3 sm:mb-4">
+                          <div className="w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-gradient-to-br from-purple-700 via-fuchsia-700 to-pink-700 shadow-lg group-hover:shadow-2xl transition-shadow">
+                            {pl.songs && pl.songs[0]?.cover ? (
+                              <img 
+                                src={pl.songs[0].cover} 
+                                alt={pl.name}
+                                className="w-full h-full object-cover transform group-hover:scale-110 transition-transform duration-300"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center">
+                                <BiSolidPlaylist className="text-4xl sm:text-5xl md:text-6xl text-white/80" />
+                              </div>
+                            )}
+                            
+                            {/* Gradient overlay on image */}
+                            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                          </div>
+                          
+                          {/* Play button overlay - Shows on hover */}
+                          <AnimatePresence>
+                            {hoveredCard === pl._id && (
+                              <motion.div
+                                initial={{ opacity: 0, scale: 0.8 }}
+                                animate={{ opacity: 1, scale: 1 }}
+                                exit={{ opacity: 0, scale: 0.8 }}
+                                transition={{ duration: 0.2 }}
+                                className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg sm:rounded-xl"
+                                whileTap={{ scale: 0.95 }}
+                              >
+                                <motion.div
+                                  whileHover={{ scale: 1.15 }}
+                                  className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white p-3 sm:p-4 rounded-full shadow-2xl border-2 border-white/40"
+                                >
+                                  <FaPlay className="text-lg sm:text-xl md:text-2xl ml-0.5" />
+                                </motion.div>
+                              </motion.div>
+                            )}
+                          </AnimatePresence>
+
+                          {/* Song count badge - Top right */}
+                          {pl.songs && pl.songs.length > 0 && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/80 backdrop-blur-md text-white text-xs font-bold shadow-lg flex items-center gap-1"
+                            >
+                              <FaMusic className="text-xs" />
+                              <span>{pl.songs.length}</span>
+                            </motion.div>
+                          )}
+
+                          {/* Play count badge - Top left */}
+                          {pl.playCount > 0 && (
+                            <motion.div
+                              initial={{ scale: 0 }}
+                              animate={{ scale: 1 }}
+                              className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg flex items-center gap-1"
+                            >
+                              <FaFire className="text-xs" />
+                              <span>{pl.playCount}</span>
+                            </motion.div>
+                          )}
+                        </div>
+
+                        {/* Playlist Info */}
+                        <div className="space-y-1 sm:space-y-2 flex-1 flex flex-col">
+                          <h3 className="font-bold text-sm sm:text-base md:text-lg text-white truncate group-hover:text-yellow-300 transition-colors">
+                            {pl.name}
+                          </h3>
+                          <p className="text-xs sm:text-sm text-purple-200 line-clamp-2 flex-1">
+                            {pl.description || "No description"}
+                          </p>
+                        </div>
+
+                        {/* Actions footer */}
+                        <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-purple-500/20">
+                          <div className="flex items-center gap-2 text-xs sm:text-sm">
+                            <div className="flex items-center gap-1 text-purple-300">
+                              <FaMusic className="text-xs" />
+                              <span className="font-medium">{pl.songs?.length || 0}</span>
+                            </div>
+                            {pl.createdAt && (
+                              <div className="flex items-center gap-1 text-purple-400/70">
+                                <FaClock className="text-xs" />
+                                <span className="text-xs hidden sm:inline">
+                                  {new Date(pl.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                                </span>
+                              </div>
+                            )}
+                          </div>
+                          
+                          {/* Action buttons */}
+                          <div className="flex items-center gap-1 sm:gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                navigate(`/playlist/${pl._id}`);
+                              }}
+                              className="p-1.5 sm:p-2 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-300 transition-all"
+                              title="View playlist"
+                            >
+                              <FaEye className="text-xs sm:text-sm" />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDelete(pl._id, pl.name);
+                              }}
+                              className="p-1.5 sm:p-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all"
+                              title="Delete playlist"
+                            >
+                              <FaTrashAlt className="text-xs sm:text-sm" />
+                            </motion.button>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Shine effect on hover - Enhanced */}
+                      <motion.div
+                        className="pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
+                        style={{
+                          background: "linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)",
+                          backgroundSize: "200% 200%",
+                          animation: "shine 2s ease-in-out infinite",
+                        }}
+                        aria-hidden
+                      />
+                    </motion.div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
             </div>
           )}
-        </div>
-        </div>
+        </motion.div>
       </div>
+
+      {/* Enhanced CSS animations */}
+      <style>{`
+        @keyframes shine {
+          0% { background-position: 200% 200%; }
+          100% { background-position: -200% -200%; }
+        }
+        
+        /* Custom scrollbar for playlists */
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 8px;
+          height: 8px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: linear-gradient(to bottom, #a855f7, #ec4899);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: linear-gradient(to bottom, #9333ea, #db2777);
+        }
+
+        /* Extra small devices support */
+        @media (max-width: 374px) {
+          .text-responsive {
+            font-size: 0.875rem;
+          }
+        }
+      `}</style>
     </MainLayout>
   );
 };

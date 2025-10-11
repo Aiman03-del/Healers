@@ -1,12 +1,12 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useAudio } from '../context/AudioContext';
 import axios from 'axios';
-import { FaPlay, FaRandom, FaDownload, FaShareAlt, FaTrashAlt, FaPause, FaRegSadTear, FaCheckCircle } from 'react-icons/fa';
+import { FaPlay, FaRandom, FaDownload, FaShareAlt, FaTrashAlt, FaPause, FaRegSadTear, FaCheckCircle, FaArrowLeft, FaChevronLeft, FaPlus } from 'react-icons/fa';
 import { MdPlaylistPlay } from 'react-icons/md';
 import { BiSolidPlaylist } from "react-icons/bi";
 import { toast } from 'react-hot-toast';
-import { AddToPlaylistModal } from '../components/features/playlists';
+import { AddSongToPlaylistModal, SharePlaylistModal } from '../components/features/playlists';
 import { motion, AnimatePresence } from "framer-motion";
 import { FaHeart } from "react-icons/fa";
 import { useAuth } from '../context/AuthContext';
@@ -15,12 +15,14 @@ import { MainLayout } from '../components/layout';
 
 export const PlaylistDetails = () => {
   const { playlistId } = useParams();
+  const navigate = useNavigate();
   const [playlist, setPlaylist] = useState(null);
   const [loading, setLoading] = useState(true);
   const { playQueue, playShuffledPlaylist, currentSong, isPlaying, pauseSong, togglePlayPause, playSong } = useAudio();
   const [copied, setCopied] = useState(false);
   const [addingSongId, setAddingSongId] = useState(null); // For loading state
   const [showAddModal, setShowAddModal] = useState(false); // modal state
+  const [showShareModal, setShowShareModal] = useState(false); // share modal state
   const { user } = useAuth();
   const [likedSongIds, setLikedSongIds] = useState([]); // Local liked state
   const [likeEffectId, setLikeEffectId] = useState(null); // For animation
@@ -125,12 +127,9 @@ export const PlaylistDetails = () => {
     }
   };
 
-  // Share playlist link with toast
+  // Share playlist - Open share modal
   const handleShare = () => {
-    navigator.clipboard.writeText(`${window.location.origin}/public/playlist/${playlist._id}`);
-    toast.success("Link copied!");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 1500);
+    setShowShareModal(true);
   };
 
   // Add song to this playlist
@@ -287,6 +286,21 @@ export const PlaylistDetails = () => {
   return (
     <MainLayout>
       <div className={`max-w-3xl mx-auto py-10 px-4`}>
+        {/* Back Button */}
+        <motion.button
+          onClick={() => navigate(-1)}
+          className={`mb-6 flex items-center gap-2 px-4 py-2 rounded-lg ${
+            theme === "light"
+              ? "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200"
+              : "bg-gradient-to-r from-purple-900/50 to-fuchsia-900/50 text-purple-200 hover:from-purple-800/60 hover:to-fuchsia-800/60"
+          } backdrop-blur-sm shadow-lg hover:shadow-xl transition-all border ${
+            theme === "light" ? "border-purple-200" : "border-purple-700/40"
+          }`}
+        >
+          <FaChevronLeft className="text-lg" />
+          <span className="font-semibold">Back</span>
+        </motion.button>
+
         {/* Playlist Info Card */}
         <div className={`${bgCard} ${shadowCard} ${borderCard} rounded-2xl p-8 mb-8 flex flex-col md:flex-row items-center gap-8 transition-all`}>
         <div className="flex-shrink-0 flex flex-col items-center">
@@ -349,24 +363,40 @@ export const PlaylistDetails = () => {
       </div>
       {/* Song List */}
       <div className={`${bgInner} rounded-xl shadow-lg p-6`}>
-        <h2 className={`text-xl font-bold mb-4 ${textSub} flex items-center gap-2`}>
-          <MdPlaylistPlay className="text-2xl" /> Songs in Playlist
-        </h2>
-        {(!playlist.songs || playlist.songs.length === 0) ? (
-          <div className="text-center py-8">
-            <p className={`${theme === "light" ? "text-gray-500" : "text-gray-400"} mb-4`}>No songs in this playlist.</p>
-            <button
-              className="px-4 py-2 rounded bg-purple-700 text-white font-semibold shadow hover:bg-purple-800 transition"
-              onClick={() => setShowAddModal(true)}
-            >
-              ➕ Add Song
-            </button>
-            {showAddModal && (
-              <AddToPlaylistModal
-                playlistId={playlist._id}
-                onClose={() => setShowAddModal(false)}
-              />
+        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+          <h2 className={`text-xl font-bold ${textSub} flex items-center gap-2`}>
+            <MdPlaylistPlay className="text-2xl" /> Songs in Playlist
+            {playlist.songs && playlist.songs.length > 0 && (
+              <span className="text-sm font-normal opacity-70">
+                ({playlist.songs.length})
+              </span>
             )}
+          </h2>
+          
+          {/* Add Song Button - Always visible */}
+          <motion.button
+            whileHover={{ scale: 1.05 }}
+            whileTap={{ scale: 0.95 }}
+            onClick={() => setShowAddModal(true)}
+            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all ${
+              theme === "light"
+                ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white"
+                : "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white"
+            }`}
+          >
+            <FaPlus />
+            <span className="hidden sm:inline">Add Song</span>
+            <span className="sm:hidden">Add</span>
+          </motion.button>
+        </div>
+        
+        {(!playlist.songs || playlist.songs.length === 0) ? (
+          <div className="text-center py-12">
+            <div className="text-6xl mb-4">🎵</div>
+            <p className={`text-lg font-semibold mb-2 ${textMain}`}>No songs yet</p>
+            <p className={`${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
+              Click the "Add Song" button above to get started!
+            </p>
           </div>
         ) : (
           <ul className="space-y-4">
@@ -462,6 +492,40 @@ export const PlaylistDetails = () => {
         )}
       </div>
       </div>
+
+      {/* Add Song Modal - Rendered once outside the song list */}
+      <AnimatePresence>
+        {showAddModal && (
+          <AddSongToPlaylistModal
+            playlistId={playlist._id}
+            onClose={() => setShowAddModal(false)}
+            onSongAdded={() => {
+              // Refresh playlist data
+              get(`/api/playlists/${playlistId}`)
+                .then(res => {
+                  setPlaylist(res.data);
+                });
+            }}
+          />
+        )}
+      </AnimatePresence>
+
+      {/* Share Playlist Modal */}
+      <AnimatePresence>
+        {showShareModal && (
+          <SharePlaylistModal
+            playlist={playlist}
+            onClose={() => setShowShareModal(false)}
+            onUpdate={() => {
+              // Refresh playlist data
+              get(`/api/playlists/${playlistId}`)
+                .then(res => {
+                  setPlaylist(res.data);
+                });
+            }}
+          />
+        )}
+      </AnimatePresence>
     </MainLayout>
   );
 };

@@ -43,26 +43,36 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
 
   const handleAddToPlaylist = async (playlistId) => {
     try {
-      await put(`/api/playlists/${playlistId}/add`, { songId });
-      toast.success("Song added to playlist!");
+      const res = await put(`/api/playlists/${playlistId}/add`, { songId });
+      if (res.data.message === "Already added" || res.data.message === "Song already in playlist") {
+        toast.error("⚠️ Song already in this playlist");
+      } else {
+        toast.success("✅ Song added to playlist!");
+      }
       onClose();
-    } catch {
-      toast.error("Failed to add song to playlist");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to add song to playlist";
+      toast.error(`❌ ${errorMessage}`);
     }
   };
 
   const handleCreateAndAdd = async () => {
-    if (!newPlaylistName.trim()) return;
+    if (!newPlaylistName.trim()) {
+      toast.error("⚠️ Please enter a playlist name");
+      return;
+    }
     try {
       const res = await post("/api/playlists", {
         name: newPlaylistName,
         description: "",
         userId: user.uid,
       });
+      toast.success("✅ Playlist created!");
       await handleAddToPlaylist(res.data.id);
       setNewPlaylistName("");
-    } catch {
-      toast.error("Failed to create playlist");
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Failed to create playlist";
+      toast.error(`❌ ${errorMessage}`);
     }
   };
 
@@ -115,6 +125,7 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
               placeholder="New playlist name"
               value={newPlaylistName}
               onChange={(e) => setNewPlaylistName(e.target.value)}
+              onKeyPress={(e) => e.key === 'Enter' && handleCreateAndAdd()}
             />
           </div>
           <button
@@ -155,6 +166,7 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
                 placeholder="New playlist name"
                 value={newPlaylistName}
                 onChange={(e) => setNewPlaylistName(e.target.value)}
+                onKeyPress={(e) => e.key === 'Enter' && handleCreateAndAdd()}
               />
             </div>
             <button

@@ -15,6 +15,7 @@ import { motion, AnimatePresence } from "framer-motion";
 import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/healers.png";
 import { USER_ROLES, THEMES } from "../../constants";
+import { NotificationCenter } from "../features/notifications";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -136,6 +137,9 @@ function Navbar() {
           </div>
 
           {/* Theme toggle (always visible) */}
+          {/* Notification Center */}
+          {user && <NotificationCenter />}
+
           <button
             className="p-2 rounded-lg cursor-pointer flex items-center justify-center"
             onClick={() =>
