@@ -5,28 +5,44 @@
   "theme_color": "#7c3aed",
   "background_color": "#18181b",
   "display": "standalone",
+  "orientation": "portrait",
+  "scope": "/",
   "start_url": "/",
   "icons": [
     {
       "src": "/healers.png",
-      "sizes": "any",
-      "type": "image/png"
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
     },
     {
       "src": "/pwa-192x192.png",
       "sizes": "192x192",
-      "type": "image/png"
+      "type": "image/png",
+      "purpose": "any"
     },
     {
-      "src": "/pwa-512x512.png",
-      "sizes": "512x512",
-      "type": "image/png"
-    },
-    {
-      "src": "/pwa-512x512.png",
+      "src": "/healers.png",
       "sizes": "512x512",
       "type": "image/png",
-      "purpose": "any maskable"
+      "purpose": "maskable"
+    }
+  ],
+  "categories": ["music", "entertainment"],
+  "shortcuts": [
+    {
+      "name": "My Playlists",
+      "short_name": "Playlists",
+      "description": "View your playlists",
+      "url": "/playlists",
+      "icons": [{ "src": "/healers.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Profile",
+      "short_name": "Profile",
+      "description": "View your profile",
+      "url": "/profile",
+      "icons": [{ "src": "/healers.png", "sizes": "192x192" }]
     }
   ]
 }

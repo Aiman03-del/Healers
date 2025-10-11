@@ -199,14 +199,10 @@ function Navbar() {
               <AnimatePresence>
                 {dropdown && (
                   <motion.div
-                    initial={{ opacity: 0, y: -10, scale: 0.95 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -10, scale: 0.95 }}
-                    transition={{
-                      duration: 0.2,
-                      type: "spring",
-                      stiffness: 300,
-                    }}
+                    initial={{ opacity: 0, y: -10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: -10 }}
+                    transition={{ duration: 0.2, ease: "easeOut" }}
                     className="absolute right-0 mt-3 w-64 bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 border-2 border-purple-500/40 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] py-2 overflow-hidden"
                     style={{ zIndex: 9999 }}
                   >
@@ -350,82 +346,59 @@ function Navbar() {
         {mobileOpen && (
           <motion.div
             ref={mobileRef}
-            initial={{ opacity: 0, height: 0 }}
-            animate={{ opacity: 1, height: "auto" }}
-            exit={{ opacity: 0, height: 0 }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
+            initial={{ opacity: 0, y: -10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: -10 }}
+            transition={{ duration: 0.2, ease: "easeOut" }}
             className="md:hidden absolute left-0 right-0 top-full bg-gradient-to-b from-gray-900/98 via-purple-900/98 to-fuchsia-900/98 backdrop-blur-2xl border-t border-purple-500/30 z-[9997] overflow-hidden shadow-2xl"
             style={{ zIndex: 9997 }}
           >
             <div className="px-4 py-5 space-y-1.5 max-h-[70vh] overflow-y-auto">
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.05 }}
+              <Link
+                to="/"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                  location.pathname === "/"
+                    ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                    : "hover:bg-white/10"
+                }`}
               >
-                <Link
-                  to="/"
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
-                    location.pathname === "/"
-                      ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
-                      : "hover:bg-white/10"
-                  }`}
-                >
-                  <FaHome className="group-hover:scale-110 transition-transform" />
-                  <span className="text-base">Home</span>
-                </Link>
-              </motion.div>
+                <FaHome className="group-hover:scale-110 transition-transform" />
+                <span className="text-base">Home</span>
+              </Link>
 
               {user &&
                 (user.type === USER_ROLES.ADMIN ||
                   user.type === USER_ROLES.STAFF) && (
-                  <motion.div
-                    initial={{ x: -20, opacity: 0 }}
-                    animate={{ x: 0, opacity: 1 }}
-                    transition={{ delay: 0.1 }}
+                  <Link
+                    to="/dashboard"
+                    onClick={() => setMobileOpen(false)}
+                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                      location.pathname.startsWith("/dashboard")
+                        ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                        : "hover:bg-white/10"
+                    }`}
                   >
-                    <Link
-                      to="/dashboard"
-                      onClick={() => setMobileOpen(false)}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
-                        location.pathname.startsWith("/dashboard")
-                          ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
-                          : "hover:bg-white/10"
-                      }`}
-                    >
-                      <FaTachometerAlt className="group-hover:scale-110 transition-transform" />
-                      <span className="text-base">Dashboard</span>
-                    </Link>
-                  </motion.div>
+                    <FaTachometerAlt className="group-hover:scale-110 transition-transform" />
+                    <span className="text-base">Dashboard</span>
+                  </Link>
                 )}
 
-              <motion.div
-                initial={{ x: -20, opacity: 0 }}
-                animate={{ x: 0, opacity: 1 }}
-                transition={{ delay: 0.15 }}
+              <Link
+                to="/playlists"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                  location.pathname === "/playlists"
+                    ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                    : "hover:bg-white/10"
+                }`}
               >
-                <Link
-                  to="/playlists"
-                  onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
-                    location.pathname === "/playlists"
-                      ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
-                      : "hover:bg-white/10"
-                  }`}
-                >
-                  <FaListUl className="group-hover:scale-110 transition-transform" />
-                  <span className="text-base">My Playlists</span>
-                </Link>
-              </motion.div>
+                <FaListUl className="group-hover:scale-110 transition-transform" />
+                <span className="text-base">My Playlists</span>
+              </Link>
 
               {!user ? (
-                <motion.div
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="pt-3"
-                >
+                <div className="pt-3">
                   <Link
                     to="/login"
                     onClick={() => setMobileOpen(false)}
@@ -433,14 +406,9 @@ function Navbar() {
                   >
                     Login
                   </Link>
-                </motion.div>
+                </div>
               ) : (
-                <motion.div
-                  initial={{ x: -20, opacity: 0 }}
-                  animate={{ x: 0, opacity: 1 }}
-                  transition={{ delay: 0.2 }}
-                  className="pt-3 mt-2 border-t border-purple-500/30 space-y-1.5"
-                >
+                <div className="pt-3 mt-2 border-t border-purple-500/30 space-y-1.5">
                   <Link
                     to="/profile"
                     onClick={() => setMobileOpen(false)}
@@ -459,7 +427,7 @@ function Navbar() {
                     <FaSignOutAlt className="group-hover:scale-110 group-hover:translate-x-1 transition-transform" />
                     <span className="text-base">Logout</span>
                   </button>
-                </motion.div>
+                </div>
               )}
             </div>
           </motion.div>

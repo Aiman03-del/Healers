@@ -4,7 +4,7 @@ import React, { useState, lazy, Suspense } from "react";
 import { Toaster } from "react-hot-toast";
 import Confetti from "react-confetti";
 import { THEMES, USER_ROLES } from "./constants";
-import { Loading } from "./components/common";
+import { Loading, InstallPWA } from "./components/common";
 
 // Lazy load pages for better performance
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
@@ -53,6 +53,7 @@ function App() {
       {showConfetti && (
         <Confetti width={window.innerWidth} height={window.innerHeight} />
       )}
+      <InstallPWA />
       <main className="min-h-[calc(100vh-12.5vh)]">
         <Suspense fallback={<Loading message="Loading page..." />}>
           <Routes>
