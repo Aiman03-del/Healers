@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
 import {
@@ -18,6 +18,124 @@ import toast from "react-hot-toast";
 import useAxios from "../hooks/useAxios";
 import { SearchBar } from "../components/features/search";
 import { AddToPlaylistModal } from "../components/features/playlists";
+
+// SongCard Component - Memoized to prevent unnecessary re-renders
+const SongCard = memo(
+  ({ song, index, songs: songList, currentSongId, isCurrentPlaying, isLiked, onPlay, onPause, onLike, likeEffectId }) => {
+    const isCurrent = currentSongId === song._id;
+
+    return (
+      <motion.div
+        key={song._id}
+        initial={{ opacity: 0, scale: 0.95 }}
+        animate={{ opacity: 1, scale: 1 }}
+        transition={{ duration: 0.15, delay: index * 0.02 }}
+        className="relative group"
+      >
+        <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
+
+          {/* Album Cover */}
+          <div className="relative w-full aspect-square">
+            <img
+              src={song.cover || "/healers.png"}
+              alt={song.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = "/healers.png";
+              }}
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+            
+            {/* Play/Pause button overlay */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => {
+                  if (isCurrent && isCurrentPlaying) {
+                    onPause();
+                  } else {
+                    onPlay(song, index, songList);
+                  }
+                }}
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+              >
+                {isCurrent && isCurrentPlaying ? (
+                  <FaPause className="text-xl" />
+                ) : (
+                  <FaPlay className="text-xl ml-1" />
+                )}
+              </button>
+            </div>
+
+            {/* Now Playing indicator */}
+            {isCurrent && (
+              <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                {isCurrentPlaying ? "Playing" : "Paused"}
+              </div>
+            )}
+
+            {/* Like button */}
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onLike(song._id);
+              }}
+              className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all ${
+                isLiked
+                  ? "bg-gradient-to-r from-red-500 to-pink-500 text-white"
+                  : "bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
+              }`}
+            >
+              <FaHeart
+                className={`text-sm ${
+                  likeEffectId === song._id ? "animate-ping" : ""
+                }`}
+              />
+            </motion.button>
+          </div>
+
+          {/* Song Info */}
+          <div className="p-3">
+            <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+              {song.title}
+            </h3>
+            <p className="text-xs text-purple-200 truncate mt-1">
+              {song.artist}
+            </p>
+            {song.genre && song.genre.length > 0 && (
+              <div className="flex gap-1 mt-2 flex-wrap">
+                {song.genre.slice(0, 2).map((g, idx) => (
+                  <span
+                    key={idx}
+                    className="text-xs px-2 py-0.5 rounded-full bg-purple-600/50 text-purple-100"
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
+    );
+  },
+  (prevProps, nextProps) => {
+    // Custom comparison function to prevent unnecessary re-renders
+    return (
+      prevProps.song._id === nextProps.song._id &&
+      prevProps.currentSongId === nextProps.currentSongId &&
+      prevProps.isCurrentPlaying === nextProps.isCurrentPlaying &&
+      prevProps.isLiked === nextProps.isLiked &&
+      prevProps.likeEffectId === nextProps.likeEffectId
+    );
+  }
+);
+
+SongCard.displayName = 'SongCard';
 
 function HomeContent() {
   const navigate = useNavigate();
@@ -175,7 +293,8 @@ function HomeContent() {
     return liked._id;
   };
 
-  const handleLikeSong = async (songId) => {
+  // Memoized callback to prevent SongCard re-renders
+  const handleLikeSong = useCallback(async (songId) => {
     setLikeEffectId(songId);
     try {
       const likedPlaylistId = await getOrCreateLikedPlaylist();
@@ -192,7 +311,7 @@ function HomeContent() {
       toast.error("Failed to update like");
     }
     setTimeout(() => setLikeEffectId(null), 300);
-  };
+  }, [likedSongIds, user]);
 
   const handleAddToPlaylist = async (playlistId, songId) => {
     try {
@@ -257,111 +376,6 @@ function HomeContent() {
     const randomIndex = Math.floor(Math.random() * songs.length);
     playSong(songs[randomIndex], randomIndex, songs);
     toast.success("Playing random song!");
-  };
-
-  // Component for rendering song cards
-  const SongCard = ({ song, index, songs: songList }) => {
-    const isCurrent = isSongCurrent(song);
-    const isLiked = likedSongIds.includes(song._id);
-
-    return (
-      <motion.div
-        key={song._id}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.15, delay: index * 0.02 }}
-        className="relative group"
-      >
-        <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
-
-          {/* Album Cover */}
-          <div className="relative w-full aspect-square">
-            <img
-              src={song.cover || "/healers.png"}
-              alt={song.title}
-              className="w-full h-full object-cover"
-              onError={(e) => {
-                e.target.src = "/healers.png";
-              }}
-            />
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-            
-            {/* Play/Pause button overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => {
-                  if (isCurrent && isPlaying) {
-                    pauseSong();
-                  } else {
-                    playSong(song, index, songList);
-                  }
-                }}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-              >
-                {isCurrent && isPlaying ? (
-                  <FaPause className="text-xl" />
-                ) : (
-                  <FaPlay className="text-xl ml-1" />
-                )}
-              </button>
-            </div>
-
-            {/* Now Playing indicator */}
-            {isCurrent && (
-              <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                {isPlaying ? "Playing" : "Paused"}
-              </div>
-            )}
-
-            {/* Like button */}
-            <motion.button
-              whileTap={{ scale: 0.8 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLikeSong(song._id);
-              }}
-              className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all ${
-                isLiked
-                  ? "bg-gradient-to-r from-red-500 to-pink-500 text-white"
-                  : "bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
-              }`}
-            >
-              <FaHeart
-                className={`text-sm ${
-                  likeEffectId === song._id ? "animate-ping" : ""
-                }`}
-              />
-            </motion.button>
-          </div>
-
-          {/* Song Info */}
-          <div className="p-3">
-            <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
-              {song.title}
-            </h3>
-            <p className="text-xs text-purple-200 truncate mt-1">
-              {song.artist}
-            </p>
-            {song.genre && song.genre.length > 0 && (
-              <div className="flex gap-1 mt-2 flex-wrap">
-                {song.genre.slice(0, 2).map((g, idx) => (
-                  <span
-                    key={idx}
-                    className="text-xs px-2 py-0.5 rounded-full bg-purple-600/50 text-purple-100"
-                  >
-                    {g}
-                  </span>
-                ))}
-              </div>
-            )}
-          </div>
-        </div>
-      </motion.div>
-    );
   };
 
   return (
@@ -505,6 +519,13 @@ function HomeContent() {
                     song={song}
                     index={idx}
                     songs={forYouSongs}
+                    currentSongId={currentSong?._id}
+                    isCurrentPlaying={isPlaying}
+                    isLiked={likedSongIds.includes(song._id)}
+                    onPlay={playSong}
+                    onPause={pauseSong}
+                    onLike={handleLikeSong}
+                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -531,6 +552,13 @@ function HomeContent() {
                     song={song}
                     index={idx}
                     songs={recentlyPlayed}
+                    currentSongId={currentSong?._id}
+                    isCurrentPlaying={isPlaying}
+                    isLiked={likedSongIds.includes(song._id)}
+                    onPlay={playSong}
+                    onPause={pauseSong}
+                    onLike={handleLikeSong}
+                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -557,6 +585,13 @@ function HomeContent() {
                     song={song}
                     index={idx}
                     songs={trendingSongs}
+                    currentSongId={currentSong?._id}
+                    isCurrentPlaying={isPlaying}
+                    isLiked={likedSongIds.includes(song._id)}
+                    onPlay={playSong}
+                    onPause={pauseSong}
+                    onLike={handleLikeSong}
+                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -583,6 +618,13 @@ function HomeContent() {
                     song={song}
                     index={idx}
                     songs={newReleases}
+                    currentSongId={currentSong?._id}
+                    isCurrentPlaying={isPlaying}
+                    isLiked={likedSongIds.includes(song._id)}
+                    onPlay={playSong}
+                    onPause={pauseSong}
+                    onLike={handleLikeSong}
+                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -606,6 +648,13 @@ function HomeContent() {
                     song={song}
                     index={index}
                     songs={searchResults}
+                    currentSongId={currentSong?._id}
+                    isCurrentPlaying={isPlaying}
+                    isLiked={likedSongIds.includes(song._id)}
+                    onPlay={playSong}
+                    onPause={pauseSong}
+                    onLike={handleLikeSong}
+                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>

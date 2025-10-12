@@ -1,5 +1,5 @@
 // src/context/AudioContext.jsx
-import { createContext, useContext, useState, useRef, useEffect } from 'react';
+import { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
 
 const AudioContext = createContext();
 
@@ -22,8 +22,8 @@ export function AudioProvider({ children }) {
 
   const audio = audioRef.current;
 
-  // Play a song and update queue/index if needed
-  const playSong = (song, index, songs) => {
+  // Play a song and update queue/index if needed - Memoized
+  const playSong = useCallback((song, index, songs) => {
     if (songs && Array.isArray(songs)) {
       setQueue(songs);
       setCurrentIndex(index);
@@ -43,9 +43,9 @@ export function AudioProvider({ children }) {
       audio.play();
       setIsPlaying(true);
     }
-  };
+  }, [audio, loopMode, volume]);
 
-  const playNext = () => {
+  const playNext = useCallback(() => {
     if (!queue || queue.length === 0 || currentIndex == null) return;
     let nextIndex;
     if (shuffle) {
@@ -65,9 +65,9 @@ export function AudioProvider({ children }) {
       setCurrentSong(null);
       setCurrentIndex(null);
     }
-  };
+  }, [queue, currentIndex, shuffle, loopMode, playSong]);
 
-  const playPrev = () => {
+  const playPrev = useCallback(() => {
     if (!queue || queue.length === 0 || currentIndex == null) return;
     let prevIndex;
     if (shuffle) {
@@ -84,17 +84,21 @@ export function AudioProvider({ children }) {
       setCurrentSong(null);
       setCurrentIndex(null);
     }
-  };
+  }, [queue, currentIndex, shuffle, playSong]);
 
-  const pauseSong = () => {
+  const pauseSong = useCallback(() => {
     audio.pause();
     setIsPlaying(false);
-  };
+  }, [audio]);
 
-  const togglePlayPause = () => {
-    if (isPlaying) pauseSong();
-    else audio.play().then(() => setIsPlaying(true));
-  };
+  const togglePlayPause = useCallback(() => {
+    if (isPlaying) {
+      audio.pause();
+      setIsPlaying(false);
+    } else {
+      audio.play().then(() => setIsPlaying(true));
+    }
+  }, [audio, isPlaying]);
 
   const changeVolume = (v) => {
     const vol = Math.max(0, Math.min(1, v)); // Clamp between 0-1
