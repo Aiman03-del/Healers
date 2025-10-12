@@ -155,6 +155,107 @@ export function AudioProvider({ children }) {
     setIsPlaying(true);
   };
 
+  // Update Media Session API when song changes
+  useEffect(() => {
+    if (!currentSong || !('mediaSession' in navigator)) return;
+
+    try {
+      // Set metadata
+      navigator.mediaSession.metadata = new MediaMetadata({
+        title: currentSong.title || 'Unknown Title',
+        artist: currentSong.artist || 'Unknown Artist',
+        album: currentSong.album || 'Healers Music',
+        artwork: [
+          {
+            src: currentSong.cover || '/healers.png',
+            sizes: '96x96',
+            type: 'image/png'
+          },
+          {
+            src: currentSong.cover || '/healers.png',
+            sizes: '128x128',
+            type: 'image/png'
+          },
+          {
+            src: currentSong.cover || '/healers.png',
+            sizes: '192x192',
+            type: 'image/png'
+          },
+          {
+            src: currentSong.cover || '/healers.png',
+            sizes: '256x256',
+            type: 'image/png'
+          },
+          {
+            src: currentSong.cover || '/healers.png',
+            sizes: '384x384',
+            type: 'image/png'
+          },
+          {
+            src: currentSong.cover || '/healers.png',
+            sizes: '512x512',
+            type: 'image/png'
+          }
+        ]
+      });
+
+      // Set action handlers
+      navigator.mediaSession.setActionHandler('play', () => {
+        audio.play();
+        setIsPlaying(true);
+      });
+
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audio.pause();
+        setIsPlaying(false);
+      });
+
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        playPrev();
+      });
+
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        playNext();
+      });
+
+      navigator.mediaSession.setActionHandler('seekbackward', () => {
+        audio.currentTime = Math.max(0, audio.currentTime - 10);
+      });
+
+      navigator.mediaSession.setActionHandler('seekforward', () => {
+        audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
+      });
+
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime) {
+          audio.currentTime = details.seekTime;
+        }
+      });
+
+      // Update playback state
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+
+    } catch (error) {
+      console.error('Error setting up media session:', error);
+    }
+  }, [currentSong, isPlaying, audio, playNext, playPrev]);
+
+  // Update position state for media session
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !currentSong || !duration) return;
+
+    try {
+      navigator.mediaSession.setPositionState({
+        duration: duration || 0,
+        playbackRate: audio.playbackRate || 1,
+        position: currentTime || 0
+      });
+    } catch (error) {
+      // Position state might not be supported
+      console.debug('Position state not supported:', error);
+    }
+  }, [currentTime, duration, currentSong, audio]);
+
   useEffect(() => {
     const updateProgress = () => {
       setCurrentTime(audio.currentTime);
@@ -177,7 +278,7 @@ export function AudioProvider({ children }) {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
     };
-  }, [audio, currentIndex, loopMode, shuffle, queue]);
+  }, [audio, currentIndex, loopMode, shuffle, queue, playNext]);
 
   return (
     <AudioContext.Provider

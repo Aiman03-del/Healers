@@ -11,6 +11,7 @@ import {
   FaMusic,
   FaDownload,
   FaCheckCircle,
+  FaShareAlt,
 } from "react-icons/fa";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -87,6 +88,38 @@ function Navbar() {
     // Clear the prompt
     setDeferredPrompt(null);
     setIsInstallable(false);
+  };
+
+  // Handle share click
+  const handleShareClick = async () => {
+    const shareData = {
+      title: 'Healers - Music Streaming',
+      text: '🎵 Check out Healers - Your personal music streaming platform for healing through music! Listen to unlimited songs, create playlists, and discover new music. 🎧✨',
+      url: window.location.origin,
+    };
+
+    try {
+      // Check if Web Share API is supported
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Thanks for sharing! 🎉');
+      } else {
+        // Fallback: Copy to clipboard
+        await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+        toast.success('Link copied to clipboard! 📋');
+      }
+    } catch (err) {
+      // User cancelled or error occurred
+      if (err.name !== 'AbortError') {
+        // Fallback: Copy to clipboard
+        try {
+          await navigator.clipboard.writeText(window.location.origin);
+          toast.success('Link copied to clipboard! 📋');
+        } catch {
+          toast.error('Failed to share');
+        }
+      }
+    }
   };
 
   // Close dropdown on outside click
@@ -186,6 +219,20 @@ function Navbar() {
               active={location.pathname === "/playlists"}
             />
           </div>
+
+          {/* Share Button for non-logged users */}
+          {!user && (
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={handleShareClick}
+              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-semibold text-sm transition-all duration-300 shadow-lg"
+              aria-label="Share app"
+            >
+              <FaShareAlt />
+              <span>Share</span>
+            </motion.button>
+          )}
 
           {/* Notification Center */}
           {user && <NotificationCenter />}
@@ -334,6 +381,18 @@ function Navbar() {
                         </button>
                       )}
 
+                      {/* Share App Button */}
+                      <button
+                        onClick={() => {
+                          handleShareClick();
+                          setDropdown(false);
+                        }}
+                        className="flex items-center gap-3 px-4 py-2.5 mx-2 w-[calc(100%-1rem)] text-left rounded-lg hover:bg-purple-600/40 text-white transition-all duration-200 font-semibold group"
+                      >
+                        <FaShareAlt className="group-hover:scale-110 transition-transform" />
+                        <span>Share App</span>
+                      </button>
+
                       <div className="my-2 mx-4 border-t border-purple-500/30" />
 
                       <button
@@ -477,7 +536,19 @@ function Navbar() {
               </Link>
 
               {!user ? (
-                <div className="pt-3">
+                <div className="pt-3 space-y-2">
+                  {/* Share Button for Non-logged Mobile Users */}
+                  <button
+                    onClick={() => {
+                      handleShareClick();
+                      setMobileOpen(false);
+                    }}
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-bold shadow-lg transition-all duration-300"
+                  >
+                    <FaShareAlt />
+                    Share App
+                  </button>
+                  
                   <Link
                     to="/login"
                     onClick={() => setMobileOpen(false)}
@@ -524,6 +595,18 @@ function Navbar() {
                       )}
                     </button>
                   )}
+
+                  {/* Share App Button for Mobile */}
+                  <button
+                    onClick={() => {
+                      handleShareClick();
+                      setMobileOpen(false);
+                    }}
+                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-600/40 transition-all duration-200 text-white font-semibold w-full text-left group"
+                  >
+                    <FaShareAlt className="group-hover:scale-110 transition-transform" />
+                    <span className="text-base">Share App</span>
+                  </button>
 
                   <button
                     onClick={() => {
