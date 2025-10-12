@@ -43,7 +43,6 @@ const NotificationCenter = () => {
     socketRef.current = socket;
 
     socket.on("connect", () => {
-      console.log("✅ Socket connected");
       socket.emit("join:user", user.uid);
     });
 
