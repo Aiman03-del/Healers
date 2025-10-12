@@ -51,88 +51,59 @@ function HomeContent() {
   const [trendingPlaylists, setTrendingPlaylists] = useState([]);
   const [isPersonalized, setIsPersonalized] = useState(false);
 
+  // ⚡ Fetch all public data in parallel (no user required)
   useEffect(() => {
-    const fetchSongs = async () => {
+    const fetchPublicData = async () => {
       try {
-        const res = await get("/api/songs");
-        setSongs(res.data.songs || []);
-      } catch {
-        setSongs([]);
+        const [songsRes, trendingRes, newReleasesRes, trendingPlaylistsRes] = 
+          await Promise.all([
+            get("/api/songs").catch(() => ({ data: { songs: [] } })),
+            get("/api/songs/trending?limit=6").catch(() => ({ data: { songs: [] } })),
+            get("/api/songs/new-releases?limit=6").catch(() => ({ data: { songs: [] } })),
+            get("/api/playlists/public/trending?limit=6").catch(() => ({ data: { playlists: [] } })),
+          ]);
+
+        setSongs(songsRes.data.songs || []);
+        setTrendingSongs(trendingRes.data.songs || []);
+        setNewReleases(newReleasesRes.data.songs || []);
+        setTrendingPlaylists(trendingPlaylistsRes.data.playlists || []);
+      } catch (error) {
+        console.error("Error fetching public data:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
-    fetchSongs();
+    fetchPublicData();
   }, []);
 
-  // Fetch trending songs
+  // ⚡ Fetch user-specific data in parallel (requires user)
   useEffect(() => {
-    const fetchTrending = async () => {
+    if (!user?.uid) return;
+    
+    const fetchUserData = async () => {
       try {
-        const res = await get("/api/songs/trending?limit=6");
-        setTrendingSongs(res.data.songs || []);
-      } catch {
-        setTrendingSongs([]);
-      }
-    };
-    fetchTrending();
-  }, []);
+        const [recommendationsRes, playlistsRes] = await Promise.all([
+          get(`/api/recommendations/${user.uid}?limit=6`).catch(() => ({ 
+            data: { songs: [], personalized: false } 
+          })),
+          get(`/api/playlists/user/${user.uid}`).catch(() => ({ data: [] })),
+        ]);
 
-  // Fetch new releases
-  useEffect(() => {
-    const fetchNewReleases = async () => {
-      try {
-        const res = await get("/api/songs/new-releases?limit=6");
-        setNewReleases(res.data.songs || []);
-      } catch {
-        setNewReleases([]);
-      }
-    };
-    fetchNewReleases();
-  }, []);
+        // Set recommendations
+        setForYouSongs(recommendationsRes.data.songs || []);
+        setIsPersonalized(recommendationsRes.data.personalized || false);
 
-  // Fetch trending public playlists
-  useEffect(() => {
-    const fetchTrendingPlaylists = async () => {
-      try {
-        const res = await get("/api/playlists/public/trending?limit=6");
-        setTrendingPlaylists(res.data.playlists || []);
-      } catch {
-        setTrendingPlaylists([]);
-      }
-    };
-    fetchTrendingPlaylists();
-  }, []);
-
-  // Fetch personalized recommendations ("For You")
-  useEffect(() => {
-    const fetchRecommendations = async () => {
-      if (!user?.uid) return;
-      try {
-        const res = await get(`/api/recommendations/${user.uid}?limit=6`);
-        setForYouSongs(res.data.songs || []);
-        setIsPersonalized(res.data.personalized || false);
-      } catch {
-        setForYouSongs([]);
-        setIsPersonalized(false);
-      }
-    };
-    fetchRecommendations();
-  }, [user]);
-
-  useEffect(() => {
-    const fetchLiked = async () => {
-      if (!user?.uid) return;
-      try {
-        const res = await get(`/api/playlists/user/${user.uid}`);
-        const liked = res.data.find((pl) => pl.name === "Liked Songs");
+        // Set liked songs
+        const liked = (playlistsRes.data || []).find((pl) => pl.name === "Liked Songs");
         if (liked && liked.songs) {
           setLikedSongIds(liked.songs.map((id) => id.toString()));
         }
-      } catch {
-        setLikedSongIds([]);
+      } catch (error) {
+        console.error("Error fetching user data:", error);
       }
     };
-    fetchLiked();
+    
+    fetchUserData();
   }, [user]);
 
   useEffect(() => {
@@ -300,7 +271,96 @@ function HomeContent() {
         animate={{ opacity: 1, scale: 1 }}
         transition={{ duration: 0.15, delay: index * 0.02 }}
         className="relative group"
-      ></motion.div>
+      >
+        <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
+          {/* Glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
+
+          {/* Album Cover */}
+          <div className="relative w-full aspect-square">
+            <img
+              src={song.cover || "/healers.png"}
+              alt={song.title}
+              className="w-full h-full object-cover"
+              onError={(e) => {
+                e.target.src = "/healers.png";
+              }}
+            />
+            {/* Gradient overlay */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+            
+            {/* Play/Pause button overlay */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+              <button
+                onClick={() => {
+                  if (isCurrent && isPlaying) {
+                    pauseSong();
+                  } else {
+                    playSong(song, index, songList);
+                  }
+                }}
+                className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
+              >
+                {isCurrent && isPlaying ? (
+                  <FaPause className="text-xl" />
+                ) : (
+                  <FaPlay className="text-xl ml-1" />
+                )}
+              </button>
+            </div>
+
+            {/* Now Playing indicator */}
+            {isCurrent && (
+              <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
+                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+                {isPlaying ? "Playing" : "Paused"}
+              </div>
+            )}
+
+            {/* Like button */}
+            <motion.button
+              whileTap={{ scale: 0.8 }}
+              onClick={(e) => {
+                e.stopPropagation();
+                handleLikeSong(song._id);
+              }}
+              className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all ${
+                isLiked
+                  ? "bg-gradient-to-r from-red-500 to-pink-500 text-white"
+                  : "bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
+              }`}
+            >
+              <FaHeart
+                className={`text-sm ${
+                  likeEffectId === song._id ? "animate-ping" : ""
+                }`}
+              />
+            </motion.button>
+          </div>
+
+          {/* Song Info */}
+          <div className="p-3">
+            <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+              {song.title}
+            </h3>
+            <p className="text-xs text-purple-200 truncate mt-1">
+              {song.artist}
+            </p>
+            {song.genre && song.genre.length > 0 && (
+              <div className="flex gap-1 mt-2 flex-wrap">
+                {song.genre.slice(0, 2).map((g, idx) => (
+                  <span
+                    key={idx}
+                    className="text-xs px-2 py-0.5 rounded-full bg-purple-600/50 text-purple-100"
+                  >
+                    {g}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      </motion.div>
     );
   };
 

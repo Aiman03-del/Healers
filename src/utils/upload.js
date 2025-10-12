@@ -1,11 +1,13 @@
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 export async function uploadToImageKit(file) {
   const formData = new FormData();
   formData.append("file", file);
 
   // Choose endpoint based on file type
-  let endpoint = "http://localhost:5000/api/upload";
+  let endpoint = `${API_BASE_URL}/api/upload`;
   if (file.type && file.type.startsWith("audio/")) {
-    endpoint = "http://localhost:5000/api/upload-audio";
+    endpoint = `${API_BASE_URL}/api/upload-audio`;
   }
 
   try {

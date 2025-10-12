@@ -27,12 +27,13 @@ const DashboardLayout = () => {
   });
 
   useEffect(() => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
     const fetchStats = async () => {
       try {
         const [songsRes, usersRes, topSongsRes] = await Promise.all([
-          axios.get("http://localhost:5000/api/songs"),
-          axios.get("http://localhost:5000/api/users"),
-          axios.get("http://localhost:5000/api/songs?sort=playCount&limit=5"),
+          axios.get(`${API_BASE_URL}/api/songs`),
+          axios.get(`${API_BASE_URL}/api/users`),
+          axios.get(`${API_BASE_URL}/api/songs?sort=playCount&limit=5`),
         ]);
         setStats({
           totalSongs: songsRes.data.songs?.length || 0,

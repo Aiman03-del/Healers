@@ -44,7 +44,7 @@ const ensureUserInDB = async (userObj) => {
   const dbUser = await fetchUserFromDB(userObj.uid);
   if (!dbUser) {
     await saveUserToDB(userObj);
-    await delay(300);
+    await delay(100); // Reduced from 300ms
     return { user: await fetchUserFromDB(userObj.uid), isNew: true };
   }
   return { user: dbUser, isNew: false };
@@ -63,11 +63,11 @@ const setBackendJWT = async (firebaseUser) => {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 // Retry logic
-const fetchUserFromDBWithRetry = async (uid, retries = 3, delayMs = 400) => {
+const fetchUserFromDBWithRetry = async (uid, retries = 2, delayMs = 200) => {
   for (let i = 0; i < retries; i++) {
     const user = await fetchUserFromDB(uid);
     if (user) return user;
-    await delay(delayMs);
+    if (i < retries - 1) await delay(delayMs); // Only delay if not last attempt
   }
   return null;
 };
@@ -142,7 +142,7 @@ const googleLogin = async () => {
   const firebaseUser = result.user;
 
   await setBackendJWT(firebaseUser);
-  await delay(400);
+  await delay(100); // Reduced from 400ms
 
   const { user: dbUser, isNew } = await ensureUserInDB({
       uid: firebaseUser.uid,
@@ -175,10 +175,10 @@ const googleLogin = async () => {
         await setBackendJWT(currentUser);
 
         // ✅ Step 2: Wait a bit for cookie to be usable
-        await delay(400); // Optional but safer
+        await delay(100); // Reduced from 400ms
 
         // ✅ Step 3: Now fetch user from DB
-        const dbUser = await fetchUserFromDBWithRetry(currentUser.uid, 4, 400);
+        const dbUser = await fetchUserFromDBWithRetry(currentUser.uid, 2, 200);
         setUser(dbUser || null);
       } else {
         setUser(null);
@@ -189,9 +189,9 @@ const googleLogin = async () => {
     return () => unsubscribe();
   }, []);
 
-  // Show loading spinner/message while loading
+  // Show loading spinner while loading
   if (loading) {
-    return <Loading message="Authenticating..." />;
+    return <Loading />;
   }
 
   return (

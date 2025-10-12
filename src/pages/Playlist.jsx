@@ -2,6 +2,8 @@ import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
 
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+
 export const Playlist = () => {
   const { user } = useAuth();
   const [playlists, setPlaylists] = useState([]);
@@ -11,7 +13,7 @@ export const Playlist = () => {
   // Fetch user's playlists
   useEffect(() => {
     if (!user?.uid) return;
-    fetch(`http://localhost:5000/api/playlists/user/${user.uid}`)
+    fetch(`${API_BASE_URL}/api/playlists/user/${user.uid}`)
       .then(res => res.json())
       .then(data => setPlaylists(data.playlists || []));
   }, [user]);
@@ -21,14 +23,14 @@ export const Playlist = () => {
     e.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
-    await fetch('http://localhost:5000/api/playlists', {
+    await fetch(`${API_BASE_URL}/api/playlists`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ name, userUid: user.uid }),
     });
     setName('');
     // Refresh playlists
-    const res = await fetch(`http://localhost:5000/api/playlists/user/${user.uid}`);
+    const res = await fetch(`${API_BASE_URL}/api/playlists/user/${user.uid}`);
     const data = await res.json();
     setPlaylists(data.playlists || []);
     setLoading(false);
