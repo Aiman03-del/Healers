@@ -22,6 +22,27 @@ export function AudioProvider({ children }) {
 
   const audio = audioRef.current;
 
+  // Set audio element attributes for better media session integration
+  useEffect(() => {
+    audio.preload = 'metadata';
+    audio.crossOrigin = 'anonymous';
+  }, [audio]);
+
+  // Handle notification click to bring app to foreground
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && currentSong && isPlaying) {
+        // App came to foreground, ensure audio is playing
+        audio.play().catch(() => {
+          // Auto-play might be blocked, user needs to click play
+        });
+      }
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    return () => document.removeEventListener('visibilitychange', handleVisibilityChange);
+  }, [audio, currentSong, isPlaying]);
+
   // Play a song and update queue/index if needed - Memoized
   const playSong = useCallback((song, index, songs) => {
     if (songs && Array.isArray(songs)) {
@@ -160,76 +181,48 @@ export function AudioProvider({ children }) {
     if (!currentSong || !('mediaSession' in navigator)) return;
 
     try {
-      // Set metadata
+      // Get absolute URL for cover image
+      const coverUrl = currentSong.cover?.startsWith('http') 
+        ? currentSong.cover 
+        : `${window.location.origin}${currentSong.cover || '/healers.png'}`;
+
+      // Set metadata with proper image URLs
       navigator.mediaSession.metadata = new MediaMetadata({
         title: currentSong.title || 'Unknown Title',
         artist: currentSong.artist || 'Unknown Artist',
         album: currentSong.album || 'Healers Music',
         artwork: [
           {
-            src: currentSong.cover || '/healers.png',
+            src: coverUrl,
             sizes: '96x96',
             type: 'image/png'
           },
           {
-            src: currentSong.cover || '/healers.png',
+            src: coverUrl,
             sizes: '128x128',
             type: 'image/png'
           },
           {
-            src: currentSong.cover || '/healers.png',
+            src: coverUrl,
             sizes: '192x192',
             type: 'image/png'
           },
           {
-            src: currentSong.cover || '/healers.png',
+            src: coverUrl,
             sizes: '256x256',
             type: 'image/png'
           },
           {
-            src: currentSong.cover || '/healers.png',
+            src: coverUrl,
             sizes: '384x384',
             type: 'image/png'
           },
           {
-            src: currentSong.cover || '/healers.png',
+            src: coverUrl,
             sizes: '512x512',
             type: 'image/png'
           }
         ]
-      });
-
-      // Set action handlers
-      navigator.mediaSession.setActionHandler('play', () => {
-        audio.play();
-        setIsPlaying(true);
-      });
-
-      navigator.mediaSession.setActionHandler('pause', () => {
-        audio.pause();
-        setIsPlaying(false);
-      });
-
-      navigator.mediaSession.setActionHandler('previoustrack', () => {
-        playPrev();
-      });
-
-      navigator.mediaSession.setActionHandler('nexttrack', () => {
-        playNext();
-      });
-
-      navigator.mediaSession.setActionHandler('seekbackward', () => {
-        audio.currentTime = Math.max(0, audio.currentTime - 10);
-      });
-
-      navigator.mediaSession.setActionHandler('seekforward', () => {
-        audio.currentTime = Math.min(audio.duration, audio.currentTime + 10);
-      });
-
-      navigator.mediaSession.setActionHandler('seekto', (details) => {
-        if (details.seekTime) {
-          audio.currentTime = details.seekTime;
-        }
       });
 
       // Update playback state
@@ -238,23 +231,118 @@ export function AudioProvider({ children }) {
     } catch (error) {
       console.error('Error setting up media session:', error);
     }
-  }, [currentSong, isPlaying, audio, playNext, playPrev]);
+  }, [currentSong, isPlaying]);
 
-  // Update position state for media session
+  // Setup Media Session action handlers (only once)
   useEffect(() => {
-    if (!('mediaSession' in navigator) || !currentSong || !duration) return;
+    if (!('mediaSession' in navigator)) return;
 
     try {
-      navigator.mediaSession.setPositionState({
-        duration: duration || 0,
-        playbackRate: audio.playbackRate || 1,
-        position: currentTime || 0
+      // Play action
+      navigator.mediaSession.setActionHandler('play', () => {
+        audio.play().then(() => setIsPlaying(true));
       });
+
+      // Pause action
+      navigator.mediaSession.setActionHandler('pause', () => {
+        audio.pause();
+        setIsPlaying(false);
+      });
+
+      // Previous track
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        playPrev();
+      });
+
+      // Next track
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        playNext();
+      });
+
+      // Seek backward (10 seconds)
+      navigator.mediaSession.setActionHandler('seekbackward', (details) => {
+        const skipTime = details.seekOffset || 10;
+        audio.currentTime = Math.max(0, audio.currentTime - skipTime);
+      });
+
+      // Seek forward (10 seconds)
+      navigator.mediaSession.setActionHandler('seekforward', (details) => {
+        const skipTime = details.seekOffset || 10;
+        audio.currentTime = Math.min(audio.duration || 0, audio.currentTime + skipTime);
+      });
+
+      // Seek to specific position
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        if (details.seekTime !== null && details.seekTime !== undefined) {
+          audio.currentTime = details.seekTime;
+        }
+      });
+
+      // Stop action (close app or stop playback)
+      navigator.mediaSession.setActionHandler('stop', () => {
+        audio.pause();
+        audio.currentTime = 0;
+        setIsPlaying(false);
+      });
+
     } catch (error) {
-      // Position state might not be supported
-      console.debug('Position state not supported:', error);
+      console.error('Error setting up media session handlers:', error);
     }
-  }, [currentTime, duration, currentSong, audio]);
+
+    // Cleanup
+    return () => {
+      if ('mediaSession' in navigator) {
+        try {
+          navigator.mediaSession.setActionHandler('play', null);
+          navigator.mediaSession.setActionHandler('pause', null);
+          navigator.mediaSession.setActionHandler('previoustrack', null);
+          navigator.mediaSession.setActionHandler('nexttrack', null);
+          navigator.mediaSession.setActionHandler('seekbackward', null);
+          navigator.mediaSession.setActionHandler('seekforward', null);
+          navigator.mediaSession.setActionHandler('seekto', null);
+          navigator.mediaSession.setActionHandler('stop', null);
+        } catch (e) {
+          // Ignore cleanup errors
+        }
+      }
+    };
+  }, [audio, playNext, playPrev]);
+
+  // Update position state for progress bar (throttled for performance)
+  useEffect(() => {
+    if (!('mediaSession' in navigator) || !currentSong) return;
+    if (!duration || duration === 0 || isNaN(duration)) return;
+    if (isNaN(currentTime)) return;
+
+    // Throttle position updates to every 1 second for better performance
+    const updatePositionState = () => {
+      try {
+        // Clamp values to prevent errors
+        const validDuration = Math.max(0.1, Math.floor(duration));
+        const validPosition = Math.max(0, Math.min(Math.floor(currentTime), validDuration));
+        
+        // Only update if values are valid
+        if (validDuration > 0 && validPosition >= 0) {
+          navigator.mediaSession.setPositionState({
+            duration: validDuration,
+            playbackRate: 1.0,
+            position: validPosition
+          });
+        }
+      } catch (error) {
+        // Position state might not be supported or values might be invalid
+        console.debug('Position state error:', error);
+      }
+    };
+
+    // Update immediately and then throttle
+    updatePositionState();
+    
+    // Throttle to reduce updates
+    const throttleTimer = setInterval(updatePositionState, 1000);
+    
+    return () => clearInterval(throttleTimer);
+  }, [currentTime, duration, currentSong]);
 
   useEffect(() => {
     const updateProgress = () => {
@@ -272,11 +360,50 @@ export function AudioProvider({ children }) {
       }
     };
 
+    const handleLoadedMetadata = () => {
+      // When metadata is loaded, update duration immediately
+      setDuration(audio.duration || 0);
+      
+      // Update media session with correct duration
+      if ('mediaSession' in navigator && audio.duration && !isNaN(audio.duration)) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: Math.floor(audio.duration),
+            playbackRate: 1.0,
+            position: 0
+          });
+        } catch (e) {
+          console.debug('Error setting initial position state:', e);
+        }
+      }
+    };
+
+    const handlePlay = () => {
+      setIsPlaying(true);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'playing';
+      }
+    };
+
+    const handlePause = () => {
+      setIsPlaying(false);
+      if ('mediaSession' in navigator) {
+        navigator.mediaSession.playbackState = 'paused';
+      }
+    };
+
     audio.addEventListener('timeupdate', updateProgress);
     audio.addEventListener('ended', handleEnded);
+    audio.addEventListener('loadedmetadata', handleLoadedMetadata);
+    audio.addEventListener('play', handlePlay);
+    audio.addEventListener('pause', handlePause);
+    
     return () => {
       audio.removeEventListener('timeupdate', updateProgress);
       audio.removeEventListener('ended', handleEnded);
+      audio.removeEventListener('loadedmetadata', handleLoadedMetadata);
+      audio.removeEventListener('play', handlePlay);
+      audio.removeEventListener('pause', handlePause);
     };
   }, [audio, currentIndex, loopMode, shuffle, queue, playNext]);
 

@@ -10,6 +10,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'autoUpdate',
+      injectRegister: 'auto',
       includeAssets: ['healers.png', 'pwa-192x192.png', 'favicon.ico'],
       manifest: {
         name: 'Healers - Music Streaming',
