@@ -9,6 +9,8 @@ import {
   FaUser,
   FaSignOutAlt,
   FaMusic,
+  FaDownload,
+  FaCheckCircle,
 } from "react-icons/fa";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
@@ -16,6 +18,7 @@ import { useState, useRef, useEffect } from "react";
 import logo from "../../assets/healers.png";
 import { USER_ROLES, THEMES } from "../../constants";
 import { NotificationCenter } from "../features/notifications";
+import toast from "react-hot-toast";
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -37,6 +40,54 @@ function Navbar() {
     document.body.className =
       theme === THEMES.LIGHT ? "bg-white text-white" : "bg-gray-900 text-white";
   }, [theme]);
+
+  // PWA Install prompt state
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [isInstallable, setIsInstallable] = useState(false);
+  const [isInstalled, setIsInstalled] = useState(false);
+
+  // Listen for beforeinstallprompt event
+  useEffect(() => {
+    const handler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+      setIsInstallable(true);
+    };
+
+    window.addEventListener('beforeinstallprompt', handler);
+
+    // Check if already installed
+    if (window.matchMedia('(display-mode: standalone)').matches) {
+      setIsInstalled(true);
+    }
+
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  // Handle install click
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) {
+      toast.error('App is already installed or not installable');
+      return;
+    }
+
+    // Show install prompt
+    deferredPrompt.prompt();
+    
+    // Wait for user response
+    const { outcome } = await deferredPrompt.userChoice;
+    
+    if (outcome === 'accepted') {
+      toast.success('🎉 App installed successfully!');
+      setIsInstalled(true);
+    } else {
+      toast('Installation cancelled', { icon: '❌' });
+    }
+    
+    // Clear the prompt
+    setDeferredPrompt(null);
+    setIsInstallable(false);
+  };
 
   // Close dropdown on outside click
   useEffect(() => {
@@ -136,10 +187,10 @@ function Navbar() {
             />
           </div>
 
-          {/* Theme toggle (always visible) */}
           {/* Notification Center */}
           {user && <NotificationCenter />}
 
+          {/* Theme toggle (always visible) */}
           <button
             className="p-2 rounded-lg cursor-pointer flex items-center justify-center"
             onClick={() =>
@@ -254,6 +305,34 @@ function Navbar() {
                         <FaListUl className="group-hover:scale-110 transition-transform" />
                         <span>My Playlists</span>
                       </Link>
+
+                      {/* PWA Install Button in Dropdown */}
+                      {(isInstallable || isInstalled) && (
+                        <button
+                          onClick={() => {
+                            handleInstallClick();
+                            setDropdown(false);
+                          }}
+                          disabled={isInstalled}
+                          className={`flex items-center gap-3 px-4 py-2.5 mx-2 w-[calc(100%-1rem)] text-left rounded-lg transition-all duration-200 font-semibold group ${
+                            isInstalled
+                              ? 'bg-green-600/20 text-green-300 cursor-not-allowed'
+                              : 'hover:bg-purple-600/40 text-white'
+                          }`}
+                        >
+                          {isInstalled ? (
+                            <>
+                              <FaCheckCircle className="group-hover:scale-110 transition-transform" />
+                              <span>App Installed</span>
+                            </>
+                          ) : (
+                            <>
+                              <FaDownload className="group-hover:scale-110 transition-transform" />
+                              <span>Install App</span>
+                            </>
+                          )}
+                        </button>
+                      )}
 
                       <div className="my-2 mx-4 border-t border-purple-500/30" />
 
@@ -417,6 +496,35 @@ function Navbar() {
                     <FaUser className="group-hover:scale-110 transition-transform" />
                     <span className="text-base">Profile</span>
                   </Link>
+
+                  {/* PWA Install Button for Mobile Users */}
+                  {(isInstallable || isInstalled) && (
+                    <button
+                      onClick={() => {
+                        handleInstallClick();
+                        setMobileOpen(false);
+                      }}
+                      disabled={isInstalled}
+                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold w-full text-left group ${
+                        isInstalled
+                          ? 'bg-green-600/20 text-green-300 cursor-not-allowed'
+                          : 'hover:bg-purple-600/40 text-white'
+                      }`}
+                    >
+                      {isInstalled ? (
+                        <>
+                          <FaCheckCircle className="transition-transform" />
+                          <span className="text-base">App Installed</span>
+                        </>
+                      ) : (
+                        <>
+                          <FaDownload className="transition-transform" />
+                          <span className="text-base">Install App</span>
+                        </>
+                      )}
+                    </button>
+                  )}
+
                   <button
                     onClick={() => {
                       logout();
