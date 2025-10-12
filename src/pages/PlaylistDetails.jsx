@@ -99,7 +99,7 @@ export const PlaylistDetails = () => {
     if (playlist?.songs?.length) {
       await put(`/api/playlists/${playlist._id}/increment-play`);
       playQueue(playlist.songs);
-      playSong(playlist.songs[0]); // প্রথম গানটি প্লে করুন
+      playSong(playlist.songs[0]); // Play the first song
     }
   };
 

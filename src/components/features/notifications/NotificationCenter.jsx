@@ -224,7 +224,7 @@ const NotificationCenter = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="absolute right-0 mt-3 w-80 sm:w-96 bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 border-2 border-purple-500/40 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] overflow-hidden"
+            className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto mt-3 sm:w-80 md:w-96 bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 border-2 border-purple-500/40 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] overflow-hidden max-w-[calc(100vw-1rem)]"
           >
             {/* Header */}
             <div className="flex items-center justify-between p-4 border-b border-purple-500/20">

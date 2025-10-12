@@ -92,7 +92,7 @@ function App() {
                     }
                   >
                     <Route index element={<Statistics />} />{" "}
-                    {/* ড্যাশবোর্ডে গেলে স্টাটিস্টিক্স দেখাবে */}
+                    {/* Show statistics by default on dashboard */}
                     <Route path="add-song" element={<AddSong />} />
                     <Route path="songs" element={<AllSongs />} />
                     <Route path="statistics" element={<Statistics />} />

@@ -85,7 +85,7 @@ export function AuthProvider({ children }) {
       password
     );
     await setBackendJWT(userCred.user);
-    // শুধু নতুন ইউজার হলে DB-তে সেভ হবে
+    // Save new user to DB if not present
     const userObj = {
       uid: userCred.user.uid,
       email,
