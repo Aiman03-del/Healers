@@ -188,8 +188,8 @@ function HomeContent() {
           get("/api/playlists/public/trending?limit=6").catch(() => ({ data: { playlists: [] } })),
         ]).then(([songsRes, newReleasesRes, trendingPlaylistsRes]) => {
           setSongs(songsRes.data.songs || []);
-          setNewReleases(newReleasesRes.data.songs || []);
-          setTrendingPlaylists(trendingPlaylistsRes.data.playlists || []);
+        setNewReleases(newReleasesRes.data.songs || []);
+        setTrendingPlaylists(trendingPlaylistsRes.data.playlists || []);
         }).catch((error) => {
           console.error("Error fetching additional data:", error);
         });
@@ -402,13 +402,13 @@ function HomeContent() {
   const searchResults = useMemo(() => {
     if (!search) return [];
     return songs.filter((song) => {
-      return (
-        song.title.toLowerCase().includes(search.toLowerCase()) ||
-        song.artist.toLowerCase().includes(search.toLowerCase()) ||
-        (song.genre &&
-          song.genre.some((g) => g.toLowerCase().includes(search.toLowerCase())))
-      );
-    });
+    return (
+      song.title.toLowerCase().includes(search.toLowerCase()) ||
+      song.artist.toLowerCase().includes(search.toLowerCase()) ||
+      (song.genre &&
+        song.genre.some((g) => g.toLowerCase().includes(search.toLowerCase())))
+    );
+  });
   }, [songs, search]);
 
   // Play random song
@@ -809,10 +809,10 @@ function HomeContent() {
       {/* Add to Playlist Drawer */}
       <AnimatePresence>
         {playlistModal.open && (
-          <AddToPlaylistModal
-            songId={playlistModal.songId}
+            <AddToPlaylistModal
+              songId={playlistModal.songId}
             onClose={closePlaylistModal}
-          />
+            />
         )}
       </AnimatePresence>
     </div>
