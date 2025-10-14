@@ -1,6 +1,17 @@
 @import "tailwindcss";
 @plugin "daisyui";
 
+/* Global Cursor Pointer for Interactive Elements */
+button,
+a,
+[role="button"],
+[type="button"],
+[type="submit"],
+[type="reset"],
+.cursor-pointer {
+  cursor: pointer !important;
+}
+
 /* Custom animations for Navbar */
 @keyframes shimmer {
   0% {

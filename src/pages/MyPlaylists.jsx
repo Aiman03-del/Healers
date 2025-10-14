@@ -17,6 +17,7 @@ const MyPlaylists = () => {
   const [form, setForm] = useState({ name: '', description: '' });
   const [loading, setLoading] = useState(true);
   const [hoveredCard, setHoveredCard] = useState(null);
+  const [showCreateForm, setShowCreateForm] = useState(false);
 
   const fetchPlaylists = async () => {
     if (!user?.uid) return;
@@ -53,6 +54,7 @@ const MyPlaylists = () => {
     });
       toast.success("Playlist created successfully!");
     setForm({ name: '', description: '' });
+    setShowCreateForm(false); // Close form after success
     fetchPlaylists();
     } catch (error) {
       toast.error("Failed to create playlist");
@@ -119,11 +121,24 @@ const MyPlaylists = () => {
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              {/* Title - Responsive text sizes */}
-              <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white mb-2 sm:mb-3 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3">
+              {/* Title with Create Button - Responsive */}
+              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-2 sm:mb-3">
+                <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white flex items-center gap-2 sm:gap-3">
                 <BiSolidPlaylist className="text-3xl sm:text-4xl md:text-5xl text-yellow-300 flex-shrink-0" />
                 <span>My Playlists</span>
         </h1>
+                
+                {/* Create New Playlist Button */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={() => setShowCreateForm(true)}
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
+                >
+                  <FaPlus className="text-base sm:text-lg" />
+                  <span className="text-sm sm:text-base">Create New</span>
+                </motion.button>
+              </div>
               
               {/* Subtitle - Responsive */}
               <p className="text-purple-100 text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 max-w-2xl">
@@ -182,64 +197,113 @@ const MyPlaylists = () => {
           </div>
         </motion.div>
 
-        {/* Create Playlist Form - Responsive */}
+        {/* Create Playlist Modal - Popup Style */}
+        <AnimatePresence>
+          {showCreateForm && (
+            <motion.div
+              className="fixed inset-0 z-[10000] flex items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              onClick={() => {
+                setShowCreateForm(false);
+                setForm({ name: '', description: '' });
+              }}
+            >
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.2 }}
-          className="max-w-full sm:max-w-2xl lg:max-w-3xl mx-auto"
-        >
-          <div className="bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl sm:rounded-2xl shadow-xl p-4 sm:p-6 md:p-8 border border-purple-500/20 backdrop-blur-sm">
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-3 mb-4 sm:mb-6">
-              <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-lg sm:rounded-xl shadow-lg flex-shrink-0">
-                <FaPlus className="text-white text-base sm:text-lg md:text-xl" />
+                initial={{ scale: 0.9, y: 20 }}
+                animate={{ scale: 1, y: 0 }}
+                exit={{ scale: 0.9, y: 20 }}
+                transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                onClick={(e) => e.stopPropagation()}
+                className="relative bg-gradient-to-br from-gray-900 via-purple-900/90 to-fuchsia-900/80 rounded-2xl shadow-2xl border border-purple-500/30 w-full max-w-md"
+              >
+                {/* Close Button */}
+                <button
+                  onClick={() => {
+                    setShowCreateForm(false);
+                    setForm({ name: '', description: '' });
+                  }}
+                  className="absolute top-4 right-4 p-2 rounded-full hover:bg-white/10 transition-colors text-gray-400 hover:text-white z-10"
+                  aria-label="Close"
+                >
+                  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+
+                {/* Modal Content */}
+                <div className="p-6">
+                  {/* Header */}
+                  <div className="flex items-center gap-3 mb-6">
+                    <div className="p-3 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl shadow-lg">
+                      <FaPlus className="text-white text-xl" />
               </div>
-              <div className="flex-1 min-w-0">
-                <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">Create New Playlist</h2>
-                <p className="text-purple-200 text-xs sm:text-sm">Add a name and description for your playlist</p>
+                    <div>
+                      <h2 className="text-2xl font-bold text-white">Create New Playlist</h2>
+                      <p className="text-purple-200 text-sm">Add a name and description</p>
               </div>
             </div>
             
-            <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                  {/* Form */}
+                  <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-purple-200 mb-1 sm:mb-2">
+                      <label className="block text-sm font-semibold text-purple-200 mb-2">
                   Playlist Name *
                 </label>
           <input
             type="text"
             name="name"
                   placeholder="e.g., My Favorite Songs"
-                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                        className="w-full p-3 text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
             value={form.name}
             onChange={handleChange}
             required
+                        autoFocus
           />
               </div>
               <div>
-                <label className="block text-xs sm:text-sm font-semibold text-purple-200 mb-1 sm:mb-2">
+                      <label className="block text-sm font-semibold text-purple-200 mb-2">
                   Description (Optional)
                 </label>
                 <textarea
             name="description"
                   placeholder="What's this playlist about?"
-                  className="w-full p-2.5 sm:p-3 text-sm sm:text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                        className="w-full p-3 text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
             value={form.description}
             onChange={handleChange}
                   rows="3"
           />
               </div>
+                    <div className="flex gap-3 pt-2">
               <motion.button
             type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white font-bold py-2.5 sm:py-3 px-4 sm:px-6 text-sm sm:text-base rounded-lg shadow-lg transition-all duration-150 flex items-center justify-center gap-2"
+                        className="flex-1 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
           >
                 <FaPlus />
                 Create Playlist
               </motion.button>
+                      <motion.button
+                        type="button"
+                        onClick={() => {
+                          setShowCreateForm(false);
+                          setForm({ name: '', description: '' });
+                        }}
+                        whileHover={{ scale: 1.02 }}
+                        whileTap={{ scale: 0.98 }}
+                        className="px-6 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-semibold transition-all"
+                      >
+                        Cancel
+                      </motion.button>
+                    </div>
         </form>
           </div>
         </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>
 
         {/* Playlists Grid - Ultra Responsive */}
         <motion.div

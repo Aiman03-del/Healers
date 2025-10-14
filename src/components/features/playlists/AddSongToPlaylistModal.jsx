@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, memo, useCallback } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
@@ -178,7 +178,7 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
     }
   }, [searchQuery, allSongs]);
 
-  const handleAddSong = async (songId) => {
+  const handleAddSong = useCallback(async (songId) => {
     setAdding(songId);
     try {
       const res = await put(`/api/playlists/${playlistId}/add`, { songId });
@@ -200,27 +200,45 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
       toast.error(errorMessage);
     }
     setAdding(null);
-  };
+  }, [put, playlistId, onSongAdded]);
 
-  const SongItem = ({ song, isSuggested = false }) => (
-    <motion.div
-      initial={{ opacity: 0, x: -10 }}
-      animate={{ opacity: 1, x: 0 }}
-      className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-purple-500/20 hover:border-purple-400/40 transition-all group"
-    >
-      {/* Album Cover */}
-      <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gradient-to-br from-purple-700 to-fuchsia-700 flex-shrink-0 relative">
-        <img 
-          src={song.cover} 
-          alt={song.title}
-          className="w-full h-full object-cover"
-        />
-        {isSuggested && (
-          <div className="absolute top-0.5 right-0.5">
-            <FaStar className="text-yellow-400 text-xs drop-shadow-lg" />
-          </div>
-        )}
-      </div>
+  // Memoized SongItem to prevent re-renders when parent re-renders
+  const SongItem = memo(({ song, isSuggested = false }) => {
+    const [imageLoaded, setImageLoaded] = useState(false);
+    const [imageError, setImageError] = useState(false);
+
+    return (
+      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-purple-500/20 hover:border-purple-400/40 transition-all group">
+        {/* Album Cover */}
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gradient-to-br from-purple-700 to-fuchsia-700 flex-shrink-0 relative">
+          {/* Placeholder/Loading state */}
+          {!imageLoaded && !imageError && (
+            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-700 to-fuchsia-700">
+              <FaMusic className="text-white/40 text-lg" />
+            </div>
+          )}
+          
+          <img 
+            src={song.cover || "/healers.png"} 
+            alt={song.title}
+            className={`w-full h-full object-cover transition-opacity duration-200 ${
+              imageLoaded ? 'opacity-100' : 'opacity-0'
+            }`}
+            loading="eager"
+            decoding="async"
+            onLoad={() => setImageLoaded(true)}
+            onError={(e) => {
+              e.target.src = "/healers.png";
+              setImageError(true);
+              setImageLoaded(true);
+            }}
+          />
+          {isSuggested && imageLoaded && (
+            <div className="absolute top-0.5 right-0.5">
+              <FaStar className="text-yellow-400 text-xs drop-shadow-lg" />
+            </div>
+          )}
+        </div>
 
       {/* Song Info */}
       <div className="flex-1 min-w-0">
@@ -265,8 +283,15 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
           </>
         )}
       </motion.button>
-    </motion.div>
+    </div>
   );
+  }, (prevProps, nextProps) => {
+    // Custom comparison to prevent unnecessary re-renders
+    return (
+      prevProps.song._id === nextProps.song._id &&
+      prevProps.isSuggested === nextProps.isSuggested
+    );
+  });
 
   return (
     <motion.div

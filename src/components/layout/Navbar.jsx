@@ -184,6 +184,7 @@ function Navbar() {
               src={logo}
               alt="Healers"
               className="w-12 h-12 object-cover rounded-full border-2 border-purple-400 shadow-lg relative z-10"
+              loading="eager"
             />
           </motion.div>
           <div className="hidden sm:flex flex-col">
@@ -287,6 +288,7 @@ function Navbar() {
                   src={user.image || avatarFromEmail(user.email)}
                   alt="avatar"
                   className="w-12 h-12 rounded-full border-3 border-fuchsia-400 shadow-2xl relative z-10 ring-2 ring-purple-500/50 group-hover:ring-fuchsia-400 transition-all duration-300 object-cover"
+                  loading="eager"
                   onError={(e) => {
                     e.target.src = avatarFromEmail(user.email);
                   }}

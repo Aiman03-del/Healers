@@ -1,4 +1,4 @@
-import { useEffect, useState, memo, useCallback } from "react";
+import { useEffect, useState, memo, useCallback, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
 import {
@@ -27,9 +27,9 @@ const SongCard = memo(
     return (
       <motion.div
         key={song._id}
-        initial={{ opacity: 0, scale: 0.95 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.15, delay: index * 0.02 }}
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.3) }}
         className="relative group"
       >
         <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
@@ -37,11 +37,13 @@ const SongCard = memo(
           <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
 
           {/* Album Cover */}
-          <div className="relative w-full aspect-square">
+          <div className="relative w-full aspect-square bg-gradient-to-br from-purple-900/30 to-fuchsia-900/30">
             <img
               src={song.cover || "/healers.png"}
               alt={song.title}
               className="w-full h-full object-cover"
+              loading="lazy"
+              decoding="async"
               onError={(e) => {
                 e.target.src = "/healers.png";
               }}
@@ -168,26 +170,31 @@ function HomeContent() {
   const [forYouSongs, setForYouSongs] = useState([]);
   const [trendingPlaylists, setTrendingPlaylists] = useState([]);
   const [isPersonalized, setIsPersonalized] = useState(false);
+  const [genrePlaylists, setGenrePlaylists] = useState([]);
 
-  // ⚡ Fetch all public data in parallel (no user required)
+  // ⚡ Fetch critical data first, then load others progressively
   useEffect(() => {
     const fetchPublicData = async () => {
       try {
-        const [songsRes, trendingRes, newReleasesRes, trendingPlaylistsRes] = 
-          await Promise.all([
-            get("/api/songs").catch(() => ({ data: { songs: [] } })),
-            get("/api/songs/trending?limit=6").catch(() => ({ data: { songs: [] } })),
-            get("/api/songs/new-releases?limit=6").catch(() => ({ data: { songs: [] } })),
-            get("/api/playlists/public/trending?limit=6").catch(() => ({ data: { playlists: [] } })),
-          ]);
-
-        setSongs(songsRes.data.songs || []);
+        // ⚡ Load trending songs first (most important)
+        const trendingRes = await get("/api/songs/trending?limit=6").catch(() => ({ data: { songs: [] } }));
         setTrendingSongs(trendingRes.data.songs || []);
-        setNewReleases(newReleasesRes.data.songs || []);
-        setTrendingPlaylists(trendingPlaylistsRes.data.playlists || []);
+        setLoading(false); // Show page with trending songs immediately
+        
+        // ⚡ Load remaining data in background (non-blocking)
+        Promise.all([
+          get("/api/songs").catch(() => ({ data: { songs: [] } })),
+          get("/api/songs/new-releases?limit=6").catch(() => ({ data: { songs: [] } })),
+          get("/api/playlists/public/trending?limit=6").catch(() => ({ data: { playlists: [] } })),
+        ]).then(([songsRes, newReleasesRes, trendingPlaylistsRes]) => {
+          setSongs(songsRes.data.songs || []);
+          setNewReleases(newReleasesRes.data.songs || []);
+          setTrendingPlaylists(trendingPlaylistsRes.data.playlists || []);
+        }).catch((error) => {
+          console.error("Error fetching additional data:", error);
+        });
       } catch (error) {
-        console.error("Error fetching public data:", error);
-      } finally {
+        console.error("Error fetching trending data:", error);
         setLoading(false);
       }
     };
@@ -200,11 +207,12 @@ function HomeContent() {
     
     const fetchUserData = async () => {
       try {
-        const [recommendationsRes, playlistsRes] = await Promise.all([
+        const [recommendationsRes, playlistsRes, userRes] = await Promise.all([
           get(`/api/recommendations/${user.uid}?limit=6`).catch(() => ({ 
             data: { songs: [], personalized: false } 
           })),
           get(`/api/playlists/user/${user.uid}`).catch(() => ({ data: [] })),
+          get(`/api/users/${user.uid}`).catch(() => ({ data: { user: null } })),
         ]);
 
         // Set recommendations
@@ -216,13 +224,39 @@ function HomeContent() {
         if (liked && liked.songs) {
           setLikedSongIds(liked.songs.map((id) => id.toString()));
         }
+
+        // Generate genre-based playlists
+        const userData = userRes.data.user;
+        if (userData && userData.preferences && userData.preferences.favoriteGenres) {
+          const favoriteGenres = userData.preferences.favoriteGenres;
+          
+          // Create virtual playlists for each favorite genre
+          const genrePlaylists = favoriteGenres.slice(0, 3).map(genre => {
+            const genreSongs = songs.filter(song => 
+              song.genre && song.genre.includes(genre)
+            );
+            
+            return {
+              _id: `genre-${genre}`,
+              name: `${genre} Mix`,
+              description: `Your personalized ${genre} collection`,
+              genre: genre,
+              songs: genreSongs.slice(0, 12),
+              songCount: genreSongs.length,
+              isGenrePlaylist: true,
+              firstSongCover: genreSongs[0]?.cover || '/healers.png'
+            };
+          }).filter(playlist => playlist.songs.length > 0);
+          
+          setGenrePlaylists(genrePlaylists);
+        }
       } catch (error) {
         console.error("Error fetching user data:", error);
       }
     };
     
     fetchUserData();
-  }, [user]);
+  }, [user, songs]);
 
   useEffect(() => {
     if (playlistModal.open && user?.uid) {
@@ -293,6 +327,11 @@ function HomeContent() {
     return liked._id;
   };
 
+  // Close playlist modal - Memoized
+  const closePlaylistModal = useCallback(() => {
+    setPlaylistModal({ open: false, songId: null });
+  }, []);
+
   // Memoized callback to prevent SongCard re-renders
   const handleLikeSong = useCallback(async (songId) => {
     setLikeEffectId(songId);
@@ -359,16 +398,18 @@ function HomeContent() {
     toast.success("Song will play next!");
   };
 
-  // Filter by search only
-  const searchResults = songs.filter((song) => {
-    if (!search) return false;
-    return (
-      song.title.toLowerCase().includes(search.toLowerCase()) ||
-      song.artist.toLowerCase().includes(search.toLowerCase()) ||
-      (song.genre &&
-        song.genre.some((g) => g.toLowerCase().includes(search.toLowerCase())))
-    );
-  });
+  // Filter by search only - Memoized for performance
+  const searchResults = useMemo(() => {
+    if (!search) return [];
+    return songs.filter((song) => {
+      return (
+        song.title.toLowerCase().includes(search.toLowerCase()) ||
+        song.artist.toLowerCase().includes(search.toLowerCase()) ||
+        (song.genre &&
+          song.genre.some((g) => g.toLowerCase().includes(search.toLowerCase())))
+      );
+    });
+  }, [songs, search]);
 
   // Play random song
   const playRandomSong = () => {
@@ -429,10 +470,10 @@ function HomeContent() {
                 {trendingPlaylists.map((playlist, idx) => (
                   <motion.div
                     key={playlist._id}
-                    initial={{ opacity: 0, scale: 0.9 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    transition={{ duration: 0.15, delay: idx * 0.03 }}
-                    whileHover={{ scale: 1.05, y: -4 }}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
+                    whileHover={{ scale: 1.02, y: -2 }}
                     onClick={() => navigate(`/public/playlist/${playlist._id}`)}
                     className="relative group cursor-pointer"
                   >
@@ -447,6 +488,8 @@ function HomeContent() {
                             src={playlist.firstSongCover}
                             alt={playlist.name}
                             className="w-full h-full object-cover"
+                            loading="lazy"
+                            decoding="async"
                           />
                         ) : (
                           <div className="w-full h-full bg-gradient-to-br from-purple-700 via-fuchsia-700 to-pink-700 flex items-center justify-center">
@@ -484,6 +527,95 @@ function HomeContent() {
                             {playlist.description}
                           </p>
                         )}
+                      </div>
+                    </div>
+                  </motion.div>
+                ))}
+              </div>
+            </motion.section>
+          )}
+
+          {/* Genre-Based Playlists Section */}
+          {genrePlaylists.length > 0 && !search && (
+            <motion.section
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.2 }}
+            >
+              <div className="flex items-center gap-3 mb-4">
+                <FaMusic className="text-2xl text-purple-400" />
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  Your Genre Mixes
+                </h2>
+                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
+                  Personalized
+                </span>
+              </div>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Curated playlists based on your favorite genres
+              </p>
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4">
+                {genrePlaylists.map((playlist, idx) => (
+                  <motion.div
+                    key={playlist._id}
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
+                    whileHover={{ scale: 1.02, y: -2 }}
+                    onClick={() => {
+                      if (playlist.songs.length > 0) {
+                        playSong(playlist.songs[0], 0, playlist.songs);
+                        toast.success(`Playing ${playlist.name}!`);
+                      }
+                    }}
+                    className="relative group cursor-pointer"
+                  >
+                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
+                      {/* Glow effect */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
+
+                      {/* Cover Image */}
+                      <div className="relative w-full aspect-square">
+                        <img
+                          src={playlist.firstSongCover}
+                          alt={playlist.name}
+                          className="w-full h-full object-cover"
+                          loading="lazy"
+                          decoding="async"
+                        />
+
+                        {/* Gradient overlay */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+
+                        {/* Play button overlay */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                          <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl">
+                            <FaPlay className="text-xl ml-1" />
+                          </div>
+                        </div>
+
+                        {/* Genre badge */}
+                        <div className="absolute top-2 left-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white text-xs font-bold shadow-lg">
+                          {playlist.genre}
+                        </div>
+
+                        {/* Song count */}
+                        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
+                          <span className="text-white text-xs font-semibold flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
+                            <FaMusic className="text-xs" />
+                            {playlist.songCount} songs
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Info */}
+                      <div className="p-3">
+                        <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+                          {playlist.name}
+                        </h3>
+                        <p className="text-xs text-purple-200 truncate mt-1">
+                          {playlist.description}
+                        </p>
                       </div>
                     </div>
                   </motion.div>
@@ -674,20 +806,13 @@ function HomeContent() {
         </>
       )}
 
-      {/* Add to Playlist Modal */}
+      {/* Add to Playlist Drawer */}
       <AnimatePresence>
         {playlistModal.open && (
-          <motion.div
-            className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 dark:bg-black/40 backdrop-blur-sm"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-          >
-            <AddToPlaylistModal
-              songId={playlistModal.songId}
-              onClose={() => setPlaylistModal({ open: false, songId: null })}
-            />
-          </motion.div>
+          <AddToPlaylistModal
+            songId={playlistModal.songId}
+            onClose={closePlaylistModal}
+          />
         )}
       </AnimatePresence>
     </div>
