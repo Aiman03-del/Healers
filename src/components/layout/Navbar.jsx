@@ -65,29 +65,44 @@ function Navbar() {
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
-  // Handle install click
+  // Handle install click with confirmation
   const handleInstallClick = async () => {
-    if (!deferredPrompt) {
-      toast.error('App is already installed or not installable');
+    // Show confirmation dialog
+    const confirmed = window.confirm(
+      'আপনি কি Healers App টি আপনার ডিভাইসে ইনস্টল করতে চান?\n\nইনস্টল করলে আপনি:\n• অফলাইন ব্যবহার করতে পারবেন\n• হোম স্ক্রিন থেকে সরাসরি অ্যাক্সেস করতে পারবেন\n• দ্রুত লোডিং পাবেন'
+    );
+
+    if (!confirmed) {
       return;
     }
 
-    // Show install prompt
-    deferredPrompt.prompt();
-    
-    // Wait for user response
-    const { outcome } = await deferredPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      toast.success('🎉 App installed successfully!');
-      setIsInstalled(true);
-    } else {
-      toast('Installation cancelled', { icon: '' });
+    if (!deferredPrompt) {
+      // If no deferred prompt, try to show browser's install prompt
+      toast.error('App installation is not available. Please use your browser\'s menu to install.');
+      return;
     }
-    
-    // Clear the prompt
-    setDeferredPrompt(null);
-    setIsInstallable(false);
+
+    try {
+      // Show install prompt
+      deferredPrompt.prompt();
+      
+      // Wait for user response
+      const { outcome } = await deferredPrompt.userChoice;
+      
+      if (outcome === 'accepted') {
+        toast.success('🎉 App installed successfully!');
+        setIsInstalled(true);
+      } else {
+        toast('Installation cancelled', { icon: '' });
+      }
+      
+      // Clear the prompt
+      setDeferredPrompt(null);
+      setIsInstallable(false);
+    } catch (error) {
+      console.error('Install error:', error);
+      toast.error('Failed to install app. Please try again.');
+    }
   };
 
   // Handle share click
@@ -299,32 +314,26 @@ function Navbar() {
                         <span>My Playlists</span>
                       </Link>
 
-                      {/* PWA Install Button in Dropdown */}
-                      {(isInstallable || isInstalled) && (
+                      {/* PWA Install Button in Dropdown - Always show if not installed */}
+                      {!isInstalled && (
                         <button
                           onClick={() => {
                             handleInstallClick();
                             setDropdown(false);
                           }}
-                          disabled={isInstalled}
-                          className={`flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors font-medium ${
-                            isInstalled
-                              ? 'text-gray-500 cursor-not-allowed'
-                              : 'text-white hover:bg-white/10'
-                          }`}
+                          className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-white hover:bg-white/10 transition-colors font-medium"
                         >
-                          {isInstalled ? (
-                            <>
-                              <FaCheckCircle />
-                              <span>App Installed</span>
-                            </>
-                          ) : (
-                            <>
-                              <FaDownload />
-                              <span>Install App</span>
-                            </>
-                          )}
+                          <FaDownload />
+                          <span>Install App</span>
                         </button>
+                      )}
+                      
+                      {/* Show installed status if app is installed */}
+                      {isInstalled && (
+                        <div className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-gray-400 cursor-default">
+                          <FaCheckCircle />
+                          <span>App Installed</span>
+                        </div>
                       )}
 
                       {/* Share App Button */}
@@ -516,32 +525,26 @@ function Navbar() {
                     <span className="text-base">Profile</span>
                   </Link>
 
-                  {/* PWA Install Button for Mobile Users */}
-                  {(isInstallable || isInstalled) && (
+                  {/* PWA Install Button for Mobile Users - Always show if not installed */}
+                  {!isInstalled && (
                     <button
                       onClick={() => {
                         handleInstallClick();
                         setMobileOpen(false);
                       }}
-                      disabled={isInstalled}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium w-full text-left ${
-                        isInstalled
-                          ? 'text-gray-500 cursor-not-allowed'
-                          : 'text-white hover:bg-white/10'
-                      }`}
+                      className="flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-white/10 transition-colors font-medium w-full text-left"
                     >
-                      {isInstalled ? (
-                        <>
-                          <FaCheckCircle />
-                          <span className="text-base">App Installed</span>
-                        </>
-                      ) : (
-                        <>
-                          <FaDownload />
-                          <span className="text-base">Install App</span>
-                        </>
-                      )}
+                      <FaDownload />
+                      <span className="text-base">Install App</span>
                     </button>
+                  )}
+                  
+                  {/* Show installed status if app is installed */}
+                  {isInstalled && (
+                    <div className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 cursor-default font-medium w-full text-left">
+                      <FaCheckCircle />
+                      <span className="text-base">App Installed</span>
+                    </div>
                   )}
 
                   {/* Share App Button for Mobile */}
