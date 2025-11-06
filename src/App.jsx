@@ -9,7 +9,8 @@ import { Loading, InstallPWA } from "./components/common";
 // Lazy load pages for better performance
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register"));
-const Home = lazy(() => import("./pages/Home"));
+const HomeLayout = lazy(() => import("./pages/HomeLayout"));
+const HomeDefault = lazy(() => import("./pages/HomeDefault"));
 const PlaylistDetails = lazy(() => import("./pages/PlaylistDetails").then(m => ({ default: m.PlaylistDetails })));
 const AdminPanel = lazy(() => import("./pages/AdminPanel").then(m => ({ default: m.AdminPanel })));
 const MyPlaylists = lazy(() => import("./pages/MyPlaylists"));
@@ -18,6 +19,18 @@ const MyProfile = lazy(() => import("./pages/MyProfile"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Forbidden = lazy(() => import("./pages/Forbidden"));
+
+// Section pages (nested)
+const TrendingSongsNested = lazy(() => import("./pages/sections/TrendingSongsNested"));
+const NewReleasesNested = lazy(() => import("./pages/sections/NewReleasesNested"));
+const ForYouNested = lazy(() => import("./pages/sections/ForYouNested"));
+
+// Section pages (standalone)
+const TrendingSongs = lazy(() => import("./pages/sections/TrendingSongs"));
+const NewReleases = lazy(() => import("./pages/sections/NewReleases"));
+const ForYou = lazy(() => import("./pages/sections/ForYou"));
+const RecentlyPlayed = lazy(() => import("./pages/sections/RecentlyPlayed"));
+const TrendingPlaylists = lazy(() => import("./pages/sections/TrendingPlaylists"));
 
 // Lazy load layout and routes
 const DashboardLayout = lazy(() => import("./components/layout").then(m => ({ default: m.DashboardLayout })));
@@ -62,13 +75,30 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/forbidden" element={<Forbidden />} />
+            {/* Public homepage with nested routes - accessible without login */}
+            <Route path="/" element={<HomeLayout />}>
+              <Route index element={<HomeDefault />} />
+              <Route path="trending" element={<TrendingSongsNested />} />
+              <Route path="new-releases" element={<NewReleasesNested />} />
+              <Route path="for-you" element={<ForYouNested />} />
+            </Route>
+            {/* Public playlist - accessible without login */}
+            <Route
+              path="/public/playlist/:id"
+              element={<PublicPlaylist />}
+            />
+            {/* Section pages - accessible without login */}
+            <Route path="/trending" element={<TrendingSongs />} />
+            <Route path="/new-releases" element={<NewReleases />} />
+            <Route path="/for-you" element={<ForYou />} />
+            <Route path="/recently-played" element={<RecentlyPlayed />} />
+            <Route path="/trending-playlists" element={<TrendingPlaylists />} />
           {/* All other routes require authentication */}
           <Route
             path="*"
             element={
               <PrivateRoute>
                 <Routes>
-                  <Route path="/" element={<Home />} />
                   <Route
                     path="/playlist/:playlistId"
                     element={<PlaylistDetails />}
@@ -107,10 +137,6 @@ function App() {
                     />
                   </Route>
                   <Route path="/playlists" element={<MyPlaylists />} />
-                  <Route
-                    path="/public/playlist/:id"
-                    element={<PublicPlaylist />}
-                  />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </PrivateRoute>

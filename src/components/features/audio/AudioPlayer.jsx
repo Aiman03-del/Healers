@@ -74,6 +74,10 @@ function AudioPlayer() {
 
   // Like/Unlike a song: add/remove from Liked Songs playlist
   const handleLikeSong = async (songId) => {
+    if (!user?.uid) {
+      toast.error("Please login to like songs");
+      return;
+    }
     setLikeEffectId(songId);
     try {
       const likedPlaylistId = await getOrCreateLikedPlaylist();
@@ -301,19 +305,21 @@ function AudioPlayer() {
                 <MdShuffle />
               </motion.button>
 
-              {/* Add to Playlist - Visible from md */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setShowModal(true);
-                }}
-                className="hidden md:block rounded-lg p-1.5 xs:p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all shadow-md"
-                aria-label="Add to Playlist"
-              >
-                <BiSolidPlaylist className="text-base sm:text-lg md:text-xl" />
-              </motion.button>
+              {/* Add to Playlist - Visible from md, only for logged-in users */}
+              {user && (
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    setShowModal(true);
+                  }}
+                  className="hidden md:block rounded-lg p-1.5 xs:p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all shadow-md"
+                  aria-label="Add to Playlist"
+                >
+                  <BiSolidPlaylist className="text-base sm:text-lg md:text-xl" />
+                </motion.button>
+              )}
             </div>
           </div>
 

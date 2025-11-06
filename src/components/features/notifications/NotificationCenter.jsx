@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaBell, FaTimes, FaCheck, FaCheckDouble, FaEnvelope, FaMusic } from "react-icons/fa";
+import { FaBell, FaTimes, FaCheck, FaCheckDouble, FaMusic } from "react-icons/fa";
 import { BiSolidPlaylist } from "react-icons/bi";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
@@ -129,6 +129,12 @@ const NotificationCenter = () => {
       if (invitationId) {
         handleInvitationAction(invitationId, notification);
       }
+    } else if (notification.type === "song_added") {
+      // For song added notifications, we can just close the panel
+      // The user can check their chat or songs list
+      setIsOpen(false);
+      // Optionally, you could navigate to chat or songs page here
+      // navigate('/chat'); // if you have a chat route
     } else if (notification.metadata?.playlistId) {
       // Navigate to playlist
       navigate(`/playlist/${notification.metadata.playlistId}`);
@@ -190,6 +196,8 @@ const NotificationCenter = () => {
         return <BiSolidPlaylist className="text-purple-400" />;
       case "invitation_accepted":
         return <FaCheck className="text-green-400" />;
+      case "song_added":
+        return <FaMusic className="text-green-400" />;
       default:
         return <FaMusic className="text-blue-400" />;
     }

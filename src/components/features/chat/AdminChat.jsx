@@ -1,0 +1,1041 @@
+import { useState, useEffect, useRef, useCallback } from "react";
+import { useAuth } from "../../../context/AuthContext";
+import useAxios from "../../../hooks/useAxios";
+import toast from "react-hot-toast";
+import { FaPaperPlane, FaMusic, FaUser, FaTimes, FaComments, FaArrowLeft, FaSearch } from "react-icons/fa";
+import { motion, AnimatePresence } from "framer-motion";
+import { io } from "socket.io-client";
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+export const AdminChat = ({ isFloating = false }) => {
+  const { user } = useAuth();
+  const { get, post, put } = useAxios();
+  const [conversations, setConversations] = useState([]);
+  const [selectedChat, setSelectedChat] = useState(null);
+  const [messages, setMessages] = useState([]);
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [socket, setSocket] = useState(null);
+  const [showChatWindow, setShowChatWindow] = useState(false);
+  const [sending, setSending] = useState(false);
+  const [isOpen, setIsOpen] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState([]);
+  const [searching, setSearching] = useState(false);
+  const messagesEndRef = useRef(null);
+
+  // Load conversations function - memoized with useCallback
+  // Use ref to store get function to avoid dependency issues
+  const getRef = useRef(get);
+  useEffect(() => {
+    getRef.current = get;
+  }, [get]);
+
+  const loadConversations = useCallback(async () => {
+    try {
+      console.log("🔄 Loading conversations for admin...");
+      const res = await getRef.current("/api/chat/admin/conversations");
+      
+      // Handle different response formats
+      let newConversations = [];
+      if (res.data) {
+        if (Array.isArray(res.data)) {
+          newConversations = res.data;
+        } else if (res.data.conversations) {
+          newConversations = res.data.conversations;
+        } else if (res.data.data && Array.isArray(res.data.data)) {
+          newConversations = res.data.data;
+        }
+      }
+      
+      // Only update state if conversations actually changed
+      setConversations((prev) => {
+        // Compare by length and IDs to avoid unnecessary updates
+        if (prev.length !== newConversations.length) {
+          return newConversations;
+        }
+        
+        // Check if any conversation changed (by ID or unreadCount)
+        const hasChanged = prev.some((prevConv, index) => {
+          const newConv = newConversations[index];
+          if (!newConv) return true;
+          return (
+            prevConv._id?.toString() !== newConv._id?.toString() ||
+            prevConv.unreadCount !== newConv.unreadCount ||
+            prevConv.lastMessage !== newConv.lastMessage ||
+            prevConv.lastMessageAt?.toString() !== newConv.lastMessageAt?.toString()
+          );
+        });
+        
+        return hasChanged ? newConversations : prev;
+      });
+      
+      console.log(`✅ Loaded ${newConversations.length} conversations`);
+    } catch (err) {
+      console.error("❌ Failed to load conversations:", err);
+      // Don't clear conversations on error, keep existing ones
+      setConversations((prev) => prev.length === 0 ? [] : prev);
+    }
+  }, []); // Empty dependency array - use ref instead
+
+  // Initialize socket connection
+  useEffect(() => {
+    if (!user?.uid || user.type !== "admin") {
+      console.log("⚠️ AdminChat: User not admin or not logged in", { user });
+      return;
+    }
+
+    console.log("🔌 AdminChat: Initializing socket for admin:", user.uid);
+
+    const newSocket = io(API_BASE_URL, {
+      withCredentials: true,
+    });
+
+    newSocket.on("connect", () => {
+      newSocket.emit("join:user", user.uid);
+      console.log("Admin socket connected");
+    });
+
+    // Debounce conversation updates to prevent blinking
+    // Use ref to persist timeout across renders
+    const conversationUpdateTimeoutRef = { current: null };
+    const debouncedLoadConversations = () => {
+      if (conversationUpdateTimeoutRef.current) {
+        clearTimeout(conversationUpdateTimeoutRef.current);
+      }
+      conversationUpdateTimeoutRef.current = setTimeout(() => {
+        loadConversations();
+      }, 500); // Wait 500ms before updating
+    };
+
+    newSocket.on("chat:message", (newMessage) => {
+      console.log("New message received:", newMessage);
+      // Check if message belongs to selected chat
+      if (selectedChat && newMessage.chatId && selectedChat._id) {
+        const messageChatId = typeof newMessage.chatId === 'string' ? newMessage.chatId : newMessage.chatId.toString();
+        const selectedChatId = typeof selectedChat._id === 'string' ? selectedChat._id : selectedChat._id.toString();
+        if (messageChatId === selectedChatId) {
+          // Prevent duplicate messages and update only if needed
+          setMessages((prev) => {
+            const messageId = newMessage._id?.toString() || newMessage.id?.toString();
+            const exists = prev.some(
+              (msg) => (msg._id?.toString() || msg.id?.toString()) === messageId
+            );
+            if (exists) {
+              // Message already exists, check if it needs update (e.g., isRead status)
+              const existingIndex = prev.findIndex(
+                (msg) => (msg._id?.toString() || msg.id?.toString()) === messageId
+              );
+              if (existingIndex >= 0) {
+                const existingMsg = prev[existingIndex];
+                // Only update if something changed
+                if (
+                  existingMsg.isRead !== newMessage.isRead ||
+                  existingMsg.requestData?.status !== newMessage.requestData?.status
+                ) {
+                  const updated = [...prev];
+                  updated[existingIndex] = newMessage;
+                  return updated;
+                }
+              }
+              return prev; // Don't add duplicate
+            }
+            return [...prev, newMessage];
+          });
+          scrollToBottom();
+        }
+      }
+      // Debounced update to prevent blinking
+      debouncedLoadConversations();
+    });
+
+    // Listen for admin-specific message events (broadcast to all admins)
+    newSocket.on("chat:message:admin", (newMessage) => {
+      console.log("Admin message event received:", newMessage);
+      // Debounced update to prevent blinking
+      debouncedLoadConversations();
+    });
+
+    newSocket.on("chat:new", ({ chatId, userId }) => {
+      console.log("New chat created:", { chatId, userId });
+      // Immediate update for new chats
+      loadConversations();
+    });
+
+    // Listen for request status updates
+    newSocket.on("chat:request:updated", ({ messageId, status }) => {
+      console.log("Request status updated:", { messageId, status });
+      setMessages((prev) =>
+        prev.map((msg) => {
+          const msgId = msg._id?.toString() || msg.id?.toString();
+          const updateMessageId = messageId?.toString();
+          if (msgId === updateMessageId) {
+            return {
+              ...msg,
+              requestData: { ...msg.requestData, status },
+            };
+          }
+          return msg;
+        })
+      );
+    });
+
+    setSocket(newSocket);
+
+    return () => {
+      if (conversationUpdateTimeoutRef.current) {
+        clearTimeout(conversationUpdateTimeoutRef.current);
+      }
+      newSocket.disconnect();
+    };
+  }, [user?.uid, user?.type, selectedChat?._id, loadConversations]); // More specific dependencies
+
+  // Load conversations on mount and periodically
+  useEffect(() => {
+    if (user?.type === "admin") {
+      console.log("🔄 AdminChat: Loading conversations on mount");
+      loadConversations();
+      // Refresh conversations every 10 seconds (reduced frequency to prevent blinking)
+      const interval = setInterval(() => {
+        loadConversations();
+      }, 10000);
+      return () => clearInterval(interval);
+    } else {
+      console.log("⚠️ AdminChat: User is not admin", { userType: user?.type, user });
+    }
+  }, [user?.type, loadConversations]); // Only depend on user.type, not entire user object
+
+  // Load messages when chat is selected - use ref to prevent unnecessary reloads
+  const selectedChatIdRef = useRef(null);
+  
+  useEffect(() => {
+    if (selectedChat) {
+      const chatId = typeof selectedChat._id === 'string' ? selectedChat._id : selectedChat._id.toString();
+      
+      // Only reload if chatId actually changed
+      if (selectedChatIdRef.current !== chatId) {
+        console.log("📨 Loading messages for selected chat:", chatId);
+        selectedChatIdRef.current = chatId;
+        loadMessages(chatId);
+        if (socket) {
+          socket.emit("join:chat", chatId);
+        }
+        setShowChatWindow(true);
+      }
+    } else {
+      selectedChatIdRef.current = null;
+    }
+  }, [selectedChat?._id, socket]);
+
+  const loadMessages = async (chatId) => {
+    try {
+      setLoading(true);
+      const chatIdStr = typeof chatId === 'string' ? chatId : chatId.toString();
+      const res = await get(`/api/chat/${chatIdStr}/messages`);
+      const newMessages = res.data.messages || [];
+      
+      // Only update if messages actually changed
+      setMessages((prev) => {
+        // Compare by length and IDs to avoid unnecessary updates
+        if (prev.length !== newMessages.length) {
+          return newMessages;
+        }
+        
+        // Check if any message changed
+        const hasChanged = prev.some((prevMsg, index) => {
+          const newMsg = newMessages[index];
+          if (!newMsg) return true;
+          return (
+            prevMsg._id?.toString() !== newMsg._id?.toString() ||
+            prevMsg.message !== newMsg.message ||
+            prevMsg.isRead !== newMsg.isRead ||
+            prevMsg.requestData?.status !== newMsg.requestData?.status
+          );
+        });
+        
+        return hasChanged ? newMessages : prev;
+      });
+    } catch (err) {
+      console.error("Failed to load messages:", err);
+      toast.error("Failed to load messages");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  // Search users
+  const searchUsers = useCallback(async (query) => {
+    if (!query || query.trim().length < 2) {
+      setSearchResults([]);
+      return;
+    }
+    
+    try {
+      setSearching(true);
+      const searchQuery = query.trim();
+      console.log(`🔍 Frontend: Searching for: "${searchQuery}"`);
+      const res = await getRef.current(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
+      console.log(`🔍 Frontend: Search response:`, res.data);
+      const users = res.data?.users || [];
+      console.log(`🔍 Frontend: Found ${users.length} users`);
+      setSearchResults(users);
+    } catch (err) {
+      console.error("❌ Failed to search users:", err);
+      console.error("❌ Error details:", err.response?.data || err.message);
+      setSearchResults([]);
+    } finally {
+      setSearching(false);
+    }
+  }, []); // Empty dependency - use ref
+
+  // Debounced search
+  useEffect(() => {
+    const timeoutId = setTimeout(() => {
+      if (searchQuery.trim().length >= 2) {
+        searchUsers(searchQuery);
+      } else {
+        setSearchResults([]);
+      }
+    }, 300);
+
+    return () => clearTimeout(timeoutId);
+  }, [searchQuery, searchUsers]);
+
+  // Start chat with user
+  const handleStartChatWithUser = async (user) => {
+    try {
+      // Check if chat already exists
+      const existingConv = conversations.find(conv => conv.userId === user.uid);
+      if (existingConv) {
+        handleSelectConversation(existingConv);
+        setSearchQuery("");
+        setSearchResults([]);
+        return;
+      }
+
+      // Create new chat or get existing one
+      const res = await post("/api/chat/create", { userId: user.uid });
+      if (res.data.chat) {
+        // Add user info to chat object
+        const newChat = {
+          ...res.data.chat,
+          user: {
+            uid: user.uid,
+            name: user.name,
+            email: user.email,
+            image: user.image,
+            type: user.type,
+          }
+        };
+        
+        // Reload conversations to get the new chat in list
+        loadConversations();
+        
+        // Select the new chat immediately
+        handleSelectConversation(newChat);
+        setSearchQuery("");
+        setSearchResults([]);
+        toast.success(`Started chat with ${user.name || user.email}`);
+      }
+    } catch (err) {
+      console.error("Failed to start chat:", err);
+      toast.error("Failed to start chat");
+    }
+  };
+
+  // Handle conversation selection
+  const handleSelectConversation = (conv) => {
+    console.log("📩 Selecting conversation:", conv);
+    setSelectedChat(conv);
+    setShowChatWindow(true);
+  };
+
+  // Handle back to conversation list
+  const handleBackToList = () => {
+    setShowChatWindow(false);
+    // Keep selectedChat for desktop view, but hide chat window on mobile
+  };
+
+  // Handle update request status
+  const handleUpdateRequestStatus = async (messageId, status) => {
+    try {
+      await put(`/api/chat/request/${messageId}/status`, { status });
+      toast.success(`Request status updated to ${status}`);
+      
+      // Update local message state
+      setMessages((prev) =>
+        prev.map((msg) => {
+          const msgId = msg._id?.toString() || msg.id?.toString();
+          if (msgId === messageId?.toString()) {
+            return {
+              ...msg,
+              requestData: { ...msg.requestData, status },
+            };
+          }
+          return msg;
+        })
+      );
+    } catch (err) {
+      console.error("Failed to update request status:", err);
+      toast.error("Failed to update request status");
+    }
+  };
+
+  const handleSendMessage = async (e) => {
+    e.preventDefault();
+    if (!selectedChat || !message.trim() || sending) return;
+
+    try {
+      setSending(true);
+      const chatId = typeof selectedChat._id === 'string' ? selectedChat._id : selectedChat._id.toString();
+      await post("/api/chat/message", {
+        chatId,
+        message: message.trim(),
+        isRequest: false,
+      });
+      // Don't add message to state here - let Socket.IO handle it
+      // This prevents duplicate messages
+      setMessage("");
+    } catch (err) {
+      console.error("Failed to send message:", err);
+      toast.error("Failed to send message");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const formatTime = (date) => {
+    return new Date(date).toLocaleTimeString("en-US", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
+  const formatDate = (date) => {
+    return new Date(date).toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+    });
+  };
+
+  if (!user || user.type !== "admin") {
+    console.log("⚠️ AdminChat: Not rendering - user check failed", { 
+      hasUser: !!user, 
+      userType: user?.type 
+    });
+    return null;
+  }
+
+  console.log("✅ AdminChat: Rendering with", { 
+    conversationsCount: conversations.length,
+    selectedChat: selectedChat?._id,
+    isFloating
+  });
+
+  // If floating mode, render as floating chat box
+  if (isFloating) {
+    return (
+      <div className="fixed bottom-20 right-4 z-[10000]">
+        {!isOpen ? (
+          <button
+            onClick={() => setIsOpen(true)}
+            className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform relative"
+          >
+            <FaComments className="text-xl" />
+            {conversations.filter(c => c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0) > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
+                {conversations.filter(c => c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
+              </span>
+            )}
+          </button>
+        ) : (
+          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-purple-500/30 overflow-hidden w-[400px] h-[500px] flex flex-col">
+            {/* Header */}
+            <div className="p-4 border-b border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 flex items-center justify-between">
+              <h3 className="text-white font-bold flex items-center gap-2">
+                <FaComments className="text-purple-400" />
+                Admin Chat
+              </h3>
+              <button
+                onClick={() => {
+                  setIsOpen(false);
+                  setSelectedChat(null);
+                }}
+                className="text-white hover:text-gray-300 transition-colors"
+              >
+                <FaTimes />
+              </button>
+            </div>
+            
+            {/* Content */}
+            <div className="flex-1 overflow-hidden flex">
+              {/* Conversations List */}
+              {!selectedChat && (
+                <div className="w-full flex flex-col">
+                  {/* Search Bar */}
+                  <div className="p-3 border-b border-purple-500/30">
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                      <input
+                        type="text"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Search users or staff..."
+                        className="w-full pl-10 pr-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      />
+                    </div>
+                    {searchQuery.trim().length >= 2 && (
+                      <div className="mt-2 max-h-48 overflow-y-auto">
+                        {searching ? (
+                          <div className="text-center text-gray-400 py-2 text-xs">Searching...</div>
+                        ) : searchResults.length > 0 ? (
+                          <div className="space-y-1">
+                            {searchResults.map((user) => (
+                              <div
+                                key={user.uid}
+                                onClick={() => handleStartChatWithUser(user)}
+                                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors flex items-center gap-2"
+                              >
+                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                  {user.image ? (
+                                    <img
+                                      src={user.image}
+                                      alt={user.name}
+                                      className="w-full h-full rounded-full object-cover"
+                                    />
+                                  ) : (
+                                    <FaUser className="text-white text-xs" />
+                                  )}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-white text-sm font-semibold truncate">
+                                    {user.name || user.email || "Unknown"}
+                                  </p>
+                                  <p className="text-gray-400 text-xs truncate">{user.email}</p>
+                                </div>
+                                <span className="text-xs px-2 py-0.5 rounded bg-purple-600/30 text-purple-300">
+                                  {user.type === "staff" ? "Staff" : "User"}
+                                </span>
+                              </div>
+                            ))}
+                          </div>
+                        ) : (
+                          <div className="text-center text-gray-400 py-2 text-xs">No users found</div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="p-3 border-b border-purple-500/30">
+                    <p className="text-sm text-gray-400">
+                      {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
+                    </p>
+                  </div>
+                  <div className="flex-1 overflow-y-auto">
+                    {conversations.length === 0 ? (
+                      <div className="text-center text-gray-400 py-8">
+                        <FaComments className="text-4xl mx-auto mb-2 opacity-50" />
+                        <p className="text-sm">No conversations yet</p>
+                      </div>
+                    ) : (
+                      conversations.map((conv) => (
+                        <div
+                          key={conv._id}
+                          onClick={() => handleSelectConversation(conv)}
+                          className={`p-3 cursor-pointer border-b border-gray-700/50 transition-all ${
+                            selectedChat?._id === conv._id
+                              ? "bg-gradient-to-r from-purple-600/30 to-fuchsia-600/30"
+                              : "hover:bg-gray-800/50"
+                          }`}
+                        >
+                          <div className="flex items-center gap-2">
+                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                              {conv.user?.image ? (
+                                <img
+                                  src={conv.user.image}
+                                  alt={conv.user.name}
+                                  className="w-full h-full rounded-full object-cover"
+                                />
+                              ) : (
+                                <FaUser className="text-white text-xs" />
+                              )}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center justify-between">
+                                <h4 className="text-white text-sm font-semibold truncate">
+                                  {conv.user?.name || conv.user?.email || "Unknown"}
+                                </h4>
+                                {conv.unreadCount > 0 && (
+                                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                    {conv.unreadCount}
+                                  </span>
+                                )}
+                              </div>
+                              <p className="text-xs text-gray-400 truncate">
+                                {conv.lastMessage || "No messages"}
+                              </p>
+                            </div>
+                          </div>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                </div>
+              )}
+              
+              {/* Chat Window */}
+              {selectedChat && (
+                <div className="flex-1 flex flex-col">
+                  {/* Chat Header */}
+                  <div className="p-3 border-b border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => setSelectedChat(null)}
+                        className="text-white hover:text-gray-300 transition-colors mr-2"
+                      >
+                        <FaArrowLeft />
+                      </button>
+                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center">
+                        {selectedChat.user?.image ? (
+                          <img
+                            src={selectedChat.user.image}
+                            alt={selectedChat.user.name}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <FaUser className="text-white text-xs" />
+                        )}
+                      </div>
+                      <div>
+                        <h4 className="text-white text-sm font-semibold">
+                          {selectedChat.user?.name || selectedChat.user?.email || "Unknown User"}
+                        </h4>
+                      </div>
+                    </div>
+                  </div>
+                  
+                  {/* Messages */}
+                  <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                    {loading ? (
+                      <div className="text-center text-gray-400 py-4">Loading...</div>
+                    ) : messages.length === 0 ? (
+                      <div className="text-center text-gray-400 py-8">
+                        <p className="text-sm">No messages yet</p>
+                      </div>
+                    ) : (
+                      messages.map((msg, index) => {
+                        const messageId = msg._id?.toString() || msg.id?.toString() || `msg-${index}`;
+                        return (
+                          <div
+                            key={messageId}
+                            className={`flex ${msg.senderType === "admin" ? "justify-end" : "justify-start"}`}
+                          >
+                            <div
+                              className={`max-w-[80%] rounded-lg p-2 text-sm ${
+                                msg.senderType === "admin"
+                                  ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
+                                  : "bg-gray-800 text-gray-100"
+                              }`}
+                            >
+                              {msg.isRequest ? (
+                                <div className="space-y-1">
+                                  <div className="font-semibold text-xs flex items-center gap-1">
+                                    <FaMusic className="text-xs" />
+                                    Music Request
+                                  </div>
+                                  <div className="text-xs space-y-0.5">
+                                    <p><span className="font-semibold">Song:</span> {msg.requestData?.songName}</p>
+                                    <p><span className="font-semibold">Artist:</span> {msg.requestData?.artistName}</p>
+                                    {msg.requestData?.movieName && (
+                                      <p><span className="font-semibold">Movie:</span> {msg.requestData.movieName}</p>
+                                    )}
+                                    {msg.requestData?.youtubeLink && (
+                                      <p><span className="font-semibold">YouTube:</span> <a href={msg.requestData.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline">Link</a></p>
+                                    )}
+                                    <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                      <span className={`px-1.5 py-0.5 rounded text-xs ${
+                                        msg.requestData?.status === "added" ? "bg-blue-500" :
+                                        msg.requestData?.status === "approved" ? "bg-green-500" :
+                                        msg.requestData?.status === "rejected" ? "bg-red-500" : "bg-yellow-500"
+                                      }`}>
+                                        {msg.requestData?.status || "pending"}
+                                      </span>
+                                      {msg.requestData?.status === "pending" && (
+                                        <button
+                                          onClick={() => handleUpdateRequestStatus(msg._id || msg.id, "added")}
+                                          className="px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                        >
+                                          Mark as Added
+                                        </button>
+                                      )}
+                                    </div>
+                                  </div>
+                                </div>
+                              ) : (
+                                <p>{msg.message}</p>
+                              )}
+                              <p className="text-xs opacity-70 mt-1">{formatTime(msg.createdAt)}</p>
+                            </div>
+                          </div>
+                        );
+                      })
+                    )}
+                    <div ref={messagesEndRef} />
+                  </div>
+                  
+                  {/* Message Input */}
+                  <form onSubmit={handleSendMessage} className="p-3 border-t border-purple-500/30">
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={message}
+                        onChange={(e) => setMessage(e.target.value)}
+                        placeholder="Type a message..."
+                        className="flex-1 px-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        disabled={sending}
+                      />
+                      <button
+                        type="submit"
+                        disabled={sending || !message.trim()}
+                        className="px-3 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      >
+                        <FaPaperPlane />
+                      </button>
+                    </div>
+                  </form>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // Full screen mode (for AdminPanel page)
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-fuchsia-900/20 p-6">
+      <div className="max-w-7xl mx-auto">
+        <h1 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
+          <FaComments className="text-purple-400" />
+          Admin Chat
+        </h1>
+
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
+          {/* Conversations List */}
+          <div
+            className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-xl border border-purple-500/30 overflow-hidden flex flex-col ${
+              showChatWindow ? "hidden lg:flex" : "flex"
+            }`}
+          >
+            <div className="p-4 border-b border-purple-500/30">
+              <h2 className="text-xl font-bold text-white">Conversations</h2>
+              <p className="text-sm text-gray-400 mt-1">
+                {conversations.length} active chat{conversations.length !== 1 ? "s" : ""}
+              </p>
+            </div>
+            
+            {/* Search Bar */}
+            <div className="p-4 border-b border-purple-500/30">
+              <div className="relative">
+                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                <input
+                  type="text"
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  placeholder="Search users or staff..."
+                  className="w-full pl-10 pr-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                />
+              </div>
+              {searchQuery.trim().length >= 2 && (
+                <div className="mt-2 max-h-48 overflow-y-auto">
+                  {searching ? (
+                    <div className="text-center text-gray-400 py-2 text-xs">Searching...</div>
+                  ) : searchResults.length > 0 ? (
+                    <div className="space-y-1">
+                      {searchResults.map((user) => (
+                        <div
+                          key={user.uid}
+                          onClick={() => handleStartChatWithUser(user)}
+                          className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors flex items-center gap-2"
+                        >
+                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                            {user.image ? (
+                              <img
+                                src={user.image}
+                                alt={user.name}
+                                className="w-full h-full rounded-full object-cover"
+                              />
+                            ) : (
+                              <FaUser className="text-white text-xs" />
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-white text-sm font-semibold truncate">
+                              {user.name || user.email || "Unknown"}
+                            </p>
+                            <p className="text-gray-400 text-xs truncate">{user.email}</p>
+                          </div>
+                          <span className="text-xs px-2 py-0.5 rounded bg-purple-600/30 text-purple-300">
+                            {user.type === "staff" ? "Staff" : "User"}
+                          </span>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center text-gray-400 py-2 text-xs">No users found</div>
+                  )}
+                </div>
+              )}
+            </div>
+            
+            <div className="flex-1 overflow-y-auto">
+              {conversations.length === 0 ? (
+                <div className="text-center text-gray-400 py-8">
+                  <FaComments className="text-4xl mx-auto mb-2 opacity-50" />
+                  <p>No conversations yet</p>
+                </div>
+              ) : (
+                conversations.map((conv) => (
+                  <motion.div
+                    key={conv._id}
+                    whileHover={{ scale: 1.02 }}
+                    onClick={() => handleSelectConversation(conv)}
+                    className={`p-4 cursor-pointer border-b border-gray-700/50 transition-all ${
+                      selectedChat?._id === conv._id
+                        ? "bg-gradient-to-r from-purple-600/30 to-fuchsia-600/30 border-l-4 border-purple-500"
+                        : "hover:bg-gray-800/50"
+                    }`}
+                  >
+                    <div className="flex items-start gap-3">
+                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                        {conv.user?.image ? (
+                          <img
+                            src={conv.user.image}
+                            alt={conv.user.name}
+                            className="w-full h-full rounded-full object-cover"
+                          />
+                        ) : (
+                          <FaUser className="text-white" />
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <h3 className="text-white font-semibold truncate">
+                            {conv.user?.name || conv.user?.email || "Unknown User"}
+                          </h3>
+                          {conv.unreadCount > 0 && (
+                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                              {conv.unreadCount}
+                            </span>
+                          )}
+                        </div>
+                        <p className="text-sm text-gray-400 truncate mt-1">
+                          {conv.lastMessage || "No messages yet"}
+                        </p>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {formatDate(conv.lastMessageAt)}
+                        </p>
+                      </div>
+                    </div>
+                  </motion.div>
+                ))
+              )}
+            </div>
+          </div>
+
+          {/* Chat Window */}
+          <div
+            className={`lg:col-span-2 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-xl border border-purple-500/30 overflow-hidden flex flex-col ${
+              showChatWindow ? "flex" : "hidden lg:flex"
+            }`}
+          >
+            {selectedChat ? (
+              <>
+                {/* Info Banner - All admins receive messages */}
+                <div className="px-4 py-2 bg-blue-900/30 border-b border-blue-500/30">
+                  <p className="text-xs text-blue-300 flex items-center gap-2">
+                    <FaComments className="text-xs" />
+                    All admins will receive messages from this user
+                  </p>
+                </div>
+                {/* Chat Header */}
+                <div className="p-4 border-b border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20">
+                  <div className="flex items-center gap-3">
+                    {/* Back Button (Mobile only) */}
+                    <button
+                      onClick={handleBackToList}
+                      className="lg:hidden text-white hover:text-gray-200 transition-colors mr-2"
+                      aria-label="Back to conversations"
+                    >
+                      <FaArrowLeft />
+                    </button>
+                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center">
+                      {selectedChat.user?.image ? (
+                        <img
+                          src={selectedChat.user.image}
+                          alt={selectedChat.user.name}
+                          className="w-full h-full rounded-full object-cover"
+                        />
+                      ) : (
+                        <FaUser className="text-white" />
+                      )}
+                    </div>
+                    <div className="flex-1">
+                      <h3 className="text-white font-semibold">
+                        {selectedChat.user?.name || selectedChat.user?.email || "Unknown User"}
+                      </h3>
+                      <p className="text-xs text-gray-400">
+                        {selectedChat.user?.type || "user"}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Messages */}
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {loading ? (
+                    <div className="text-center text-gray-400 py-8">
+                      Loading messages...
+                    </div>
+                  ) : messages.length === 0 ? (
+                    <div className="text-center text-gray-400 py-8">
+                      <FaComments className="text-4xl mx-auto mb-2 opacity-50" />
+                      <p>No messages yet</p>
+                    </div>
+                  ) : (
+                    messages.map((msg, index) => {
+                      // Use unique key - combine _id with index as fallback
+                      const messageId = msg._id?.toString() || msg.id?.toString() || `msg-${index}`;
+                      return (
+                      <div
+                        key={messageId}
+                        className={`flex ${
+                          msg.senderType === "admin" ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        <div
+                          className={`max-w-[70%] rounded-lg p-3 ${
+                            msg.senderType === "admin"
+                              ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
+                              : "bg-gray-700 text-gray-100"
+                          }`}
+                        >
+                          {msg.isRequest ? (
+                            <div className="space-y-2">
+                              <div className="font-semibold text-sm flex items-center gap-2">
+                                <FaMusic className="text-xs" />
+                                Music Request
+                              </div>
+                              <div className="text-xs space-y-1">
+                                <p>
+                                  <span className="font-semibold">Song:</span>{" "}
+                                  {msg.requestData?.songName}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Artist:</span>{" "}
+                                  {msg.requestData?.artistName}
+                                </p>
+                                {msg.requestData?.movieName && (
+                                  <p>
+                                    <span className="font-semibold">Movie:</span>{" "}
+                                    {msg.requestData.movieName}
+                                  </p>
+                                )}
+                                {msg.requestData?.youtubeLink && (
+                                  <p>
+                                    <span className="font-semibold">YouTube:</span>{" "}
+                                    <a
+                                      href={msg.requestData.youtubeLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-300 hover:underline"
+                                    >
+                                      Link
+                                    </a>
+                                  </p>
+                                )}
+                                <div className="mt-2 flex items-center gap-2 flex-wrap">
+                                  <span
+                                    className={`px-2 py-1 rounded text-xs ${
+                                      msg.requestData?.status === "added"
+                                        ? "bg-blue-500"
+                                        : msg.requestData?.status === "approved"
+                                        ? "bg-green-500"
+                                        : msg.requestData?.status === "rejected"
+                                        ? "bg-red-500"
+                                        : "bg-yellow-500"
+                                    }`}
+                                  >
+                                    {msg.requestData?.status || "pending"}
+                                  </span>
+                                  {msg.requestData?.status === "pending" && (
+                                    <button
+                                      onClick={() => handleUpdateRequestStatus(msg._id || msg.id, "added")}
+                                      className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                    >
+                                      Mark as Added
+                                    </button>
+                                  )}
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm">{msg.message}</p>
+                          )}
+                          <p className="text-xs opacity-70 mt-1">
+                            {formatTime(msg.createdAt)}
+                          </p>
+                        </div>
+                      </div>
+                      );
+                    })
+                  )}
+                  <div ref={messagesEndRef} />
+                </div>
+
+                {/* Message Input */}
+                <form
+                  onSubmit={handleSendMessage}
+                  className="p-4 border-t border-purple-500/30"
+                >
+                  <div className="flex gap-2">
+                    <input
+                      type="text"
+                      value={message}
+                      onChange={(e) => setMessage(e.target.value)}
+                      placeholder="Type a message..."
+                      className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    />
+                    <button
+                      type="submit"
+                      disabled={sending}
+                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      <FaPaperPlane />
+                    </button>
+                  </div>
+                </form>
+              </>
+            ) : (
+              <div className="flex-1 flex items-center justify-center">
+                <div className="text-center text-gray-400">
+                  <FaComments className="text-6xl mx-auto mb-4 opacity-50" />
+                  <p className="text-xl">Select a conversation to start chatting</p>
+                  <p className="text-sm mt-2 text-gray-500">
+                    Click on any conversation from the list to view messages and reply
+                  </p>
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+};
+

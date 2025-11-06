@@ -214,11 +214,13 @@ function Navbar() {
                   active={location.pathname.startsWith("/dashboard")}
                 />
               )}
-            <NavLink
-              to="/playlists"
-              label="Playlists"
-              active={location.pathname === "/playlists"}
-            />
+            {user && (
+              <NavLink
+                to="/playlists"
+                label="Playlists"
+                active={location.pathname === "/playlists"}
+              />
+            )}
           </div>
 
           {/* Share Button for non-logged users */}
@@ -524,18 +526,20 @@ function Navbar() {
                   </Link>
                 )}
 
-              <Link
-                to="/playlists"
-                onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
-                  location.pathname === "/playlists"
-                    ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
-                    : "hover:bg-white/10"
-                }`}
-              >
-                <FaListUl className="group-hover:scale-110 transition-transform" />
-                <span className="text-base">My Playlists</span>
-              </Link>
+              {user && (
+                <Link
+                  to="/playlists"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                    location.pathname === "/playlists"
+                      ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                      : "hover:bg-white/10"
+                  }`}
+                >
+                  <FaListUl className="group-hover:scale-110 transition-transform" />
+                  <span className="text-base">My Playlists</span>
+                </Link>
+              )}
 
               {!user ? (
                 <div className="pt-3 space-y-2">

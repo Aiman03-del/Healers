@@ -1,5 +1,7 @@
 // src/context/AudioContext.jsx
 import { createContext, useContext, useState, useRef, useEffect, useCallback } from 'react';
+import { useAuth } from './AuthContext';
+import toast from 'react-hot-toast';
 
 const AudioContext = createContext();
 
@@ -7,7 +9,47 @@ export function useAudio() {
   return useContext(AudioContext);
 }
 
+// Helper function to get and manage guest song count
+const GUEST_SONG_LIMIT = 6;
+const GUEST_SONGS_KEY = 'guest_played_songs';
+const GUEST_LAST_SONG_KEY = 'guest_last_song_id';
+
+const getGuestSongCount = () => {
+  try {
+    const count = localStorage.getItem(GUEST_SONGS_KEY);
+    return count ? parseInt(count, 10) : 0;
+  } catch {
+    return 0;
+  }
+};
+
+const incrementGuestSongCount = (songId) => {
+  try {
+    const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+    // Only increment if it's a different song
+    if (lastSongId !== songId) {
+      const currentCount = getGuestSongCount();
+      localStorage.setItem(GUEST_SONGS_KEY, (currentCount + 1).toString());
+      localStorage.setItem(GUEST_LAST_SONG_KEY, songId);
+      return currentCount + 1;
+    }
+    return getGuestSongCount();
+  } catch {
+    return 0;
+  }
+};
+
+const resetGuestSongCount = () => {
+  try {
+    localStorage.removeItem(GUEST_SONGS_KEY);
+    localStorage.removeItem(GUEST_LAST_SONG_KEY);
+  } catch {
+    // Ignore errors
+  }
+};
+
 export function AudioProvider({ children }) {
+  const { user } = useAuth();
   const audioRef = useRef(new Audio());
   const [queue, setQueue] = useState([]);
   const [currentIndex, setCurrentIndex] = useState(null);
@@ -21,6 +63,13 @@ export function AudioProvider({ children }) {
   const [shuffle, setShuffle] = useState(false); // 🆕 shuffle state
 
   const audio = audioRef.current;
+
+  // Reset guest song count when user logs in
+  useEffect(() => {
+    if (user?.uid) {
+      resetGuestSongCount();
+    }
+  }, [user]);
 
   // Set audio element attributes for better media session integration
   useEffect(() => {
@@ -45,6 +94,28 @@ export function AudioProvider({ children }) {
 
   // Play a song and update queue/index if needed - Memoized
   const playSong = useCallback((song, index, songs) => {
+    // Check guest song limit for non-logged-in users
+    if (!user?.uid) {
+      const songId = song._id || song.id;
+      const currentCount = getGuestSongCount();
+      const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+      
+      // If it's a new song (different from last played), check limit
+      if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
+        toast.error(
+          `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
+          {
+            duration: 4000,
+            icon: '🔒',
+          }
+        );
+        return; // Prevent playing
+      }
+    }
+
+    const previousSongId = currentSong?._id || currentSong?.id;
+    const newSongId = song._id || song.id;
+
     if (songs && Array.isArray(songs)) {
       setQueue(songs);
       setCurrentIndex(index);
@@ -64,7 +135,12 @@ export function AudioProvider({ children }) {
       audio.play();
       setIsPlaying(true);
     }
-  }, [audio, loopMode, volume]);
+
+    // Increment count for guests when a new song starts playing
+    if (!user?.uid && previousSongId !== newSongId) {
+      incrementGuestSongCount(newSongId);
+    }
+  }, [audio, loopMode, volume, user, currentSong]);
 
   const playNext = useCallback(() => {
     if (!queue || queue.length === 0 || currentIndex == null) return;
@@ -77,16 +153,51 @@ export function AudioProvider({ children }) {
       nextIndex = currentIndex + 1;
     }
     if (nextIndex < queue.length) {
+      // Check guest limit before playing next song
+      if (!user?.uid && queue[nextIndex]) {
+        const songId = queue[nextIndex]._id || queue[nextIndex].id;
+        const currentCount = getGuestSongCount();
+        const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+        
+        if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
+          toast.error(
+            `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
+            {
+              duration: 4000,
+              icon: '🔒',
+            }
+          );
+          setIsPlaying(false);
+          return;
+        }
+      }
       playSong(queue[nextIndex], nextIndex);
     } else if (loopMode === 2 && queue.length > 0) {
-      // Loop all: go to first song
+      // Loop all: go to first song (check limit for guests)
+      if (!user?.uid && queue[0]) {
+        const songId = queue[0]._id || queue[0].id;
+        const currentCount = getGuestSongCount();
+        const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+        
+        if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
+          toast.error(
+            `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
+            {
+              duration: 4000,
+              icon: '🔒',
+            }
+          );
+          setIsPlaying(false);
+          return;
+        }
+      }
       playSong(queue[0], 0);
     } else {
       setIsPlaying(false);
       setCurrentSong(null);
       setCurrentIndex(null);
     }
-  }, [queue, currentIndex, shuffle, loopMode, playSong]);
+  }, [queue, currentIndex, shuffle, loopMode, playSong, user]);
 
   const playPrev = useCallback(() => {
     if (!queue || queue.length === 0 || currentIndex == null) return;
@@ -99,13 +210,34 @@ export function AudioProvider({ children }) {
       prevIndex = currentIndex - 1;
     }
     if (prevIndex >= 0) {
+      // Check guest limit before playing previous song (if it's a different song)
+      if (!user?.uid && queue[prevIndex]) {
+        const songId = queue[prevIndex]._id || queue[prevIndex].id;
+        const currentSongId = currentSong?._id || currentSong?.id;
+        // Only check limit if it's a different song
+        if (songId !== currentSongId) {
+          const currentCount = getGuestSongCount();
+          const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+          
+          if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
+            toast.error(
+              `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
+              {
+                duration: 4000,
+                icon: '🔒',
+              }
+            );
+            return;
+          }
+        }
+      }
       playSong(queue[prevIndex], prevIndex);
     } else {
       setIsPlaying(false);
       setCurrentSong(null);
       setCurrentIndex(null);
     }
-  }, [queue, currentIndex, shuffle, playSong]);
+  }, [queue, currentIndex, shuffle, playSong, user, currentSong]);
 
   const pauseSong = useCallback(() => {
     audio.pause();
@@ -144,14 +276,41 @@ export function AudioProvider({ children }) {
 
   const playQueue = (songs) => {
     if (!songs || songs.length === 0) return;
+    
+    const firstSong = songs[0];
+    const songId = firstSong._id || firstSong.id;
+    const previousSongId = currentSong?._id || currentSong?.id;
+    
+    // Check guest song limit for non-logged-in users
+    if (!user?.uid) {
+      const currentCount = getGuestSongCount();
+      const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+      
+      if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
+        toast.error(
+          `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
+          {
+            duration: 4000,
+            icon: '🔒',
+          }
+        );
+        return;
+      }
+    }
+    
     setQueue(songs);
     setCurrentIndex(0);
-    setCurrentSong(songs[0]);
-    audio.src = songs[0].audio;
+    setCurrentSong(firstSong);
+    audio.src = firstSong.audio;
     audio.loop = loopMode === 1;
     audio.volume = volume;
     audio.play();
     setIsPlaying(true);
+
+    // Increment count for guests when a new song starts playing
+    if (!user?.uid && previousSongId !== songId) {
+      incrementGuestSongCount(songId);
+    }
   };
 
   // 🆕 Shuffle helpers
@@ -165,15 +324,43 @@ export function AudioProvider({ children }) {
   };
 
   const playShuffledPlaylist = (songs) => {
+    if (!songs || songs.length === 0) return;
+    
     const shuffled = shuffleArray(songs);
+    const firstSong = shuffled[0];
+    const songId = firstSong._id || firstSong.id;
+    const previousSongId = currentSong?._id || currentSong?.id;
+    
+    // Check guest song limit for non-logged-in users
+    if (!user?.uid) {
+      const currentCount = getGuestSongCount();
+      const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
+      
+      if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
+        toast.error(
+          `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
+          {
+            duration: 4000,
+            icon: '🔒',
+          }
+        );
+        return;
+      }
+    }
+    
     setQueue(shuffled);
     setCurrentIndex(0);
-    setCurrentSong(shuffled[0]);
-    audio.src = shuffled[0].audio;
+    setCurrentSong(firstSong);
+    audio.src = firstSong.audio;
     audio.loop = loopMode === 1;
     audio.volume = volume;
     audio.play();
     setIsPlaying(true);
+
+    // Increment count for guests when a new song starts playing
+    if (!user?.uid && previousSongId !== songId) {
+      incrementGuestSongCount(songId);
+    }
   };
 
   // Update Media Session API when song changes
@@ -405,7 +592,7 @@ export function AudioProvider({ children }) {
       audio.removeEventListener('play', handlePlay);
       audio.removeEventListener('pause', handlePause);
     };
-  }, [audio, currentIndex, loopMode, shuffle, queue, playNext]);
+  }, [audio, currentIndex, loopMode, shuffle, queue, playNext, user, currentSong]);
 
   return (
     <AudioContext.Provider

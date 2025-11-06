@@ -1,7 +1,14 @@
 import { Navbar } from "./";
 import { AudioPlayer } from "../features/audio";
+import { ChatBox, AdminChat } from "../features/chat";
+import { useAuth } from "../../context/AuthContext";
+import { USER_ROLES } from "../../constants";
 
 export default function MainLayout({ children }) {
+  const { user } = useAuth();
+  const isUserOrStaff = user && (user.type === USER_ROLES.USER || user.type === USER_ROLES.STAFF);
+  const isAdmin = user && user.type === USER_ROLES.ADMIN;
+
   return (
     <>
       <Navbar />
@@ -11,6 +18,8 @@ export default function MainLayout({ children }) {
       >
         <div className="w-full max-w-7xl pb-20">{children}</div>
         <AudioPlayer />
+        {isUserOrStaff && <ChatBox />}
+        {isAdmin && <AdminChat isFloating={true} />}
       </main>
     </>
   );

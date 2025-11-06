@@ -12,4 +12,5 @@ export * from './features/audio';
 export * from './features/playlists';
 // export * from './features/songs'; // TODO: Implement SongCard or remove
 export * from './features/search';
+export * from './features/chat';
 

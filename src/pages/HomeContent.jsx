@@ -1,5 +1,5 @@
 import { useEffect, useState, memo, useCallback, useMemo } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
 import {
   FaPause,
@@ -8,7 +8,6 @@ import {
   FaFire,
   FaClock,
   FaRandom,
-  FaHeart,
   FaStar,
 } from "react-icons/fa";
 import { BiSolidPlaylist } from "react-icons/bi";
@@ -21,8 +20,16 @@ import { AddToPlaylistModal } from "../components/features/playlists";
 
 // SongCard Component - Memoized to prevent unnecessary re-renders
 const SongCard = memo(
-  ({ song, index, songs: songList, currentSongId, isCurrentPlaying, isLiked, onPlay, onPause, onLike, likeEffectId }) => {
+  ({ song, index, songs: songList, currentSongId, isCurrentPlaying, onPlay, onPause }) => {
     const isCurrent = currentSongId === song._id;
+
+    const handleCardClick = () => {
+      if (isCurrent && isCurrentPlaying) {
+        onPause();
+      } else {
+        onPlay(song, index, songList);
+      }
+    };
 
     return (
       <motion.div
@@ -30,7 +37,8 @@ const SongCard = memo(
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.3) }}
-        className="relative group"
+        className="relative group cursor-pointer"
+        onClick={handleCardClick}
       >
         <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
           {/* Glow effect */}
@@ -52,23 +60,14 @@ const SongCard = memo(
             <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             
             {/* Play/Pause button overlay */}
-            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-              <button
-                onClick={() => {
-                  if (isCurrent && isCurrentPlaying) {
-                    onPause();
-                  } else {
-                    onPlay(song, index, songList);
-                  }
-                }}
-                className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl hover:scale-110 transition-transform"
-              >
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+              <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl">
                 {isCurrent && isCurrentPlaying ? (
                   <FaPause className="text-xl" />
                 ) : (
                   <FaPlay className="text-xl ml-1" />
                 )}
-              </button>
+              </div>
             </div>
 
             {/* Now Playing indicator */}
@@ -78,26 +77,6 @@ const SongCard = memo(
                 {isCurrentPlaying ? "Playing" : "Paused"}
               </div>
             )}
-
-            {/* Like button */}
-            <motion.button
-              whileTap={{ scale: 0.8 }}
-              onClick={(e) => {
-                e.stopPropagation();
-                onLike(song._id);
-              }}
-              className={`absolute top-2 right-2 w-8 h-8 rounded-full flex items-center justify-center shadow-lg transition-all ${
-                isLiked
-                  ? "bg-gradient-to-r from-red-500 to-pink-500 text-white"
-                  : "bg-black/50 text-white hover:bg-black/70 backdrop-blur-sm"
-              }`}
-            >
-              <FaHeart
-                className={`text-sm ${
-                  likeEffectId === song._id ? "animate-ping" : ""
-                }`}
-              />
-            </motion.button>
           </div>
 
           {/* Song Info */}
@@ -130,16 +109,14 @@ const SongCard = memo(
     return (
       prevProps.song._id === nextProps.song._id &&
       prevProps.currentSongId === nextProps.currentSongId &&
-      prevProps.isCurrentPlaying === nextProps.isCurrentPlaying &&
-      prevProps.isLiked === nextProps.isLiked &&
-      prevProps.likeEffectId === nextProps.likeEffectId
+      prevProps.isCurrentPlaying === nextProps.isCurrentPlaying
     );
   }
 );
 
 SongCard.displayName = 'SongCard';
 
-function HomeContent() {
+function HomeContent({ searchQuery = "" }) {
   const navigate = useNavigate();
   const {
     playSong,
@@ -156,7 +133,7 @@ function HomeContent() {
   const [likedSongIds, setLikedSongIds] = useState([]);
   const [likeEffectId, setLikeEffectId] = useState(null);
   const { get, post, put } = useAxios();
-  const [search, setSearch] = useState("");
+  const [search, setSearch] = useState(searchQuery);
   const [playlistModal, setPlaylistModal] = useState({
     open: false,
     songId: null,
@@ -334,6 +311,10 @@ function HomeContent() {
 
   // Memoized callback to prevent SongCard re-renders
   const handleLikeSong = useCallback(async (songId) => {
+    if (!user?.uid) {
+      toast.error("Please login to like songs");
+      return;
+    }
     setLikeEffectId(songId);
     try {
       const likedPlaylistId = await getOrCreateLikedPlaylist();
@@ -419,14 +400,15 @@ function HomeContent() {
     toast.success("Playing random song!");
   };
 
+  // Update search when searchQuery prop changes
+  useEffect(() => {
+    if (searchQuery !== undefined) {
+      setSearch(searchQuery);
+    }
+  }, [searchQuery]);
+
   return (
-    <div className="space-y-8  pb-42   md:pb-32">
-      {/* Search Bar */}
-      <SearchBar
-        value={search}
-        onChange={(e) => setSearch(e.target.value)}
-        placeholder="Search songs or artists..."
-      />
+    <div className="space-y-8">
 
       {loading ? (
         <div className="grid md:grid-cols-4 gap-6">
@@ -456,15 +438,25 @@ function HomeContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <FaFire className="text-2xl text-orange-400" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Trending Playlists
-                </h2>
-                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold flex items-center gap-1">
-                  <FaFire className="text-xs" />
-                  Hot
-                </span>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/trending-playlists"
+                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                  >
+                    Trending Playlists
+                  </Link>
+                  <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold flex items-center gap-1">
+                    <FaFire className="text-xs" />
+                    Hot
+                  </span>
+                </div>
+                <Link
+                  to="/trending-playlists"
+                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  View All →
+                </Link>
               </div>
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4">
                 {trendingPlaylists.map((playlist, idx) => (
@@ -475,9 +467,9 @@ function HomeContent() {
                     transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
                     whileHover={{ scale: 1.02, y: -2 }}
                     onClick={() => navigate(`/public/playlist/${playlist._id}`)}
-                    className="relative group cursor-pointer"
+                    className="relative group cursor-pointer h-full"
                   >
-                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
+                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all h-full flex flex-col">
                       {/* Glow effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
 
@@ -518,14 +510,16 @@ function HomeContent() {
                       </div>
 
                       {/* Info */}
-                      <div className="p-3">
+                      <div className="p-3 min-h-[60px] flex flex-col justify-between">
                         <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
                           {playlist.name}
                         </h3>
-                        {playlist.description && (
+                        {playlist.description ? (
                           <p className="text-xs text-purple-200 truncate mt-1">
                             {playlist.description}
                           </p>
+                        ) : (
+                          <div className="mt-1 h-4"></div>
                         )}
                       </div>
                     </div>
@@ -543,7 +537,6 @@ function HomeContent() {
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <FaMusic className="text-2xl text-purple-400" />
                 <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
                   Your Genre Mixes
                 </h2>
@@ -568,14 +561,14 @@ function HomeContent() {
                         toast.success(`Playing ${playlist.name}!`);
                       }
                     }}
-                    className="relative group cursor-pointer"
+                    className="relative group cursor-pointer h-full"
                   >
-                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
+                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all h-full flex flex-col">
                       {/* Glow effect */}
                       <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
 
                       {/* Cover Image */}
-                      <div className="relative w-full aspect-square">
+                      <div className="relative w-full aspect-square flex-shrink-0">
                         <img
                           src={playlist.firstSongCover}
                           alt={playlist.name}
@@ -588,7 +581,7 @@ function HomeContent() {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
 
                         {/* Play button overlay */}
-                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
                           <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl">
                             <FaPlay className="text-xl ml-1" />
                           </div>
@@ -609,7 +602,7 @@ function HomeContent() {
                       </div>
 
                       {/* Info */}
-                      <div className="p-3">
+                      <div className="p-3 min-h-[60px] flex flex-col justify-between flex-shrink-0">
                         <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
                           {playlist.name}
                         </h3>
@@ -633,16 +626,26 @@ function HomeContent() {
             >
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
-                  <FaStar className="text-2xl text-yellow-400" />
-                  <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                  <Link
+                    to="/for-you"
+                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                  >
                     {isPersonalized ? "Made For You" : "Popular Picks"}
-                  </h2>
+                  </Link>
                 </div>
-                {isPersonalized && (
-                  <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
-                    Personalized
-                  </span>
-                )}
+                <div className="flex items-center gap-3">
+                  {isPersonalized && (
+                    <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
+                      Personalized
+                    </span>
+                  )}
+                  <Link
+                    to="/for-you"
+                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                  >
+                    View All →
+                  </Link>
+                </div>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                 {forYouSongs.map((song, idx) => (
@@ -653,11 +656,8 @@ function HomeContent() {
                     songs={forYouSongs}
                     currentSongId={currentSong?._id}
                     isCurrentPlaying={isPlaying}
-                    isLiked={likedSongIds.includes(song._id)}
                     onPlay={playSong}
                     onPause={pauseSong}
-                    onLike={handleLikeSong}
-                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -671,11 +671,21 @@ function HomeContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.05 }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <FaClock className="text-2xl text-purple-400" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Recently Played
-                </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/recently-played"
+                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                  >
+                    Recently Played
+                  </Link>
+                </div>
+                <Link
+                  to="/recently-played"
+                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  View All →
+                </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                 {recentlyPlayed.map((song, idx) => (
@@ -686,11 +696,8 @@ function HomeContent() {
                     songs={recentlyPlayed}
                     currentSongId={currentSong?._id}
                     isCurrentPlaying={isPlaying}
-                    isLiked={likedSongIds.includes(song._id)}
                     onPlay={playSong}
                     onPause={pauseSong}
-                    onLike={handleLikeSong}
-                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -704,11 +711,21 @@ function HomeContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.1 }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <FaFire className="text-2xl text-orange-500" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  Trending Now
-                </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/trending"
+                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                  >
+                    Trending Now
+                  </Link>
+                </div>
+                <Link
+                  to="/trending"
+                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  View All →
+                </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                 {trendingSongs.map((song, idx) => (
@@ -719,11 +736,8 @@ function HomeContent() {
                     songs={trendingSongs}
                     currentSongId={currentSong?._id}
                     isCurrentPlaying={isPlaying}
-                    isLiked={likedSongIds.includes(song._id)}
                     onPlay={playSong}
                     onPause={pauseSong}
-                    onLike={handleLikeSong}
-                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -737,11 +751,21 @@ function HomeContent() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2, delay: 0.15 }}
             >
-              <div className="flex items-center gap-3 mb-4">
-                <FaMusic className="text-2xl text-green-500" />
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
-                  New Releases
-                </h2>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-3">
+                  <Link
+                    to="/new-releases"
+                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                  >
+                    New Releases
+                  </Link>
+                </div>
+                <Link
+                  to="/new-releases"
+                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  View All →
+                </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
                 {newReleases.map((song, idx) => (
@@ -752,11 +776,8 @@ function HomeContent() {
                     songs={newReleases}
                     currentSongId={currentSong?._id}
                     isCurrentPlaying={isPlaying}
-                    isLiked={likedSongIds.includes(song._id)}
                     onPlay={playSong}
                     onPause={pauseSong}
-                    onLike={handleLikeSong}
-                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
@@ -782,11 +803,8 @@ function HomeContent() {
                     songs={searchResults}
                     currentSongId={currentSong?._id}
                     isCurrentPlaying={isPlaying}
-                    isLiked={likedSongIds.includes(song._id)}
                     onPlay={playSong}
                     onPause={pauseSong}
-                    onLike={handleLikeSong}
-                    likeEffectId={likeEffectId}
                   />
                 ))}
               </div>
