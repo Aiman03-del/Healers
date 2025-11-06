@@ -162,10 +162,10 @@ export const ChatBox = () => {
 
   return (
     <>
-      {/* Chat Button */}
+      {/* Chat Button - Spotify Style */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="fixed bottom-20 right-6 w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg hover:shadow-xl hover:scale-110 transition-all flex items-center justify-center"
+        className="fixed bottom-20 right-6 w-14 h-14 rounded-full bg-[#1db954] text-white shadow-lg hover:bg-[#1ed760] hover:scale-105 transition-all flex items-center justify-center"
         aria-label="Open chat"
         style={{ zIndex: 10000 }}
       >
@@ -179,18 +179,18 @@ export const ChatBox = () => {
             initial={{ opacity: 0, y: 20, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 20, scale: 0.95 }}
-            className="fixed bottom-24 right-6 w-96 h-[450px] bg-gradient-to-br from-gray-900 via-purple-900/90 to-fuchsia-900/80 rounded-2xl shadow-2xl border border-purple-500/30 flex flex-col overflow-hidden"
+            className="fixed bottom-24 right-6 w-96 h-[450px] bg-[#282828] rounded-lg shadow-2xl border border-gray-800 flex flex-col overflow-hidden"
             style={{ zIndex: 10000 }}
           >
-            {/* Header */}
-            <div className="bg-gradient-to-r from-purple-600 to-fuchsia-600 p-4 flex items-center justify-between">
+            {/* Header - Spotify Style */}
+            <div className="bg-[#181818] p-4 flex items-center justify-between border-b border-gray-700">
               <div className="flex items-center gap-2">
-                <FaUser className="text-white" />
-                <h3 className="text-white font-bold">Chat with Admin</h3>
+                <FaUser className="text-gray-400" />
+                <h3 className="text-white font-semibold">Chat with Admin</h3>
               </div>
               <button
                 onClick={() => setIsOpen(false)}
-                className="text-white hover:text-gray-200 transition-colors"
+                className="text-gray-400 hover:text-white transition-colors"
               >
                 <FaTimes />
               </button>
@@ -224,8 +224,8 @@ export const ChatBox = () => {
                     <div
                       className={`max-w-[80%] rounded-lg p-3 ${
                         msg.senderId === user.uid
-                          ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
-                          : "bg-gray-800 text-gray-100"
+                          ? "bg-[#1db954] text-white"
+                          : "bg-[#181818] text-gray-100"
                       }`}
                     >
                       {msg.isRequest ? (
@@ -293,23 +293,23 @@ export const ChatBox = () => {
               <div ref={messagesEndRef} />
             </div>
 
-            {/* Request Toggle */}
-            <div className="px-4 py-2 border-t border-purple-500/30">
+            {/* Request Toggle - Spotify Style */}
+            <div className="px-4 py-2 border-t border-gray-700">
               <button
                 onClick={() => setIsRequest(!isRequest)}
-                className={`w-full py-2 rounded-lg text-sm font-semibold transition-all ${
+                className={`w-full py-2 rounded-full text-sm font-semibold transition-all ${
                   isRequest
-                    ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
-                    : "bg-gray-800 text-gray-300 hover:bg-gray-700"
+                    ? "bg-[#1db954] text-white hover:bg-[#1ed760]"
+                    : "bg-[#181818] text-gray-300 hover:bg-white/10 border border-gray-700"
                 }`}
               >
                 {isRequest ? "Cancel Request" : "Send Music Request"}
               </button>
             </div>
 
-            {/* Request Form */}
+            {/* Request Form - Spotify Style */}
             {isRequest && (
-              <div className="px-4 py-2 border-t border-purple-500/30 bg-gray-900/50 space-y-2">
+              <div className="px-4 py-2 border-t border-gray-700 bg-[#181818] space-y-2">
                 <input
                   type="text"
                   placeholder="Song Name *"
@@ -317,7 +317,7 @@ export const ChatBox = () => {
                   onChange={(e) =>
                     setRequestData({ ...requestData, songName: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                 />
                 <input
                   type="text"
@@ -326,7 +326,7 @@ export const ChatBox = () => {
                   onChange={(e) =>
                     setRequestData({ ...requestData, artistName: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                 />
                 <input
                   type="text"
@@ -335,7 +335,7 @@ export const ChatBox = () => {
                   onChange={(e) =>
                     setRequestData({ ...requestData, movieName: e.target.value })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                 />
                 <input
                   type="url"
@@ -347,26 +347,26 @@ export const ChatBox = () => {
                       youtubeLink: e.target.value,
                     })
                   }
-                  className="w-full px-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="w-full px-3 py-2 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                 />
               </div>
             )}
 
-            {/* Message Input */}
-            <form onSubmit={handleSendMessage} className="p-4 border-t border-purple-500/30">
+            {/* Message Input - Spotify Style */}
+            <form onSubmit={handleSendMessage} className="p-4 border-t border-gray-700">
               <div className="flex gap-2">
                 <input
                   type="text"
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
                   placeholder={isRequest ? "Add a message (optional)" : "Type a message..."}
-                  className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  className="flex-1 px-4 py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                   disabled={isRequest}
                 />
                 <button
                   type="submit"
                   disabled={sending}
-                  className="px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="px-4 py-2 bg-[#1db954] text-white rounded-full hover:bg-[#1ed760] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FaPaperPlane />
                 </button>

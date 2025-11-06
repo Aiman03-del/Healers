@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaPlay, FaPause, FaHeart, FaChevronDown, 
   FaStepBackward, FaStepForward 
@@ -7,6 +7,7 @@ import {
 import { BiSolidPlaylist } from 'react-icons/bi';
 import { MdLoop, MdRepeatOne, MdShuffle } from 'react-icons/md';
 import { useAudio } from '../context/AudioContext';
+import { AddToPlaylistModal } from '../components/features/playlists';
 
 export default function SongDetails({ 
   song, 
@@ -33,6 +34,7 @@ export default function SongDetails({
   } = useAudio();
 
   const [isLiked, setIsLiked] = useState(initialLiked);
+  const [showModal, setShowModal] = useState(false);
 
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return '0:00';
@@ -45,184 +47,135 @@ export default function SongDetails({
 
   return (
     <motion.div
-      className="fixed inset-0 z-[9999] bg-gradient-to-br from-purple-950 via-fuchsia-950 to-black overflow-hidden"
+      className="fixed inset-0 z-[9999] bg-[#121212] overflow-hidden"
       initial={{ y: "100%" }}
       animate={{ y: 0 }}
       exit={{ y: "100%" }}
       transition={{ type: "spring", stiffness: 300, damping: 30 }}
     >
-      {/* Animated Background */}
-      <div className="absolute inset-0 opacity-20 pointer-events-none">
-        <motion.div 
-          animate={{ scale: [1, 1.3, 1], rotate: [0, 180, 0] }} 
-          transition={{ duration: 25, repeat: Infinity, ease: "linear" }} 
-          className="absolute top-1/4 left-1/4 w-80 h-80 bg-purple-500 rounded-full blur-3xl" 
-        />
-        <motion.div 
-          animate={{ scale: [1.3, 1, 1.3], rotate: [0, -180, 0] }} 
-          transition={{ duration: 20, repeat: Infinity, ease: "linear" }} 
-          className="absolute bottom-1/4 right-1/4 w-80 h-80 bg-fuchsia-500 rounded-full blur-3xl" 
-        />
+      {/* Subtle Background Gradient - Spotify Style */}
+      <div className="absolute inset-0 opacity-30 pointer-events-none">
+        <div className="absolute inset-0 bg-gradient-to-b from-[#1db954]/10 via-transparent to-transparent" />
       </div>
 
       {/* Main Content - Single Page Layout */}
-      <div className="relative z-10 h-full flex flex-col px-4 sm:px-6 py-4">
+      <div className="relative z-10 h-full flex flex-col px-2 xs:px-3 sm:px-4 md:px-6 py-2 xs:py-3 sm:py-4">
         
         {/* Header */}
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex items-center justify-between mb-2 xs:mb-3 sm:mb-4 gap-2">
           <motion.button
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             onClick={onClose}
-            className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-all shadow-lg"
+            className="flex items-center gap-1 xs:gap-1.5 sm:gap-2 px-2 xs:px-3 sm:px-4 py-1.5 xs:py-2 rounded-full bg-white/10 hover:bg-white/20 backdrop-blur-sm text-white transition-all shadow-lg"
           >
-            <FaChevronDown />
-            <span className="text-sm font-semibold">Close</span>
+            <FaChevronDown className="text-xs xs:text-sm sm:text-base" />
+            <span className="text-xs xs:text-sm font-semibold hidden xs:inline">Close</span>
           </motion.button>
           
-          <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-green-500/20 border border-green-400/30 backdrop-blur-sm">
-            <div className="w-2 h-2 rounded-full bg-green-400 animate-pulse" />
-            <span className="text-green-300 text-xs font-semibold">Now Playing</span>
+          <div className="flex items-center gap-1 xs:gap-1.5 px-2 xs:px-2.5 sm:px-3 py-1 xs:py-1.5 rounded-full bg-green-500/20 border border-green-400/30 backdrop-blur-sm">
+            <div className="w-1.5 xs:w-2 h-1.5 xs:h-2 rounded-full bg-green-400 animate-pulse" />
+            <span className="text-green-300 text-[10px] xs:text-xs font-semibold">Now Playing</span>
           </div>
         </div>
 
-        {/* Main Content Grid - Centered */}
-        <div className="flex-1 flex items-center justify-center overflow-hidden">
-          <div className="w-full max-w-6xl grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-10 items-center">
+        {/* Main Content - Centered */}
+        <div className="flex-1 flex flex-col items-center justify-center overflow-hidden pb-2 xs:pb-3 sm:pb-4">
+          <div className="w-full max-w-6xl flex justify-center items-center flex-1 px-2 xs:px-3 sm:px-4">
             
-            {/* Left: Album Cover */}
-            <div className="flex justify-center">
+            {/* Album Cover - Centered */}
+            <div className="flex justify-center w-full">
               <motion.div
-                className="relative w-full max-w-sm aspect-square"
+                className="relative w-full max-w-[200px] xs:max-w-[240px] sm:max-w-[280px] md:max-w-[320px] lg:max-w-sm aspect-square"
                 initial={{ scale: 0.9, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 transition={{ duration: 0.4 }}
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-3xl blur-3xl opacity-40" />
                 <img
                   src={song.cover}
                   alt={song.title}
-                  className="relative z-10 w-full h-full rounded-3xl object-cover shadow-2xl border-2 border-purple-400/30"
+                  className="relative z-10 w-full h-full rounded-xl xs:rounded-2xl sm:rounded-3xl object-cover shadow-2xl"
                 />
-                <motion.button
-                  whileHover={{ scale: 1.15 }}
-                  whileTap={{ scale: 0.9 }}
-                  className={`absolute -top-3 -right-3 rounded-full p-3 shadow-2xl border-2 ${
-                    isLiked
-                      ? "bg-gradient-to-r from-pink-500 to-rose-500 border-pink-300 text-white"
-                      : "bg-white/20 backdrop-blur-sm border-white/40 text-white hover:bg-white/30"
-                  }`}
-                  onClick={() => {
-                    onLike(song._id);
-                    setIsLiked(!isLiked);
-                  }}
-                >
-                  <FaHeart className="text-xl" />
-                </motion.button>
                 {isPlaying && (
                   <motion.div
                     animate={{ rotate: 360 }}
                     transition={{ duration: 3, repeat: Infinity, ease: "linear" }}
-                    className="absolute -right-3 top-1/2 -translate-y-1/2 w-16 h-16 rounded-full bg-gradient-to-br from-gray-800 to-black border-2 border-purple-500 shadow-xl"
+                    className="absolute -right-1 xs:-right-2 sm:-right-3 top-1/2 -translate-y-1/2 w-10 h-10 xs:w-12 xs:h-12 sm:w-14 sm:h-14 md:w-16 md:h-16 rounded-full bg-[#1db954] shadow-xl"
                   >
-                    <div className="absolute inset-2.5 rounded-full bg-gray-900" />
+                    <div className="absolute inset-1.5 xs:inset-2 sm:inset-2.5 rounded-full bg-[#121212]" />
                   </motion.div>
                 )}
               </motion.div>
             </div>
+          </div>
 
-            {/* Right: Song Info + Controls */}
-            <div className="space-y-4">
-              
-              {/* Title + Artist + Genres */}
-              <div>
-                <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white mb-2 leading-tight">
+          {/* Song Info + Playback Controls + Volume - Horizontal on Desktop, Vertical on Mobile */}
+          <div className="w-full max-w-6xl flex flex-col sm:flex-row items-center sm:items-center sm:justify-between gap-2 xs:gap-2.5 sm:gap-3 md:gap-4 px-2 xs:px-3 sm:px-4 md:px-6 mb-2 xs:mb-2.5 sm:mb-3">
+            {/* Song Info - Left on Desktop, Top on Mobile */}
+            <div className="flex flex-col items-start sm:items-start text-left gap-1.5 xs:gap-2 order-1 sm:order-none flex-1 min-w-0 w-full sm:w-auto">
+              <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 md:gap-3 mb-0.5 xs:mb-1 w-full">
+                <div className="flex items-center gap-1.5 xs:gap-2 flex-1 min-w-0">
+                  <h2 className="text-base xs:text-lg sm:text-xl md:text-2xl font-bold text-white leading-tight truncate">
                   {song.title}
-                </h1>
-                <p className="text-xl sm:text-2xl text-purple-200 mb-3">
+                  </h2>
+                  {/* ❤️ Like Button - Next to Song Name */}
+                  <motion.button
+                    whileHover={{ scale: 1.15 }}
+                    whileTap={{ scale: 0.9 }}
+                    className={`rounded-full p-0.5 xs:p-1 sm:p-1.5 transition-all flex-shrink-0 ${
+                      isLiked
+                        ? "text-green-500 hover:text-green-400"
+                        : "text-gray-400 hover:text-white"
+                    }`}
+                    onClick={() => {
+                      onLike(song._id);
+                      setIsLiked(!isLiked);
+                    }}
+                    aria-label={isLiked ? "Unlike" : "Like"}
+                  >
+                    <FaHeart className={`text-sm xs:text-base sm:text-lg md:text-xl ${isLiked ? 'fill-current' : ''}`} />
+                  </motion.button>
+                </div>
+              </div>
+              <p className="text-xs xs:text-sm sm:text-base md:text-lg text-gray-400 hover:text-white hover:underline cursor-pointer truncate w-full">
                   {song.artist}
                 </p>
                 {song.genre && song.genre.length > 0 && (
-                  <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center justify-start gap-1 xs:gap-1.5 sm:gap-2 w-full">
                     {song.genre.map((g, i) => (
                       <span
                         key={i}
-                        className="px-3 py-1 rounded-full bg-purple-600/40 text-purple-100 text-sm font-semibold backdrop-blur-sm border border-purple-400/40"
+                      className="px-1.5 xs:px-2 sm:px-2.5 md:px-3 py-0.5 xs:py-0.5 sm:py-1 rounded-full bg-gray-800 text-gray-300 text-[10px] xs:text-xs sm:text-sm font-medium border border-gray-700"
                       >
                         {g}
                       </span>
                     ))}
-                  </div>
-                )}
-              </div>
-
-              {/* Volume Control */}
-              <div className="bg-gradient-to-br from-purple-500/10 to-fuchsia-500/10 backdrop-blur-sm rounded-xl p-4 border border-purple-500/30">
-                <div className="flex items-center gap-2 mb-3">
-                  <span className="text-2xl">🎵</span>
-                  <span className="text-white font-semibold text-sm">Volume Control</span>
-                  <span className="ml-auto text-purple-300 text-sm font-bold">{Math.round(volume * 100)}%</span>
+                  {/* Add to Playlist Icon - Next to Genres */}
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={() => setShowModal(true)}
+                    className="rounded-full p-1 xs:p-1.5 sm:p-2 text-gray-400 hover:text-white transition-all"
+                    aria-label="Add to Playlist"
+                  >
+                    <BiSolidPlaylist className="text-sm xs:text-base sm:text-lg md:text-xl" />
+                  </motion.button>
                 </div>
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">🔈</span>
-                  <div className="flex-1 relative group">
-                    <input
-                      type="range"
-                      min="0"
-                      max="1"
-                      step="0.01"
-                      value={volume}
-                      onChange={(e) => changeVolume(parseFloat(e.target.value))}
-                      className="w-full h-2 bg-purple-900/50 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-400 [&::-webkit-slider-thumb]:to-fuchsia-400 [&::-webkit-slider-thumb]:shadow-lg group-hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform"
-                      style={{
-                        background: `linear-gradient(to right, rgb(168, 85, 247) ${volume * 100}%, rgba(88, 28, 135, 0.5) ${volume * 100}%)`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-xl">🔊</span>
-                </div>
-              </div>
+              )}
+            </div>
 
-              {/* Seekbar */}
-              <div className="bg-white/5 backdrop-blur-sm rounded-xl p-3 border border-purple-500/20">
-                <div className="flex items-center gap-3">
-                  <span className="text-xs font-semibold text-purple-300 w-11 text-right">
-                    {formatTime(currentTime)}
-                  </span>
-                  <div className="flex-1 relative group">
-                    <input
-                      type="range"
-                      min="0"
-                      max="100"
-                      value={progress}
-                      onChange={(e) => seekTo(parseFloat(e.target.value))}
-                      className="w-full h-2 bg-purple-900/50 rounded-full appearance-none [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-4 [&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-gradient-to-r [&::-webkit-slider-thumb]:from-purple-500 [&::-webkit-slider-thumb]:to-fuchsia-500 [&::-webkit-slider-thumb]:shadow-lg group-hover:[&::-webkit-slider-thumb]:scale-125 [&::-webkit-slider-thumb]:transition-transform"
-                      style={{
-                        background: `linear-gradient(to right, rgb(168, 85, 247) ${progress}%, rgba(88, 28, 135, 0.5) ${progress}%)`,
-                      }}
-                    />
-                  </div>
-                  <span className="text-xs font-semibold text-purple-300 w-11">
-                    {formatTime(duration)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Playback Controls + Add Icon */}
-              <div className="flex items-center justify-between gap-3">
-                
-                {/* Playback Controls */}
-                <div className="flex items-center gap-2">
+            {/* Playback Controls - Center on Desktop, Middle on Mobile */}
+            <div className="flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 md:gap-3 order-2 sm:order-none w-full sm:w-auto">
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleLoop}
-                    className={`rounded-full p-2 text-lg shadow-lg transition-all ${
+                className={`rounded-full p-1.5 xs:p-1.5 sm:p-2 text-sm xs:text-base sm:text-lg transition-all ${
                       loopMode === 1
-                        ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white'
+                    ? 'text-green-500'
                         : loopMode === 2
-                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white'
-                        : 'bg-white/10 backdrop-blur-sm text-purple-300 border border-purple-500/30'
+                    ? 'text-green-500'
+                    : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     {loopMode === 1 ? <MdRepeatOne /> : <MdLoop />}
@@ -232,60 +185,119 @@ export default function SongDetails({
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={playPrev}
-                    className="rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-purple-500/30 text-white hover:bg-white/15 transition-all shadow-lg"
+                className="rounded-full p-1.5 xs:p-2 sm:p-2.5 text-gray-400 hover:text-white transition-all"
                   >
-                    <FaStepBackward />
+                <FaStepBackward className="text-xs xs:text-sm sm:text-base" />
                   </motion.button>
                   
                   <motion.button
                     whileHover={{ scale: 1.05 }}
                     whileTap={{ scale: 0.95 }}
                     onClick={togglePlayPause}
-                    className="rounded-full p-4 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white text-2xl shadow-2xl border-2 border-white/30"
-                  >
-                    {isPlaying ? <FaPause /> : <FaPlay className="ml-0.5" />}
+                className="rounded-full p-2.5 xs:p-3 sm:p-3.5 md:p-4 bg-white text-black hover:scale-105 transition-all shadow-xl"
+              >
+                {isPlaying ? (
+                  <FaPause className="text-base xs:text-lg sm:text-xl md:text-2xl" />
+                ) : (
+                  <FaPlay className="text-base xs:text-lg sm:text-xl md:text-2xl ml-0.5" />
+                )}
                   </motion.button>
                   
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={playNext}
-                    className="rounded-full p-2.5 bg-white/10 backdrop-blur-sm border border-purple-500/30 text-white hover:bg-white/15 transition-all shadow-lg"
+                className="rounded-full p-1.5 xs:p-2 sm:p-2.5 text-gray-400 hover:text-white transition-all"
                   >
-                    <FaStepForward />
+                <FaStepForward className="text-xs xs:text-sm sm:text-base" />
                   </motion.button>
                   
                   <motion.button
                     whileHover={{ scale: 1.1 }}
                     whileTap={{ scale: 0.9 }}
                     onClick={toggleShuffle}
-                    className={`rounded-full p-2 text-lg shadow-lg transition-all ${
+                className={`rounded-full p-1.5 xs:p-1.5 sm:p-2 text-sm xs:text-base sm:text-lg transition-all ${
                       shuffle 
-                        ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white' 
-                        : 'bg-white/10 backdrop-blur-sm text-purple-300 border border-purple-500/30'
+                    ? 'text-green-500' 
+                    : 'text-gray-400 hover:text-white'
                     }`}
                   >
                     <MdShuffle />
                   </motion.button>
                 </div>
 
-                {/* Add to Playlist Icon */}
+            {/* Volume Control - Right on Desktop, Bottom on Mobile */}
+            <div className="flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 md:gap-3 order-3 sm:order-none w-full sm:w-auto justify-center sm:justify-start">
                 <motion.button
-                  whileHover={{ scale: 1.15, rotate: 5 }}
+                whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  onClick={() => onAddToPlaylist(song._id)}
-                  className="rounded-full p-3 bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white shadow-xl transition-all"
-                  aria-label="Add to Playlist"
-                >
-                  <BiSolidPlaylist className="text-2xl" />
+                onClick={() => changeVolume(volume === 0 ? 0.5 : 0)}
+                className="text-gray-400 hover:text-white transition-colors flex items-center"
+                aria-label={volume === 0 ? "Unmute" : "Mute"}
+              >
+                {volume === 0 ? (
+                  <svg className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.383 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.383l4-3.617a1 1 0 011.617.793zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-4 xs:w-4.5 sm:w-5 h-4 xs:h-4.5 sm:h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.383 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.383l4-3.617a1 1 0 011.617.793zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                  </svg>
+                )}
                 </motion.button>
+              <div className="w-12 xs:w-14 sm:w-16 md:w-20 lg:w-24 relative group flex items-center">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => changeVolume(parseFloat(e.target.value))}
+                  className="w-full h-0.5 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-0 [&::-webkit-slider-thumb]:h-0 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer group-hover:[&::-webkit-slider-thumb]:w-3 xs:group-hover:[&::-webkit-slider-thumb]:w-3.5 sm:group-hover:[&::-webkit-slider-thumb]:w-4 group-hover:[&::-webkit-slider-thumb]:h-3 xs:group-hover:[&::-webkit-slider-thumb]:h-3.5 sm:group-hover:[&::-webkit-slider-thumb]:h-4 [&::-webkit-slider-thumb]:transition-all"
+                  style={{
+                    background: `linear-gradient(to right, #1db954 ${volume * 100}%, #535353 ${volume * 100}%)`,
+                  }}
+                />
               </div>
-
+              <span className="text-[10px] xs:text-xs text-gray-400 w-6 xs:w-7 sm:w-8 md:w-10 text-right flex items-center">{Math.round(volume * 100)}%</span>
             </div>
+          </div>
+
+          {/* Bottom Row: Seekbar - Full Width, At Bottom */}
+          <div className="w-full max-w-6xl flex items-center gap-1.5 xs:gap-2 sm:gap-2.5 md:gap-3 px-2 xs:px-3 sm:px-4 md:px-6">
+            <span className="text-[10px] xs:text-xs font-medium text-gray-400 w-8 xs:w-9 sm:w-10 md:w-11 text-right flex-shrink-0">
+              {formatTime(currentTime)}
+            </span>
+            <div className="flex-1 relative group">
+              <input
+                type="range"
+                min="0"
+                max="100"
+                value={progress}
+                onChange={(e) => seekTo(parseFloat(e.target.value))}
+                className="w-full h-0.5 xs:h-1 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-0 [&::-webkit-slider-thumb]:h-0 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer group-hover:[&::-webkit-slider-thumb]:w-2.5 xs:group-hover:[&::-webkit-slider-thumb]:w-3 sm:group-hover:[&::-webkit-slider-thumb]:w-3.5 group-hover:[&::-webkit-slider-thumb]:h-2.5 xs:group-hover:[&::-webkit-slider-thumb]:h-3 sm:group-hover:[&::-webkit-slider-thumb]:h-3.5 [&::-webkit-slider-thumb]:transition-all"
+                style={{
+                  background: `linear-gradient(to right, #1db954 ${progress}%, #535353 ${progress}%)`,
+                }}
+              />
+            </div>
+            <span className="text-[10px] xs:text-xs font-medium text-gray-400 w-8 xs:w-9 sm:w-10 md:w-11 flex-shrink-0">
+              {formatTime(duration)}
+            </span>
           </div>
         </div>
 
       </div>
+
+      {/* AddToPlaylistModal - Rendered with higher z-index */}
+      <AnimatePresence>
+        {showModal && (
+          <AddToPlaylistModal
+            songId={song._id}
+            onClose={() => setShowModal(false)}
+          />
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }

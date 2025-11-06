@@ -138,9 +138,9 @@ function AudioPlayer() {
 
   return (
     <>
-      {/* Main draggable/swipeable player */}
+      {/* Main draggable/swipeable player - Spotify Style */}
       <motion.div
-        className=" fixed bottom-0 left-0 right-0 bg-gradient-to-r from-gray-900 via-purple-900 to-fuchsia-900 backdrop-blur-xl text-white px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 py-2 xs:py-2.5 sm:py-3 shadow-2xl z-50 border-t border-purple-500/30 transition-all"
+        className="fixed bottom-0 left-0 right-0 bg-[#121212] text-white px-2 xs:px-3 sm:px-4 md:px-6 lg:px-8 py-2 xs:py-2.5 sm:py-3 shadow-2xl z-50 border-t border-gray-800 transition-all"
         drag={isMobile && !expanded ? "y" : "x"}
         dragConstraints={isMobile && !expanded ? { top: -80, bottom: 0 } : { left: 0, right: 0 }}
         dragElastic={0.2}
@@ -150,198 +150,219 @@ function AudioPlayer() {
         style={{ touchAction: "pan-y" }}
         onClick={handlePlayerClick}
       >
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 xs:gap-2.5 sm:gap-3 md:gap-4 lg:gap-6 max-w-7xl mx-auto w-full">
-          {/* Song Info + Like */}
-          <div className="flex items-center justify-between w-full md:w-auto gap-2 xs:gap-2.5 sm:gap-3 md:gap-4 min-w-0 md:min-w-[200px] lg:min-w-[280px]">
-            <div className="flex items-center min-w-0 gap-2 xs:gap-2.5 sm:gap-3 flex-1">
-              {/* Album Cover with glow */}
-              <div className="relative group flex-shrink-0">
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-md sm:rounded-lg blur-sm sm:blur-md opacity-50 group-hover:opacity-100 transition-opacity" />
-                <img
-                  src={currentSong.cover}
-                  alt="cover"
-                  className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded-md sm:rounded-lg object-cover relative z-10 shadow-xl border-2 border-purple-400/40"
-                  loading="eager"
-                />
-              </div>
-              
-              <div className="min-w-0 flex-1">
-                <p className="font-bold text-xs xs:text-sm sm:text-base text-white truncate max-w-[100px] xs:max-w-[120px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[280px]">
-                  {currentSong.title}
-                </p>
-                <p className="text-[10px] xs:text-xs sm:text-sm text-purple-200 truncate max-w-[100px] xs:max-w-[120px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[280px]">
-                  {currentSong.artist}
-                </p>
+        <div className="flex flex-col gap-2 xs:gap-2.5 sm:gap-3 max-w-7xl mx-auto w-full">
+          {/* Top Row: Song Info + Controls + Volume */}
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-2 xs:gap-2.5 sm:gap-3 md:gap-4 lg:gap-6">
+            {/* Song Info + Like */}
+            <div className="flex items-center justify-between w-full md:w-auto gap-2 xs:gap-2.5 sm:gap-3 md:gap-4 min-w-0 md:min-w-[200px] lg:min-w-[280px]">
+              <div className="flex items-center min-w-0 gap-2 xs:gap-2.5 sm:gap-3 flex-1">
+                {/* Album Cover - Spotify Style */}
+                <div className="relative group flex-shrink-0">
+                  <img
+                    src={currentSong.cover}
+                    alt="cover"
+                    className="w-10 h-10 xs:w-11 xs:h-11 sm:w-12 sm:h-12 md:w-14 md:h-14 lg:w-16 lg:h-16 rounded object-cover relative z-10 shadow-lg"
+                    loading="eager"
+                  />
+                </div>
+                
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center gap-1.5 xs:gap-2">
+                    <p className="font-semibold text-xs xs:text-sm sm:text-base text-white hover:underline cursor-pointer truncate max-w-[80px] xs:max-w-[100px] sm:max-w-[140px] md:max-w-[180px] lg:max-w-[260px]">
+                      {currentSong.title}
+                    </p>
+                    {/* ❤️ Like Button - Next to Song Name */}
+                    <motion.button
+                      whileHover={{ scale: 1.15 }}
+                      whileTap={{ scale: 0.9 }}
+                      className={`rounded-full p-0.5 xs:p-1 transition-all flex-shrink-0 ${
+                        isLiked
+                          ? "text-green-500 hover:text-green-400"
+                          : "text-gray-400 hover:text-white"
+                      }`}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleLikeSong(currentSong._id);
+                      }}
+                      aria-label={isLiked ? "Unlike" : "Like"}
+                    >
+                      <FaHeart className={`text-[10px] xs:text-xs sm:text-sm ${isLiked ? 'fill-current' : ''}`} />
+                    </motion.button>
+                  </div>
+                  <p className="text-[10px] xs:text-xs sm:text-sm text-gray-400 hover:text-white hover:underline cursor-pointer truncate max-w-[100px] xs:max-w-[120px] sm:max-w-[160px] md:max-w-[200px] lg:max-w-[280px]">
+                    {currentSong.artist}
+                  </p>
+                </div>
               </div>
             </div>
 
-            {/* ❤️ Like Button - Hidden on xs, visible from sm */}
-            <motion.button
-              whileHover={{ scale: 1.15 }}
-              whileTap={{ scale: 0.9 }}
-              className={`hidden xs:flex rounded-full p-1.5 xs:p-2 shadow-lg transition-all flex-shrink-0 ${
-                isLiked
-                  ? "bg-gradient-to-r from-pink-500 to-rose-500 text-white"
-                  : "bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 border border-white/20"
-              }`}
-              onClick={(e) => {
-                e.stopPropagation();
-                handleLikeSong(currentSong._id);
-              }}
-              aria-label={isLiked ? "Unlike" : "Like"}
-            >
-              <FaHeart className="text-xs xs:text-sm sm:text-base" />
-            </motion.button>
-          </div>
-
-          {/* Controls (center on desktop) */}
-          <div className="flex flex-col gap-1.5 sm:gap-2 flex-1 w-full md:max-w-md lg:max-w-2xl xl:max-w-3xl">
-            {/* Seekbar */}
-            <div className="flex items-center gap-1.5 xs:gap-2 w-full">
-              <span className="text-[10px] xs:text-xs font-semibold text-purple-200 w-8 xs:w-9 sm:w-10 text-right">
-                {formatTime(currentTime)}
-              </span>
-              <div className="flex-1 relative group">
-                <input
-                  type="range"
-                  min="0"
-                  max="100"
-                  value={progress}
-                  onChange={(e) => seekTo(parseFloat(e.target.value))}
-                  onClick={(e) => e.stopPropagation()}
-                  className="w-full h-1 xs:h-1.5 bg-purple-900/60 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-2.5 [&::-webkit-slider-thumb]:h-2.5 xs:[&::-webkit-slider-thumb]:w-3 xs:[&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all group-hover:[&::-webkit-slider-thumb]:w-3 group-hover:[&::-webkit-slider-thumb]:h-3 xs:group-hover:[&::-webkit-slider-thumb]:w-3.5 xs:group-hover:[&::-webkit-slider-thumb]:h-3.5"
-                  style={{
-                    background: `linear-gradient(to right, rgb(168, 85, 247) ${progress}%, rgba(88, 28, 135, 0.6) ${progress}%)`,
-                  }}
-                />
-              </div>
-              <span className="text-[10px] xs:text-xs font-semibold text-purple-200 w-8 xs:w-9 sm:w-10">
-                {formatTime(duration)}
-              </span>
-            </div>
-
-            {/* Control Buttons */}
-            <div className="flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 md:gap-3">
-              {/* Loop - Hidden on xs */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  handleLoopClick();
-                }}
-                className={`hidden xs:block rounded-lg p-1.5 xs:p-2 text-sm xs:text-base sm:text-lg transition-all ${
-                  loopMode === 1
-                    ? 'bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg'
-                    : loopMode === 2
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg'
-                    : 'bg-white/10 text-purple-300 hover:bg-white/20'
-                }`}
-                aria-label="Loop"
-              >
-                {loopMode === 1 ? <MdRepeatOne /> : <MdLoop />}
-              </motion.button>
-
-              {/* Previous */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  playPrev();
-                }}
-                className="rounded-lg p-1.5 xs:p-2 sm:p-2.5 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all shadow-md"
-                aria-label="Previous"
-              >
-                <FaStepBackward className="text-xs xs:text-sm sm:text-base md:text-lg" />
-              </motion.button>
-
-              {/* Play/Pause */}
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  togglePlayPause();
-                }}
-                className="rounded-full p-2.5 xs:p-3 sm:p-3.5 md:p-4 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white shadow-2xl hover:shadow-purple-500/50 transition-all"
-              >
-                {isPlaying ? (
-                  <FaPause className="text-base xs:text-lg sm:text-xl md:text-2xl" />
-                ) : (
-                  <FaPlay className="text-base xs:text-lg sm:text-xl md:text-2xl ml-0.5" />
-                )}
-              </motion.button>
-
-              {/* Next */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  playNext();
-                }}
-                className="rounded-lg p-1.5 xs:p-2 sm:p-2.5 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all shadow-md"
-                aria-label="Next"
-              >
-                <FaStepForward className="text-xs xs:text-sm sm:text-base md:text-lg" />
-              </motion.button>
-
-              {/* Shuffle - Hidden on xs */}
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleShuffle();
-                }}
-                className={`hidden xs:block rounded-lg p-1.5 xs:p-2 text-sm xs:text-base sm:text-lg transition-all ${
-                  shuffle 
-                    ? 'bg-gradient-to-r from-green-600 to-emerald-600 text-white shadow-lg' 
-                    : 'bg-white/10 text-purple-300 hover:bg-white/20'
-                }`}
-                aria-label="Shuffle"
-              >
-                <MdShuffle />
-              </motion.button>
-
-              {/* Add to Playlist - Visible from md, only for logged-in users */}
-              {user && (
+            {/* Controls (center on desktop) */}
+            <div className="flex flex-col gap-1.5 sm:gap-2 flex-1 w-full md:max-w-md lg:max-w-2xl xl:max-w-3xl">
+              {/* Control Buttons */}
+              <div className="flex items-center justify-center gap-1 xs:gap-1.5 sm:gap-2 md:gap-3">
+                {/* Loop - Hidden on xs */}
                 <motion.button
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
                   onClick={(e) => {
                     e.stopPropagation();
-                    setShowModal(true);
+                    handleLoopClick();
                   }}
-                  className="hidden md:block rounded-lg p-1.5 xs:p-2 bg-white/10 backdrop-blur-sm text-white hover:bg-white/20 transition-all shadow-md"
-                  aria-label="Add to Playlist"
+                  className={`hidden xs:block rounded-full p-1.5 xs:p-2 text-sm xs:text-base sm:text-lg transition-all ${
+                    loopMode === 1
+                      ? 'text-green-500'
+                      : loopMode === 2
+                      ? 'text-green-500'
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  aria-label="Loop"
                 >
-                  <BiSolidPlaylist className="text-base sm:text-lg md:text-xl" />
+                  {loopMode === 1 ? <MdRepeatOne /> : <MdLoop />}
                 </motion.button>
-              )}
+
+                {/* Previous */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    playPrev();
+                  }}
+                  className="rounded-full p-1.5 xs:p-2 sm:p-2.5 text-gray-400 hover:text-white transition-all"
+                  aria-label="Previous"
+                >
+                  <FaStepBackward className="text-xs xs:text-sm sm:text-base md:text-lg" />
+                </motion.button>
+
+                {/* Play/Pause */}
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    togglePlayPause();
+                  }}
+                  className="rounded-full p-2.5 xs:p-3 sm:p-3.5 md:p-4 bg-white text-black hover:scale-105 transition-all shadow-lg"
+                >
+                  {isPlaying ? (
+                    <FaPause className="text-base xs:text-lg sm:text-xl md:text-2xl" />
+                  ) : (
+                    <FaPlay className="text-base xs:text-lg sm:text-xl md:text-2xl ml-0.5" />
+                  )}
+                </motion.button>
+
+                {/* Next */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    playNext();
+                  }}
+                  className="rounded-full p-1.5 xs:p-2 sm:p-2.5 text-gray-400 hover:text-white transition-all"
+                  aria-label="Next"
+                >
+                  <FaStepForward className="text-xs xs:text-sm sm:text-base md:text-lg" />
+                </motion.button>
+
+                {/* Shuffle - Hidden on xs */}
+                <motion.button
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    toggleShuffle();
+                  }}
+                  className={`hidden xs:block rounded-full p-1.5 xs:p-2 text-sm xs:text-base sm:text-lg transition-all ${
+                    shuffle 
+                      ? 'text-green-500' 
+                      : 'text-gray-400 hover:text-white'
+                  }`}
+                  aria-label="Shuffle"
+                >
+                  <MdShuffle />
+                </motion.button>
+
+                {/* Add to Playlist - Always visible for logged-in users */}
+                {user && (
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setShowModal(true);
+                    }}
+                    className="rounded-full p-1.5 xs:p-2 text-gray-400 hover:text-white transition-all"
+                    aria-label="Add to Playlist"
+                  >
+                    <BiSolidPlaylist className="text-base sm:text-lg md:text-xl" />
+                  </motion.button>
+                )}
+              </div>
+            </div>
+
+            {/* 🔊 Volume (desktop only - lg and up) - Smaller width, thicker thumb */}
+            <div className="hidden lg:flex items-center gap-2 w-16 xl:w-20 flex-shrink-0">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  changeVolume(volume === 0 ? 0.5 : 0);
+                }}
+                className="text-gray-400 hover:text-white transition-colors"
+                aria-label={volume === 0 ? "Unmute" : "Mute"}
+              >
+                {volume === 0 ? (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.383 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.383l4-3.617a1 1 0 011.617.793zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                  </svg>
+                ) : (
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M9.383 3.076A1 1 0 0110 4v12a1 1 0 01-1.617.793L4.383 13H2a1 1 0 01-1-1V8a1 1 0 011-1h2.383l4-3.617a1 1 0 011.617.793zM14.657 2.929a1 1 0 011.414 0A9.972 9.972 0 0119 10a9.972 9.972 0 01-2.929 7.071 1 1 0 01-1.414-1.414A7.971 7.971 0 0017 10c0-2.21-.894-4.208-2.343-5.657a1 1 0 010-1.414zm-2.829 2.828a1 1 0 011.415 0A5.983 5.983 0 0115 10a5.984 5.984 0 01-1.757 4.243 1 1 0 01-1.415-1.415A3.984 3.984 0 0013 10a3.983 3.983 0 00-1.172-2.828 1 1 0 010-1.415z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </motion.button>
+              <div className="flex-1 relative group">
+                <input
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.01"
+                  value={volume}
+                  onChange={(e) => changeVolume(parseFloat(e.target.value))}
+                  onClick={(e) => e.stopPropagation()}
+                  className="w-full h-0.5 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-0 [&::-webkit-slider-thumb]:h-0 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer group-hover:[&::-webkit-slider-thumb]:w-4 group-hover:[&::-webkit-slider-thumb]:h-4"
+                  style={{
+                    background: `linear-gradient(to right, #1db954 ${volume * 100}%, #535353 ${volume * 100}%)`,
+                  }}
+                />
+              </div>
             </div>
           </div>
 
-          {/* 🔊 Volume (desktop only - lg and up) */}
-          <div className="hidden lg:flex items-center gap-2 w-24 lg:w-28 xl:w-32 flex-shrink-0">
-            <span className="text-sm lg:text-base">🔈</span>
-            <div className="flex-1 relative">
+          {/* Bottom Row: Seekbar - Full Width, At Bottom */}
+          <div className="flex items-center gap-1.5 xs:gap-2 w-full">
+            <span className="text-[10px] xs:text-xs font-medium text-gray-400 w-8 xs:w-9 sm:w-10 text-right flex-shrink-0">
+              {formatTime(currentTime)}
+            </span>
+            <div className="flex-1 relative group">
               <input
                 type="range"
                 min="0"
-                max="1"
-                step="0.01"
-                value={volume}
-                onChange={(e) => changeVolume(parseFloat(e.target.value))}
+                max="100"
+                value={progress}
+                onChange={(e) => seekTo(parseFloat(e.target.value))}
                 onClick={(e) => e.stopPropagation()}
-                className="w-full h-1.5 bg-purple-900/60 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-3 [&::-webkit-slider-thumb]:h-3 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer"
+                className="w-full h-1 xs:h-1.5 bg-gray-700 rounded-full appearance-none cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-0 [&::-webkit-slider-thumb]:h-0 [&::-webkit-slider-thumb]:rounded-full [&::-webkit-slider-thumb]:bg-white [&::-webkit-slider-thumb]:shadow-lg [&::-webkit-slider-thumb]:cursor-pointer [&::-webkit-slider-thumb]:transition-all group-hover:[&::-webkit-slider-thumb]:w-3 group-hover:[&::-webkit-slider-thumb]:h-3 xs:group-hover:[&::-webkit-slider-thumb]:w-3.5 xs:group-hover:[&::-webkit-slider-thumb]:h-3.5"
                 style={{
-                  background: `linear-gradient(to right, rgb(168, 85, 247) ${volume * 100}%, rgba(88, 28, 135, 0.6) ${volume * 100}%)`,
+                  background: `linear-gradient(to right, #1db954 ${progress}%, #535353 ${progress}%)`,
                 }}
               />
             </div>
-            <span className="text-sm lg:text-base">🔊</span>
+            <span className="text-[10px] xs:text-xs font-medium text-gray-400 w-8 xs:w-9 sm:w-10 flex-shrink-0">
+              {formatTime(duration)}
+            </span>
           </div>
         </div>
         {/* AddToPlaylistModal as drawer */}

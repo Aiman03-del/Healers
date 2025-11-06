@@ -68,12 +68,12 @@ export default function ForYouNested() {
           <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
             {isPersonalized ? "Made For You" : "Popular Picks"}
           </h1>
+          {isPersonalized && (
+            <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
+              Personalized
+            </span>
+          )}
         </div>
-        {isPersonalized && (
-          <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
-            Personalized
-          </span>
-        )}
       </div>
       <p className="text-gray-600 dark:text-gray-400 mb-6">
         {isPersonalized 

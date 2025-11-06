@@ -71,9 +71,9 @@ export const AdminChat = ({ isFloating = false }) => {
         return hasChanged ? newConversations : prev;
       });
       
-      console.log(`✅ Loaded ${newConversations.length} conversations`);
+      console.log(`Loaded ${newConversations.length} conversations`);
     } catch (err) {
-      console.error("❌ Failed to load conversations:", err);
+      console.error("Failed to load conversations:", err);
       // Don't clear conversations on error, keep existing ones
       setConversations((prev) => prev.length === 0 ? [] : prev);
     }
@@ -285,8 +285,8 @@ export const AdminChat = ({ isFloating = false }) => {
       console.log(`🔍 Frontend: Found ${users.length} users`);
       setSearchResults(users);
     } catch (err) {
-      console.error("❌ Failed to search users:", err);
-      console.error("❌ Error details:", err.response?.data || err.message);
+      console.error(" Failed to search users:", err);
+      console.error(" Error details:", err.response?.data || err.message);
       setSearchResults([]);
     } finally {
       setSearching(false);
@@ -431,7 +431,7 @@ export const AdminChat = ({ isFloating = false }) => {
     return null;
   }
 
-  console.log("✅ AdminChat: Rendering with", { 
+  console.log("AdminChat: Rendering with", { 
     conversationsCount: conversations.length,
     selectedChat: selectedChat?._id,
     isFloating
@@ -440,35 +440,48 @@ export const AdminChat = ({ isFloating = false }) => {
   // If floating mode, render as floating chat box
   if (isFloating) {
     return (
-      <div className="fixed bottom-20 right-4 z-[10000]">
+      <>
+      <div className="fixed bottom-16 sm:bottom-20 right-2 sm:right-4 z-[10000]">
         {!isOpen ? (
           <button
             onClick={() => setIsOpen(true)}
-            className="bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white p-4 rounded-full shadow-2xl hover:scale-110 transition-transform relative"
+            className="bg-[#1db954] text-white p-3 sm:p-4 rounded-full shadow-2xl hover:bg-[#1ed760] hover:scale-105 active:scale-95 transition-all relative"
+            aria-label="Open admin chat"
           >
-            <FaComments className="text-xl" />
+            <FaComments className="text-lg sm:text-xl" />
             {conversations.filter(c => c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0) > 0 && (
-              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-6 h-6 flex items-center justify-center">
-                {conversations.filter(c => c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
+              <span className="absolute -top-1 -right-1 sm:-top-2 sm:-right-2 bg-white text-black text-xs rounded-full w-5 h-5 sm:w-6 sm:h-6 flex items-center justify-center text-[10px] sm:text-xs font-bold">
+                {conversations.filter(c => c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0) > 9 ? '9+' : conversations.filter(c => c.unreadCount > 0).reduce((sum, c) => sum + (c.unreadCount || 0), 0)}
               </span>
             )}
           </button>
         ) : (
-          <div className="bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-2xl border border-purple-500/30 overflow-hidden w-[400px] h-[500px] flex flex-col">
-            {/* Header */}
-            <div className="p-4 border-b border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 flex items-center justify-between">
-              <h3 className="text-white font-bold flex items-center gap-2">
-                <FaComments className="text-purple-400" />
-                Admin Chat
+          <div className="bg-[#282828] rounded-lg shadow-2xl border border-gray-800 overflow-hidden w-[calc(100vw-1rem)] sm:w-[400px] h-[calc(100vh-8rem)] sm:h-[500px] max-h-[600px] flex flex-col">
+            {/* Header - Spotify Style */}
+            <div className="p-3 sm:p-4 border-b border-gray-700 bg-[#181818] flex items-center justify-between">
+              <h3 className="text-white font-semibold flex items-center gap-2 text-sm sm:text-base">
+                <FaComments className="text-gray-400 text-sm sm:text-base" />
+                <span className="hidden sm:inline">Admin Chat</span>
+                <span className="sm:hidden">Chat</span>
               </h3>
+              {selectedChat && (
+                <button
+                  onClick={handleBackToList}
+                  className="sm:hidden text-white hover:text-gray-300 transition-colors p-1"
+                  aria-label="Back to conversations"
+                >
+                  <FaArrowLeft className="text-sm" />
+                </button>
+              )}
               <button
                 onClick={() => {
                   setIsOpen(false);
                   setSelectedChat(null);
                 }}
-                className="text-white hover:text-gray-300 transition-colors"
+                className="text-white hover:text-gray-300 transition-colors p-1 active:scale-95"
+                aria-label="Close chat"
               >
-                <FaTimes />
+                <FaTimes className="text-sm sm:text-base" />
               </button>
             </div>
             
@@ -477,20 +490,20 @@ export const AdminChat = ({ isFloating = false }) => {
               {/* Conversations List */}
               {!selectedChat && (
                 <div className="w-full flex flex-col">
-                  {/* Search Bar */}
-                  <div className="p-3 border-b border-purple-500/30">
+                  {/* Search Bar - Spotify Style */}
+                  <div className="p-2 sm:p-3 border-b border-gray-700">
                     <div className="relative">
-                      <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                      <FaSearch className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
                       <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search users or staff..."
-                        className="w-full pl-10 pr-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        placeholder="Search users..."
+                        className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                       />
                     </div>
                     {searchQuery.trim().length >= 2 && (
-                      <div className="mt-2 max-h-48 overflow-y-auto">
+                      <div className="mt-2 max-h-40 sm:max-h-48 overflow-y-auto custom-scrollbar">
                         {searching ? (
                           <div className="text-center text-gray-400 py-2 text-xs">Searching...</div>
                         ) : searchResults.length > 0 ? (
@@ -499,9 +512,9 @@ export const AdminChat = ({ isFloating = false }) => {
                               <div
                                 key={user.uid}
                                 onClick={() => handleStartChatWithUser(user)}
-                                className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors flex items-center gap-2"
+                                className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/15 cursor-pointer transition-colors flex items-center gap-2 touch-manipulation"
                               >
-                                <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                                <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#181818] flex items-center justify-center flex-shrink-0">
                                   {user.image ? (
                                     <img
                                       src={user.image}
@@ -509,16 +522,16 @@ export const AdminChat = ({ isFloating = false }) => {
                                       className="w-full h-full rounded-full object-cover"
                                     />
                                   ) : (
-                                    <FaUser className="text-white text-xs" />
+                                    <FaUser className="text-white text-[10px] sm:text-xs" />
                                   )}
                                 </div>
                                 <div className="flex-1 min-w-0">
-                                  <p className="text-white text-sm font-semibold truncate">
+                                  <p className="text-white text-xs sm:text-sm font-semibold truncate">
                                     {user.name || user.email || "Unknown"}
                                   </p>
-                                  <p className="text-gray-400 text-xs truncate">{user.email}</p>
+                                  <p className="text-gray-400 text-[10px] sm:text-xs truncate">{user.email}</p>
                                 </div>
-                                <span className="text-xs px-2 py-0.5 rounded bg-purple-600/30 text-purple-300">
+                                <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-white/10 text-gray-400 hidden sm:inline">
                                   {user.type === "staff" ? "Staff" : "User"}
                                 </span>
                               </div>
@@ -530,7 +543,7 @@ export const AdminChat = ({ isFloating = false }) => {
                       </div>
                     )}
                   </div>
-                  <div className="p-3 border-b border-purple-500/30">
+                  <div className="p-3 border-b border-gray-700">
                     <p className="text-sm text-gray-400">
                       {conversations.length} conversation{conversations.length !== 1 ? 's' : ''}
                     </p>
@@ -546,14 +559,14 @@ export const AdminChat = ({ isFloating = false }) => {
                         <div
                           key={conv._id}
                           onClick={() => handleSelectConversation(conv)}
-                          className={`p-3 cursor-pointer border-b border-gray-700/50 transition-all ${
+                          className={`p-3 cursor-pointer border-b border-gray-700 transition-colors ${
                             selectedChat?._id === conv._id
-                              ? "bg-gradient-to-r from-purple-600/30 to-fuchsia-600/30"
-                              : "hover:bg-gray-800/50"
+                              ? "bg-white/10"
+                              : "hover:bg-white/5"
                           }`}
                         >
                           <div className="flex items-center gap-2">
-                            <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                            <div className="w-8 h-8 rounded-full bg-[#181818] flex items-center justify-center flex-shrink-0">
                               {conv.user?.image ? (
                                 <img
                                   src={conv.user.image}
@@ -570,7 +583,7 @@ export const AdminChat = ({ isFloating = false }) => {
                                   {conv.user?.name || conv.user?.email || "Unknown"}
                                 </h4>
                                 {conv.unreadCount > 0 && (
-                                  <span className="bg-red-500 text-white text-xs px-1.5 py-0.5 rounded-full">
+                                  <span className="bg-[#1db954] text-white text-xs px-1.5 py-0.5 rounded-full">
                                     {conv.unreadCount}
                                   </span>
                                 )}
@@ -590,16 +603,16 @@ export const AdminChat = ({ isFloating = false }) => {
               {/* Chat Window */}
               {selectedChat && (
                 <div className="flex-1 flex flex-col">
-                  {/* Chat Header */}
-                  <div className="p-3 border-b border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20 flex items-center justify-between">
+                  {/* Chat Header - Spotify Style */}
+                  <div className="p-3 border-b border-gray-700 bg-[#181818] flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <button
                         onClick={() => setSelectedChat(null)}
-                        className="text-white hover:text-gray-300 transition-colors mr-2"
+                        className="text-gray-400 hover:text-white transition-colors mr-2"
                       >
                         <FaArrowLeft />
                       </button>
-                      <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center">
+                      <div className="w-8 h-8 rounded-full bg-[#181818] flex items-center justify-center">
                         {selectedChat.user?.image ? (
                           <img
                             src={selectedChat.user.image}
@@ -637,8 +650,8 @@ export const AdminChat = ({ isFloating = false }) => {
                             <div
                               className={`max-w-[80%] rounded-lg p-2 text-sm ${
                                 msg.senderType === "admin"
-                                  ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
-                                  : "bg-gray-800 text-gray-100"
+                                  ? "bg-[#1db954] text-white"
+                                  : "bg-[#181818] text-gray-100"
                               }`}
                             >
                               {msg.isRequest ? (
@@ -667,7 +680,7 @@ export const AdminChat = ({ isFloating = false }) => {
                                       {msg.requestData?.status === "pending" && (
                                         <button
                                           onClick={() => handleUpdateRequestStatus(msg._id || msg.id, "added")}
-                                          className="px-2 py-0.5 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                          className="px-2 py-0.5 bg-[#1db954] hover:bg-[#1ed760] text-white text-xs rounded-full transition-colors"
                                         >
                                           Mark as Added
                                         </button>
@@ -687,21 +700,21 @@ export const AdminChat = ({ isFloating = false }) => {
                     <div ref={messagesEndRef} />
                   </div>
                   
-                  {/* Message Input */}
-                  <form onSubmit={handleSendMessage} className="p-3 border-t border-purple-500/30">
+                  {/* Message Input - Spotify Style */}
+                  <form onSubmit={handleSendMessage} className="p-3 border-t border-gray-700">
                     <div className="flex gap-2">
                       <input
                         type="text"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         placeholder="Type a message..."
-                        className="flex-1 px-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                        className="flex-1 px-3 py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                         disabled={sending}
                       />
                       <button
                         type="submit"
                         disabled={sending || !message.trim()}
-                        className="px-3 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="px-3 py-2 bg-[#1db954] text-white rounded-full hover:bg-[#1ed760] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                       >
                         <FaPaperPlane />
                       </button>
@@ -713,46 +726,73 @@ export const AdminChat = ({ isFloating = false }) => {
           </div>
         )}
       </div>
+      {/* Custom Scrollbar Styles */}
+      <style>{`
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: rgba(0, 0, 0, 0.2);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: #535353;
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #727272;
+        }
+        @media (min-width: 640px) {
+          .custom-scrollbar::-webkit-scrollbar {
+            width: 6px;
+          }
+        }
+        .touch-manipulation {
+          touch-action: manipulation;
+        }
+      `}</style>
+      </>
     );
   }
 
-  // Full screen mode (for AdminPanel page)
+  // Full screen mode (for AdminPanel page) - Spotify Style
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900/20 to-fuchsia-900/20 p-6">
+    <div className="min-h-screen bg-[#121212] p-2 sm:p-4 md:p-6">
       <div className="max-w-7xl mx-auto">
-        <h1 className="text-3xl font-bold text-white mb-6 flex items-center gap-3">
-          <FaComments className="text-purple-400" />
-          Admin Chat
+        <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-white mb-3 sm:mb-4 md:mb-6 flex items-center gap-2 sm:gap-3">
+          <FaComments className="text-gray-400 text-lg sm:text-xl md:text-2xl" />
+          <span className="hidden sm:inline">Admin Chat</span>
+          <span className="sm:hidden">Chat</span>
         </h1>
 
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 h-[calc(100vh-200px)]">
-          {/* Conversations List */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-3 sm:gap-4 md:gap-6 h-[calc(100vh-120px)] sm:h-[calc(100vh-150px)] md:h-[calc(100vh-200px)]">
+          {/* Conversations List - Spotify Style */}
           <div
-            className={`bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-xl border border-purple-500/30 overflow-hidden flex flex-col ${
+            className={`bg-[#181818] rounded-lg shadow-xl border border-gray-800 overflow-hidden flex flex-col ${
               showChatWindow ? "hidden lg:flex" : "flex"
             }`}
           >
-            <div className="p-4 border-b border-purple-500/30">
-              <h2 className="text-xl font-bold text-white">Conversations</h2>
-              <p className="text-sm text-gray-400 mt-1">
+            <div className="p-3 sm:p-4 border-b border-gray-700">
+              <h2 className="text-lg sm:text-xl font-semibold text-white">Conversations</h2>
+              <p className="text-xs sm:text-sm text-gray-400 mt-1">
                 {conversations.length} active chat{conversations.length !== 1 ? "s" : ""}
               </p>
             </div>
             
-            {/* Search Bar */}
-            <div className="p-4 border-b border-purple-500/30">
+            {/* Search Bar - Spotify Style */}
+            <div className="p-3 sm:p-4 border-b border-gray-700">
               <div className="relative">
-                <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm" />
+                <FaSearch className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search users or staff..."
-                  className="w-full pl-10 pr-3 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 text-sm focus:outline-none focus:ring-2 focus:ring-purple-500"
+                  placeholder="Search users..."
+                  className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                 />
               </div>
               {searchQuery.trim().length >= 2 && (
-                <div className="mt-2 max-h-48 overflow-y-auto">
+                <div className="mt-2 max-h-40 sm:max-h-48 overflow-y-auto custom-scrollbar">
                   {searching ? (
                     <div className="text-center text-gray-400 py-2 text-xs">Searching...</div>
                   ) : searchResults.length > 0 ? (
@@ -761,9 +801,9 @@ export const AdminChat = ({ isFloating = false }) => {
                         <div
                           key={user.uid}
                           onClick={() => handleStartChatWithUser(user)}
-                          className="p-2 rounded-lg bg-gray-800 hover:bg-gray-700 cursor-pointer transition-colors flex items-center gap-2"
+                          className="p-1.5 sm:p-2 rounded-lg bg-white/5 hover:bg-white/10 active:bg-white/15 cursor-pointer transition-colors flex items-center gap-2 touch-manipulation"
                         >
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                          <div className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-[#181818] flex items-center justify-center flex-shrink-0">
                             {user.image ? (
                               <img
                                 src={user.image}
@@ -771,16 +811,16 @@ export const AdminChat = ({ isFloating = false }) => {
                                 className="w-full h-full rounded-full object-cover"
                               />
                             ) : (
-                              <FaUser className="text-white text-xs" />
+                              <FaUser className="text-white text-[10px] sm:text-xs" />
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-white text-sm font-semibold truncate">
+                            <p className="text-white text-xs sm:text-sm font-semibold truncate">
                               {user.name || user.email || "Unknown"}
                             </p>
-                            <p className="text-gray-400 text-xs truncate">{user.email}</p>
+                            <p className="text-gray-400 text-[10px] sm:text-xs truncate">{user.email}</p>
                           </div>
-                          <span className="text-xs px-2 py-0.5 rounded bg-purple-600/30 text-purple-300">
+                          <span className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 rounded bg-white/10 text-gray-400 hidden sm:inline">
                             {user.type === "staff" ? "Staff" : "User"}
                           </span>
                         </div>
@@ -803,16 +843,16 @@ export const AdminChat = ({ isFloating = false }) => {
                 conversations.map((conv) => (
                   <motion.div
                     key={conv._id}
-                    whileHover={{ scale: 1.02 }}
+                    whileHover={{ scale: 1.01 }}
                     onClick={() => handleSelectConversation(conv)}
-                    className={`p-4 cursor-pointer border-b border-gray-700/50 transition-all ${
+                    className={`p-4 cursor-pointer border-b border-gray-700 transition-colors ${
                       selectedChat?._id === conv._id
-                        ? "bg-gradient-to-r from-purple-600/30 to-fuchsia-600/30 border-l-4 border-purple-500"
-                        : "hover:bg-gray-800/50"
+                        ? "bg-white/10"
+                        : "hover:bg-white/5"
                     }`}
                   >
                     <div className="flex items-start gap-3">
-                      <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center flex-shrink-0">
+                      <div className="w-12 h-12 rounded-full bg-[#181818] flex items-center justify-center flex-shrink-0">
                         {conv.user?.image ? (
                           <img
                             src={conv.user.image}
@@ -829,7 +869,7 @@ export const AdminChat = ({ isFloating = false }) => {
                             {conv.user?.name || conv.user?.email || "Unknown User"}
                           </h3>
                           {conv.unreadCount > 0 && (
-                            <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                            <span className="bg-[#1db954] text-white text-xs px-2 py-1 rounded-full">
                               {conv.unreadCount}
                             </span>
                           )}
@@ -848,33 +888,34 @@ export const AdminChat = ({ isFloating = false }) => {
             </div>
           </div>
 
-          {/* Chat Window */}
+          {/* Chat Window - Spotify Style */}
           <div
-            className={`lg:col-span-2 bg-gradient-to-br from-gray-800 to-gray-900 rounded-xl shadow-xl border border-purple-500/30 overflow-hidden flex flex-col ${
+            className={`lg:col-span-2 bg-[#181818] rounded-lg shadow-xl border border-gray-800 overflow-hidden flex flex-col ${
               showChatWindow ? "flex" : "hidden lg:flex"
             }`}
           >
             {selectedChat ? (
               <>
-                {/* Info Banner - All admins receive messages */}
-                <div className="px-4 py-2 bg-blue-900/30 border-b border-blue-500/30">
-                  <p className="text-xs text-blue-300 flex items-center gap-2">
-                    <FaComments className="text-xs" />
-                    All admins will receive messages from this user
+                {/* Info Banner - All admins receive messages - Spotify Style */}
+                <div className="px-2 sm:px-4 py-1.5 sm:py-2 bg-white/5 border-b border-gray-700">
+                  <p className="text-[10px] sm:text-xs text-gray-400 flex items-center gap-1 sm:gap-2">
+                    <FaComments className="text-[10px] sm:text-xs" />
+                    <span className="hidden sm:inline">All admins will receive messages from this user</span>
+                    <span className="sm:hidden">All admins receive messages</span>
                   </p>
                 </div>
-                {/* Chat Header */}
-                <div className="p-4 border-b border-purple-500/30 bg-gradient-to-r from-purple-600/20 to-fuchsia-600/20">
-                  <div className="flex items-center gap-3">
+                {/* Chat Header - Spotify Style */}
+                <div className="p-3 sm:p-4 border-b border-gray-700 bg-[#181818]">
+                  <div className="flex items-center gap-2 sm:gap-3">
                     {/* Back Button (Mobile only) */}
                     <button
                       onClick={handleBackToList}
-                      className="lg:hidden text-white hover:text-gray-200 transition-colors mr-2"
+                      className="lg:hidden text-gray-400 hover:text-white active:scale-95 transition-all p-1"
                       aria-label="Back to conversations"
                     >
-                      <FaArrowLeft />
+                      <FaArrowLeft className="text-sm sm:text-base" />
                     </button>
-                    <div className="w-10 h-10 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 flex items-center justify-center">
+                    <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-full bg-[#181818] flex items-center justify-center flex-shrink-0">
                       {selectedChat.user?.image ? (
                         <img
                           src={selectedChat.user.image}
@@ -882,14 +923,14 @@ export const AdminChat = ({ isFloating = false }) => {
                           className="w-full h-full rounded-full object-cover"
                         />
                       ) : (
-                        <FaUser className="text-white" />
+                        <FaUser className="text-white text-xs sm:text-sm" />
                       )}
                     </div>
-                    <div className="flex-1">
-                      <h3 className="text-white font-semibold">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="text-white text-xs sm:text-sm md:text-base font-semibold truncate">
                         {selectedChat.user?.name || selectedChat.user?.email || "Unknown User"}
                       </h3>
-                      <p className="text-xs text-gray-400">
+                      <p className="text-[10px] sm:text-xs text-gray-400">
                         {selectedChat.user?.type || "user"}
                       </p>
                     </div>
@@ -921,8 +962,8 @@ export const AdminChat = ({ isFloating = false }) => {
                         <div
                           className={`max-w-[70%] rounded-lg p-3 ${
                             msg.senderType === "admin"
-                              ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white"
-                              : "bg-gray-700 text-gray-100"
+                              ? "bg-[#1db954] text-white"
+                              : "bg-[#181818] text-gray-100"
                           }`}
                         >
                           {msg.isRequest ? (
@@ -976,7 +1017,7 @@ export const AdminChat = ({ isFloating = false }) => {
                                   {msg.requestData?.status === "pending" && (
                                     <button
                                       onClick={() => handleUpdateRequestStatus(msg._id || msg.id, "added")}
-                                      className="px-2 py-1 bg-blue-600 hover:bg-blue-700 text-white text-xs rounded transition-colors"
+                                      className="px-2 py-1 bg-[#1db954] hover:bg-[#1ed760] text-white text-xs rounded-full transition-colors"
                                     >
                                       Mark as Added
                                     </button>
@@ -998,10 +1039,10 @@ export const AdminChat = ({ isFloating = false }) => {
                   <div ref={messagesEndRef} />
                 </div>
 
-                {/* Message Input */}
+                {/* Message Input - Spotify Style */}
                 <form
                   onSubmit={handleSendMessage}
-                  className="p-4 border-t border-purple-500/30"
+                  className="p-4 border-t border-gray-700"
                 >
                   <div className="flex gap-2">
                     <input
@@ -1009,12 +1050,12 @@ export const AdminChat = ({ isFloating = false }) => {
                       value={message}
                       onChange={(e) => setMessage(e.target.value)}
                       placeholder="Type a message..."
-                      className="flex-1 px-4 py-2 rounded-lg bg-gray-800 text-white placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-purple-500"
+                      className="flex-1 px-4 py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
                     />
                     <button
                       type="submit"
                       disabled={sending}
-                      className="px-4 py-2 bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white rounded-lg hover:opacity-90 transition-opacity disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="px-4 py-2 bg-[#1db954] text-white rounded-full hover:bg-[#1ed760] transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                       <FaPaperPlane />
                     </button>

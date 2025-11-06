@@ -63,7 +63,7 @@ const NotificationCenter = () => {
     });
 
     socket.on("disconnect", () => {
-      console.log("❌ Socket disconnected");
+      console.log(" Socket disconnected");
     });
 
     return () => {
@@ -155,7 +155,7 @@ const NotificationCenter = () => {
                 toast.dismiss(t.id);
                 try {
                   await put(`/api/invitations/${invitationId}/accept`);
-                  toast.success("✅ Invitation accepted!");
+                  toast.success("Invitation accepted!");
                   fetchNotifications();
                   navigate(`/playlist/${notification.metadata.playlistId}`);
                   setIsOpen(false);
@@ -189,25 +189,25 @@ const NotificationCenter = () => {
     );
   };
 
-  // Get icon based on notification type
+  // Get icon based on notification type - Spotify Style
   const getNotificationIcon = (type) => {
     switch (type) {
       case "playlist_invitation":
-        return <BiSolidPlaylist className="text-purple-400" />;
+        return <BiSolidPlaylist className="text-[#1db954]" />;
       case "invitation_accepted":
-        return <FaCheck className="text-green-400" />;
+        return <FaCheck className="text-[#1db954]" />;
       case "song_added":
-        return <FaMusic className="text-green-400" />;
+        return <FaMusic className="text-[#1db954]" />;
       default:
-        return <FaMusic className="text-blue-400" />;
+        return <FaMusic className="text-gray-400" />;
     }
   };
 
   return (
     <div className="relative" ref={panelRef}>
-      {/* Bell Icon Button */}
+      {/* Bell Icon Button - Spotify Style */}
       <motion.button
-        whileHover={{ scale: 1.1 }}
+        whileHover={{ scale: 1.05 }}
         whileTap={{ scale: 0.95 }}
         onClick={() => setIsOpen(!isOpen)}
         className="relative p-2 rounded-full hover:bg-white/10 transition-colors"
@@ -217,7 +217,7 @@ const NotificationCenter = () => {
           <motion.span
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
-            className="absolute -top-1 -right-1 bg-gradient-to-r from-red-500 to-pink-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center shadow-lg"
+            className="absolute -top-1 -right-1 bg-[#1db954] text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center"
           >
             {unreadCount > 9 ? "9+" : unreadCount}
           </motion.span>
@@ -232,15 +232,15 @@ const NotificationCenter = () => {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.95 }}
             transition={{ duration: 0.2 }}
-            className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto mt-3 sm:w-80 md:w-96 bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 border-2 border-purple-500/40 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] overflow-hidden max-w-[calc(100vw-1rem)]"
+            className="fixed sm:absolute right-2 sm:right-0 left-2 sm:left-auto mt-3 sm:w-80 md:w-96 bg-[#282828] border border-gray-800 rounded-lg shadow-2xl z-[9999] overflow-hidden max-w-[calc(100vw-1rem)]"
           >
-            {/* Header */}
-            <div className="flex items-center justify-between p-4 border-b border-purple-500/20">
+            {/* Header - Spotify Style */}
+            <div className="flex items-center justify-between p-4 border-b border-gray-700">
               <h3 className="text-lg font-bold text-white flex items-center gap-2">
-                <FaBell className="text-purple-400" />
+                <FaBell className="text-gray-400" />
                 Notifications
                 {unreadCount > 0 && (
-                  <span className="text-xs px-2 py-0.5 rounded-full bg-red-500 text-white">
+                  <span className="text-xs px-2 py-0.5 rounded-full bg-[#1db954] text-white">
                     {unreadCount}
                   </span>
                 )}
@@ -248,7 +248,7 @@ const NotificationCenter = () => {
               {unreadCount > 0 && (
                 <button
                   onClick={markAllAsRead}
-                  className="text-xs text-purple-300 hover:text-white transition-colors flex items-center gap-1"
+                  className="text-xs text-gray-400 hover:text-white transition-colors flex items-center gap-1"
                 >
                   <FaCheckDouble />
                   Mark all read
@@ -260,23 +260,23 @@ const NotificationCenter = () => {
             <div className="max-h-96 overflow-y-auto custom-scrollbar">
               {loading ? (
                 <div className="flex items-center justify-center py-12">
-                  <div className="w-8 h-8 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
+                  <div className="w-8 h-8 border-2 border-gray-600 border-t-white rounded-full animate-spin" />
                 </div>
               ) : notifications.length === 0 ? (
                 <div className="text-center py-12">
-                  <FaBell className="text-5xl text-purple-400/50 mx-auto mb-3" />
-                  <p className="text-purple-200">No notifications</p>
-                  <p className="text-purple-300/70 text-sm mt-1">You're all caught up!</p>
+                  <FaBell className="text-5xl text-gray-600 mx-auto mb-3" />
+                  <p className="text-gray-400">No notifications</p>
+                  <p className="text-gray-500 text-sm mt-1">You're all caught up!</p>
                 </div>
               ) : (
-                <div className="divide-y divide-purple-500/20">
+                <div className="divide-y divide-gray-700">
                   {notifications.map((notif) => (
                     <motion.div
                       key={notif._id}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
-                      className={`p-4 hover:bg-white/5 transition-colors cursor-pointer ${
-                        !notif.isRead ? "bg-purple-500/10" : ""
+                      className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
+                        !notif.isRead ? "bg-white/5" : ""
                       }`}
                       onClick={() => handleNotificationClick(notif)}
                     >
@@ -287,18 +287,18 @@ const NotificationCenter = () => {
                         <div className="flex-1 min-w-0">
                           <div className="flex items-start justify-between gap-2">
                             <h4 className={`font-semibold text-sm ${
-                              !notif.isRead ? "text-white" : "text-purple-200"
+                              !notif.isRead ? "text-white" : "text-gray-300"
                             }`}>
                               {notif.title}
                             </h4>
                             {!notif.isRead && (
-                              <span className="w-2 h-2 rounded-full bg-blue-500 flex-shrink-0 mt-1" />
+                              <span className="w-2 h-2 rounded-full bg-[#1db954] flex-shrink-0 mt-1" />
                             )}
                           </div>
-                          <p className="text-xs text-purple-300 mt-1">
+                          <p className="text-xs text-gray-400 mt-1">
                             {notif.message}
                           </p>
-                          <p className="text-xs text-purple-400/70 mt-2">
+                          <p className="text-xs text-gray-500 mt-2">
                             {new Date(notif.createdAt).toLocaleString()}
                           </p>
                         </div>
@@ -312,7 +312,7 @@ const NotificationCenter = () => {
         )}
       </AnimatePresence>
 
-      {/* Custom Scrollbar */}
+      {/* Custom Scrollbar - Spotify Style */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -322,8 +322,11 @@ const NotificationCenter = () => {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #a855f7, #ec4899);
+          background: #535353;
           border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: #727272;
         }
       `}</style>
     </div>

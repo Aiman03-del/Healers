@@ -100,96 +100,88 @@ const MyPlaylists = () => {
   return (
     <MainLayout>
       <div className="space-y-6 sm:space-y-8 pb-24 sm:pb-32 md:pb-32 px-2 sm:px-4 lg:px-6">
-        {/* Hero Banner - Responsive */}
+        {/* Hero Banner - Spotify Style */}
         <motion.div
           initial={{ opacity: 0, y: 10 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.3 }}
-          className="mt-4 sm:mt-6 md:mt-10 relative bg-gradient-to-br from-purple-900 via-fuchsia-900 to-pink-900 rounded-2xl sm:rounded-3xl overflow-hidden shadow-2xl"
+          className="mt-4 sm:mt-6 md:mt-10 relative bg-gradient-to-b from-[#1db954]/20 via-transparent to-transparent rounded-lg overflow-hidden"
         >
-          {/* Background patterns and overlays */}
-          <div className="absolute inset-0 bg-black/20" />
-          <div className="absolute inset-0 bg-[url('data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAwIiBoZWlnaHQ9IjIwMCIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj48ZGVmcz48cGF0dGVybiBpZD0iYSIgcGF0dGVyblVuaXRzPSJ1c2VyU3BhY2VPblVzZSIgd2lkdGg9IjQwIiBoZWlnaHQ9IjQwIiBwYXR0ZXJuVHJhbnNmb3JtPSJyb3RhdGUoNDUpIj48cGF0aCBkPSJNLS41IDM5LjVoNDEiIGZpbGw9Im5vbmUiIHN0cm9rZT0iI2ZmZiIgc3Ryb2tlLW9wYWNpdHk9Ii4wNSIvPjwvcGF0dGVybj48L2RlZnM+PHJlY3Qgd2lkdGg9IjEwMCUiIGhlaWdodD0iMTAwJSIgZmlsbD0idXJsKCNhKSIvPjwvc3ZnPg==')] opacity-30" />
-          
-          {/* Floating circles decoration */}
-          <div className="absolute top-10 right-10 w-32 h-32 sm:w-48 sm:h-48 bg-yellow-300/10 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-10 left-10 w-32 h-32 sm:w-48 sm:h-48 bg-pink-300/10 rounded-full blur-3xl animate-pulse delay-75" />
-          
           <div className="relative px-4 sm:px-6 md:px-12 py-8 sm:py-10 md:py-16">
             <motion.div
               initial={{ opacity: 0, x: -10 }}
               animate={{ opacity: 1, x: 0 }}
               transition={{ duration: 0.3, delay: 0.1 }}
             >
-              {/* Title with Create Button - Responsive */}
+              {/* Title with Create Button - Spotify Style */}
               <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-2 sm:mb-3">
                 <h1 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold text-white flex items-center gap-2 sm:gap-3">
-                <BiSolidPlaylist className="text-3xl sm:text-4xl md:text-5xl text-yellow-300 flex-shrink-0" />
+                <BiSolidPlaylist className="text-3xl sm:text-4xl md:text-5xl text-white flex-shrink-0" />
                 <span>My Playlists</span>
         </h1>
                 
-                {/* Create New Playlist Button */}
+                {/* Create New Playlist Button - Spotify Style */}
                 <motion.button
                   whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.95 }}
                   onClick={() => setShowCreateForm(true)}
-                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold rounded-lg sm:rounded-xl shadow-lg hover:shadow-xl transition-all whitespace-nowrap"
+                  className="flex items-center gap-2 px-4 sm:px-6 py-2 sm:py-3 bg-white text-black font-bold rounded-full hover:scale-105 transition-all whitespace-nowrap"
                 >
                   <FaPlus className="text-base sm:text-lg" />
                   <span className="text-sm sm:text-base">Create New</span>
                 </motion.button>
               </div>
               
-              {/* Subtitle - Responsive */}
-              <p className="text-purple-100 text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 max-w-2xl">
+              {/* Subtitle - Spotify Style */}
+              <p className="text-gray-400 text-sm sm:text-base md:text-lg lg:text-xl mb-4 sm:mb-6 max-w-2xl">
                 Create and manage your personalized music collections
               </p>
               
-              {/* Stats Cards - Responsive grid */}
+              {/* Stats Cards - Spotify Style */}
               <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4">
                 <motion.div 
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20"
+                  whileHover={{ scale: 1.02 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-[#181818] rounded-lg flex items-center gap-2 hover:bg-[#282828] transition-colors"
                 >
-                  <FaFolder className="text-yellow-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <FaFolder className="text-gray-400 text-sm sm:text-base md:text-lg flex-shrink-0" />
                   <div className="min-w-0">
                     <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">{playlists.length}</div>
-                    <div className="text-purple-200 text-xs sm:text-sm truncate">Playlists</div>
+                    <div className="text-gray-400 text-xs sm:text-sm truncate">Playlists</div>
                   </div>
                 </motion.div>
                 
                 <motion.div 
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20"
+                  whileHover={{ scale: 1.02 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-[#181818] rounded-lg flex items-center gap-2 hover:bg-[#282828] transition-colors"
                 >
-                  <FaMusic className="text-pink-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <FaMusic className="text-gray-400 text-sm sm:text-base md:text-lg flex-shrink-0" />
                   <div className="min-w-0">
                     <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">{totalSongs}</div>
-                    <div className="text-purple-200 text-xs sm:text-sm truncate">Songs</div>
+                    <div className="text-gray-400 text-xs sm:text-sm truncate">Songs</div>
                   </div>
                 </motion.div>
                 
                 <motion.div 
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20"
+                  whileHover={{ scale: 1.02 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-[#181818] rounded-lg flex items-center gap-2 hover:bg-[#282828] transition-colors"
                 >
-                  <FaFire className="text-orange-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <FaFire className="text-gray-400 text-sm sm:text-base md:text-lg flex-shrink-0" />
                   <div className="min-w-0">
                     <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">{totalPlays}</div>
-                    <div className="text-purple-200 text-xs sm:text-sm truncate">Plays</div>
+                    <div className="text-gray-400 text-xs sm:text-sm truncate">Plays</div>
                   </div>
                 </motion.div>
                 
                 <motion.div 
-                  whileHover={{ scale: 1.05, y: -2 }}
-                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-white/10 backdrop-blur-sm rounded-lg sm:rounded-xl shadow-lg flex items-center gap-2 border border-white/20 col-span-2 sm:col-span-1"
+                  whileHover={{ scale: 1.02 }}
+                  className="px-3 sm:px-4 md:px-6 py-2 sm:py-3 bg-[#181818] rounded-lg flex items-center gap-2 hover:bg-[#282828] transition-colors col-span-2 sm:col-span-1"
                 >
-                  <FaClock className="text-blue-300 text-sm sm:text-base md:text-lg flex-shrink-0" />
+                  <FaClock className="text-gray-400 text-sm sm:text-base md:text-lg flex-shrink-0" />
                   <div className="min-w-0">
                     <div className="text-white font-bold text-lg sm:text-xl md:text-2xl">
                       {playlists.length > 0 ? new Date(playlists[0].createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : 'N/A'}
                     </div>
-                    <div className="text-purple-200 text-xs sm:text-sm truncate">Latest</div>
+                    <div className="text-gray-400 text-xs sm:text-sm truncate">Latest</div>
                   </div>
                 </motion.div>
               </div>
@@ -211,14 +203,14 @@ const MyPlaylists = () => {
               }}
             >
         <motion.div
-                initial={{ scale: 0.9, y: 20 }}
-                animate={{ scale: 1, y: 0 }}
-                exit={{ scale: 0.9, y: 20 }}
-                transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                onClick={(e) => e.stopPropagation()}
-                className="relative bg-gradient-to-br from-gray-900 via-purple-900/90 to-fuchsia-900/80 rounded-2xl shadow-2xl border border-purple-500/30 w-full max-w-md"
-              >
-                {/* Close Button */}
+              initial={{ scale: 0.9, y: 20 }}
+              animate={{ scale: 1, y: 0 }}
+              exit={{ scale: 0.9, y: 20 }}
+              transition={{ type: "spring", stiffness: 300, damping: 30 }}
+              onClick={(e) => e.stopPropagation()}
+              className="relative bg-[#282828] rounded-lg shadow-2xl border border-gray-800 w-full max-w-md"
+            >
+                {/* Close Button - Spotify Style */}
                 <button
                   onClick={() => {
                     setShowCreateForm(false);
@@ -232,30 +224,25 @@ const MyPlaylists = () => {
                   </svg>
                 </button>
 
-                {/* Modal Content */}
+                {/* Modal Content - Spotify Style */}
                 <div className="p-6">
                   {/* Header */}
-                  <div className="flex items-center gap-3 mb-6">
-                    <div className="p-3 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl shadow-lg">
-                      <FaPlus className="text-white text-xl" />
-              </div>
-                    <div>
-                      <h2 className="text-2xl font-bold text-white">Create New Playlist</h2>
-                      <p className="text-purple-200 text-sm">Add a name and description</p>
-              </div>
+                  <div className="mb-6">
+                    <h2 className="text-2xl font-bold text-white">Create New Playlist</h2>
+                    <p className="text-gray-400 text-sm mt-1">Add a name and description</p>
             </div>
             
-                  {/* Form */}
+                  {/* Form - Spotify Style */}
                   <form onSubmit={handleSubmit} className="space-y-4">
               <div>
-                      <label className="block text-sm font-semibold text-purple-200 mb-2">
+                      <label className="block text-sm font-semibold text-white mb-2">
                   Playlist Name *
                 </label>
           <input
             type="text"
             name="name"
                   placeholder="e.g., My Favorite Songs"
-                        className="w-full p-3 text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
+                        className="w-full p-3 text-base rounded-lg bg-white/10 border border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 outline-none transition-all"
             value={form.name}
             onChange={handleChange}
             required
@@ -263,13 +250,13 @@ const MyPlaylists = () => {
           />
               </div>
               <div>
-                      <label className="block text-sm font-semibold text-purple-200 mb-2">
+                      <label className="block text-sm font-semibold text-white mb-2">
                   Description (Optional)
                 </label>
                 <textarea
             name="description"
                   placeholder="What's this playlist about?"
-                        className="w-full p-3 text-base rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all resize-none"
+                        className="w-full p-3 text-base rounded-lg bg-white/10 border border-gray-700 text-white placeholder:text-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 outline-none transition-all resize-none"
             value={form.description}
             onChange={handleChange}
                   rows="3"
@@ -280,7 +267,7 @@ const MyPlaylists = () => {
             type="submit"
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
-                        className="flex-1 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white font-bold py-3 px-6 rounded-lg shadow-lg transition-all flex items-center justify-center gap-2"
+                        className="flex-1 bg-white text-black font-bold py-3 px-6 rounded-full transition-all flex items-center justify-center gap-2 hover:scale-105"
           >
                 <FaPlus />
                 Create Playlist
@@ -293,7 +280,7 @@ const MyPlaylists = () => {
                         }}
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
-                        className="px-6 py-3 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-semibold transition-all"
+                        className="px-6 py-3 rounded-full bg-transparent border border-gray-700 text-white font-semibold transition-all hover:border-gray-600"
                       >
                         Cancel
                       </motion.button>
@@ -314,10 +301,10 @@ const MyPlaylists = () => {
         >
           <div className="flex items-center justify-between mb-4 sm:mb-6">
             <h2 className="text-xl sm:text-2xl md:text-3xl font-bold text-white flex items-center gap-2">
-              <MdPlaylistPlay className="text-purple-400 text-2xl sm:text-3xl" />
+              <MdPlaylistPlay className="text-gray-400 text-2xl sm:text-3xl" />
               <span>Your Collection</span>
             </h2>
-            <div className="text-purple-300 text-xs sm:text-sm">
+            <div className="text-gray-400 text-xs sm:text-sm">
               {playlists.length} {playlists.length === 1 ? 'playlist' : 'playlists'}
                   </div>
                   </div>
@@ -332,20 +319,20 @@ const MyPlaylists = () => {
               ))}
             </div>
           ) : playlists.length === 0 ? (
-            // Empty state - Responsive
+            // Empty state - Spotify Style
             <motion.div
               initial={{ opacity: 0, scale: 0.95 }}
               animate={{ opacity: 1, scale: 1 }}
-              className="bg-gradient-to-br from-gray-900 via-purple-900/50 to-fuchsia-900/50 rounded-xl sm:rounded-2xl shadow-xl p-6 sm:p-8 md:p-12 text-center border border-purple-500/20"
+              className="bg-[#181818] rounded-lg shadow-xl p-6 sm:p-8 md:p-12 text-center border border-gray-800"
             >
-              <BiSolidPlaylist className="text-6xl sm:text-7xl md:text-8xl text-purple-400/50 mx-auto mb-3 sm:mb-4" />
+              <BiSolidPlaylist className="text-6xl sm:text-7xl md:text-8xl text-gray-600 mx-auto mb-3 sm:mb-4" />
               <h3 className="text-xl sm:text-2xl font-bold text-white mb-2">No Playlists Yet</h3>
-              <p className="text-purple-200 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
+              <p className="text-gray-400 text-sm sm:text-base mb-4 sm:mb-6 max-w-md mx-auto">
                 Create your first playlist to start organizing your music!
               </p>
                   <button
-                onClick={() => document.querySelector('input[name="name"]').focus()}
-                className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold rounded-lg shadow-lg transition-all inline-flex items-center gap-2"
+                onClick={() => setShowCreateForm(true)}
+                className="px-4 sm:px-6 py-2 sm:py-3 text-sm sm:text-base bg-white text-black font-bold rounded-full hover:scale-105 transition-all inline-flex items-center gap-2"
               >
                 <FaPlus />
                 Create Your First Playlist
@@ -367,21 +354,15 @@ const MyPlaylists = () => {
                     onMouseLeave={() => setHoveredCard(null)}
                   >
                     <motion.div
-                      whileHover={{ y: -6, scale: 1.02 }}
+                      whileHover={{ y: -4, scale: 1.01 }}
                       transition={{ duration: 0.2, ease: "easeOut" }}
-                      className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl sm:rounded-2xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/40 overflow-hidden border border-purple-500/20 hover:border-purple-400/50 transition-all duration-200 cursor-pointer h-full flex flex-col"
+                      className="relative bg-[#181818] rounded-lg shadow-lg hover:bg-[#282828] overflow-hidden transition-all duration-200 cursor-pointer h-full flex flex-col group"
                       onClick={() => navigate(`/playlist/${pl._id}`)}
                     >
-                      {/* 3D Glow effect on hover */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/20 group-hover:via-fuchsia-500/20 group-hover:to-pink-500/20 rounded-xl sm:rounded-2xl transition-all duration-200 pointer-events-none" />
-                      
-                      {/* Decorative top gradient bar */}
-                      <div className="h-1.5 sm:h-2 w-full bg-gradient-to-r from-pink-500 via-purple-500 to-blue-500" />
-                      
                       <div className="p-3 sm:p-4 md:p-5 flex flex-col flex-1">
-                        {/* Album Cover / Playlist Image */}
+                        {/* Album Cover / Playlist Image - Spotify Style */}
                         <div className="relative mb-3 sm:mb-4">
-                          <div className="w-full aspect-square rounded-lg sm:rounded-xl overflow-hidden bg-gradient-to-br from-purple-700 via-fuchsia-700 to-pink-700 shadow-lg group-hover:shadow-2xl transition-shadow">
+                          <div className="w-full aspect-square rounded-lg overflow-hidden bg-[#282828] shadow-lg group-hover:shadow-xl transition-shadow">
                             {pl.songs && pl.songs[0]?.cover ? (
                               <img 
                                 src={pl.songs[0].cover} 
@@ -398,7 +379,7 @@ const MyPlaylists = () => {
                             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
                           </div>
                           
-                          {/* Play button overlay - Shows on hover */}
+                          {/* Play button overlay - Shows on hover - Spotify Style */}
                           <AnimatePresence>
                             {hoveredCard === pl._id && (
                               <motion.div
@@ -406,12 +387,12 @@ const MyPlaylists = () => {
                                 animate={{ opacity: 1, scale: 1 }}
                                 exit={{ opacity: 0, scale: 0.8 }}
                                 transition={{ duration: 0.2 }}
-                                className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg sm:rounded-xl"
+                                className="absolute inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm rounded-lg"
                                 whileTap={{ scale: 0.95 }}
                               >
                                 <motion.div
-                                  whileHover={{ scale: 1.15 }}
-                                  className="bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white p-3 sm:p-4 rounded-full shadow-2xl border-2 border-white/40"
+                                  whileHover={{ scale: 1.1 }}
+                                  className="bg-[#1db954] text-white p-3 sm:p-4 rounded-full shadow-2xl"
                                 >
                                   <FaPlay className="text-lg sm:text-xl md:text-2xl ml-0.5" />
                                 </motion.div>
@@ -419,24 +400,24 @@ const MyPlaylists = () => {
                             )}
                           </AnimatePresence>
 
-                          {/* Song count badge - Top right */}
+                          {/* Song count badge - Top right - Spotify Style */}
                           {pl.songs && pl.songs.length > 0 && (
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/80 backdrop-blur-md text-white text-xs font-bold shadow-lg flex items-center gap-1"
+                              className="absolute top-2 right-2 px-2 py-1 rounded-full bg-black/70 text-white text-xs font-bold shadow-lg flex items-center gap-1"
                             >
                               <FaMusic className="text-xs" />
                               <span>{pl.songs.length}</span>
                             </motion.div>
                           )}
 
-                          {/* Play count badge - Top left */}
+                          {/* Play count badge - Top left - Spotify Style */}
                           {pl.playCount > 0 && (
                             <motion.div
                               initial={{ scale: 0 }}
                               animate={{ scale: 1 }}
-                              className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg flex items-center gap-1"
+                              className="absolute top-2 left-2 px-2 py-1 rounded-full bg-[#1db954] text-white text-xs font-bold shadow-lg flex items-center gap-1"
                             >
                               <FaFire className="text-xs" />
                               <span>{pl.playCount}</span>
@@ -444,25 +425,25 @@ const MyPlaylists = () => {
                           )}
                         </div>
 
-                        {/* Playlist Info */}
+                        {/* Playlist Info - Spotify Style */}
                         <div className="space-y-1 sm:space-y-2 flex-1 flex flex-col">
-                          <h3 className="font-bold text-sm sm:text-base md:text-lg text-white truncate group-hover:text-yellow-300 transition-colors">
+                          <h3 className="font-semibold text-sm sm:text-base md:text-lg text-white truncate group-hover:underline transition-colors">
                             {pl.name}
                           </h3>
-                          <p className="text-xs sm:text-sm text-purple-200 line-clamp-2 flex-1">
+                          <p className="text-xs sm:text-sm text-gray-400 line-clamp-2 flex-1">
                             {pl.description || "No description"}
                           </p>
                         </div>
 
-                        {/* Actions footer */}
-                        <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-purple-500/20">
+                        {/* Actions footer - Spotify Style */}
+                        <div className="flex items-center justify-between mt-3 sm:mt-4 pt-3 sm:pt-4 border-t border-gray-700">
                           <div className="flex items-center gap-2 text-xs sm:text-sm">
-                            <div className="flex items-center gap-1 text-purple-300">
+                            <div className="flex items-center gap-1 text-gray-400">
                               <FaMusic className="text-xs" />
                               <span className="font-medium">{pl.songs?.length || 0}</span>
                             </div>
                             {pl.createdAt && (
-                              <div className="flex items-center gap-1 text-purple-400/70">
+                              <div className="flex items-center gap-1 text-gray-500">
                                 <FaClock className="text-xs" />
                                 <span className="text-xs hidden sm:inline">
                                   {new Date(pl.createdAt).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
@@ -471,7 +452,7 @@ const MyPlaylists = () => {
                             )}
                           </div>
                           
-                          {/* Action buttons */}
+                          {/* Action buttons - Spotify Style */}
                           <div className="flex items-center gap-1 sm:gap-2">
                             <motion.button
                               whileHover={{ scale: 1.1 }}
@@ -480,7 +461,7 @@ const MyPlaylists = () => {
                                 e.stopPropagation();
                                 navigate(`/playlist/${pl._id}`);
                               }}
-                              className="p-1.5 sm:p-2 rounded-full bg-blue-500/20 text-blue-400 hover:bg-blue-500/30 hover:text-blue-300 transition-all"
+                              className="p-1.5 sm:p-2 rounded-full bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white transition-all"
                               title="View playlist"
                             >
                               <FaEye className="text-xs sm:text-sm" />
@@ -492,7 +473,7 @@ const MyPlaylists = () => {
                                 e.stopPropagation();
                                 handleDelete(pl._id, pl.name);
                               }}
-                              className="p-1.5 sm:p-2 rounded-full bg-red-500/20 text-red-400 hover:bg-red-500/30 hover:text-red-300 transition-all"
+                              className="p-1.5 sm:p-2 rounded-full bg-white/10 text-gray-400 hover:bg-white/20 hover:text-white transition-all"
                               title="Delete playlist"
                             >
                               <FaTrashAlt className="text-xs sm:text-sm" />
@@ -500,17 +481,6 @@ const MyPlaylists = () => {
                 </div>
               </div>
             </div>
-
-                      {/* Shine effect on hover - Enhanced */}
-                      <motion.div
-                        className="pointer-events-none absolute inset-0 rounded-xl sm:rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-200"
-                        style={{
-                          background: "linear-gradient(135deg, transparent 0%, rgba(255,255,255,0.15) 50%, transparent 100%)",
-                          backgroundSize: "200% 200%",
-                          animation: "shine 2s ease-in-out infinite",
-                        }}
-                        aria-hidden
-                      />
                     </motion.div>
                   </motion.div>
                 ))}
@@ -537,11 +507,11 @@ const MyPlaylists = () => {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #a855f7, #ec4899);
+          background: #535353;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #9333ea, #db2777);
+          background: #727272;
         }
 
         /* Extra small devices support */

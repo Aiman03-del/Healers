@@ -181,7 +181,7 @@ Feature: Playlists
 
 ## 🔄 Import Patterns
 
-### ✅ Good Imports (Using Barrel Exports)
+### Good Imports (Using Barrel Exports)
 
 ```javascript
 // Clean, organized imports
@@ -193,7 +193,7 @@ import { apiService } from '@/services';
 import { THEMES, USER_ROLES } from '@/constants';
 ```
 
-### ❌ Bad Imports (Direct Paths)
+###  Bad Imports (Direct Paths)
 
 ```javascript
 // Verbose, hard to maintain

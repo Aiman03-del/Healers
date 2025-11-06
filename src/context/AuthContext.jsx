@@ -171,13 +171,13 @@ const googleLogin = async () => {
     const unsubscribe = onAuthStateChanged(auth, async (currentUser) => {
       setLoading(true);
       if (currentUser) {
-        // ✅ Step 1: Set backend JWT cookie first
+        // Step 1: Set backend JWT cookie first
         await setBackendJWT(currentUser);
 
-        // ✅ Step 2: Wait a bit for cookie to be usable
+        // Step 2: Wait a bit for cookie to be usable
         await delay(100); // Reduced from 400ms
 
-        // ✅ Step 3: Now fetch user from DB
+        // Step 3: Now fetch user from DB
         const dbUser = await fetchUserFromDBWithRetry(currentUser.uid, 2, 200);
         setUser(dbUser || null);
       } else {

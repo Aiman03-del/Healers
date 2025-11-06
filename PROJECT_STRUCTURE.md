@@ -136,14 +136,14 @@ Route protection components:
 Each folder has an `index.js` that exports all components, allowing clean imports:
 
 ```javascript
-// ✅ Good - Clean import from barrel export
+// Good - Clean import from barrel export
 import { ErrorBoundary, Loading, Modal } from '@/components/common';
 import { Navbar, MainLayout } from '@/components/layout';
 import { AudioPlayer } from '@/components/features/audio';
 import { apiService } from '@/services';
 import { THEMES, USER_ROLES } from '@/constants';
 
-// ❌ Avoid - Direct imports without using barrel exports
+//  Avoid - Direct imports without using barrel exports
 import ErrorBoundary from '@/components/common/ErrorBoundary';
 import Loading from '@/components/common/Loading';
 ```

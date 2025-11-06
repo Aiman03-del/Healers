@@ -49,8 +49,8 @@ export default function HomeLayout() {
           placeholder="Search songs or artists..."
         />
 
-        {/* Tabs Navigation */}
-        <div className="flex items-center gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        {/* Tabs Navigation - Spotify Style */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-2 scrollbar-hide">
           {tabs.map((tab) => {
             const isActive = location.pathname === tab.path;
             
@@ -58,10 +58,10 @@ export default function HomeLayout() {
               <Link
                 key={tab.path}
                 to={tab.path}
-                className={`px-4 py-2 rounded-lg font-semibold transition-all whitespace-nowrap ${
+                className={`px-4 py-2 rounded-full font-semibold transition-all whitespace-nowrap ${
                   isActive
-                    ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg"
-                    : "bg-gray-800/50 text-gray-300 hover:bg-gray-700/50 hover:text-white"
+                    ? "bg-white text-black"
+                    : "text-gray-400 hover:text-white"
                 }`}
               >
                 {tab.label}

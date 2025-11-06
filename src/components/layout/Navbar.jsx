@@ -82,7 +82,7 @@ function Navbar() {
       toast.success('🎉 App installed successfully!');
       setIsInstalled(true);
     } else {
-      toast('Installation cancelled', { icon: '❌' });
+      toast('Installation cancelled', { icon: '' });
     }
     
     // Clear the prompt
@@ -156,42 +156,33 @@ function Navbar() {
 
   return (
     <nav
-      className="w-full relative bg-gradient-to-r from-gray-900 via-purple-900 to-fuchsia-900 backdrop-blur-xl border-b border-purple-500/30 shadow-2xl z-[9998]"
+      className="w-full relative bg-[#121212] border-b border-gray-800 z-[9998]"
       role="navigation"
       aria-label="Main navigation"
       style={{ position: "sticky", top: 0, zIndex: 9998 }}
     >
-      {/* Animated gradient overlay for shine effect */}
-      <div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none"
-        style={{
-          backgroundSize: "200% 100%",
-          animation: "shimmer 8s ease-in-out infinite",
-        }}
-      />
 
       {/* wrapper to center content and control responsive paddings */}
       <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 relative z-10">
         <Link to="/" className="flex items-center gap-3 group">
           <motion.div
-            whileHover={{ scale: 1.1, rotate: 5 }}
+            whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
             transition={{ type: "spring", stiffness: 400, damping: 17 }}
             className="relative"
           >
-            <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-full blur-md opacity-60 group-hover:opacity-100 transition-opacity duration-300" />
             <img
               src={logo}
               alt="Healers"
-              className="w-12 h-12 object-cover rounded-full border-2 border-purple-400 shadow-lg relative z-10"
+              className="w-10 h-10 object-cover rounded-full relative z-10"
               loading="eager"
             />
           </motion.div>
           <div className="hidden sm:flex flex-col">
-            <span className="text-xl font-bold bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent tracking-wide">
+            <span className="text-xl font-bold text-white tracking-wide">
               Healers
             </span>
-            <span className="text-xs text-purple-300 flex items-center gap-1">
+            <span className="text-xs text-gray-400 flex items-center gap-1">
               <FaMusic className="text-[10px]" /> Feel the rhythm
             </span>
           </div>
@@ -229,7 +220,7 @@ function Navbar() {
               whileHover={{ scale: 1.05 }}
               whileTap={{ scale: 0.95 }}
               onClick={handleShareClick}
-              className="hidden sm:flex items-center gap-2 px-3 py-2 rounded-lg bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-semibold text-sm transition-all duration-300 shadow-lg"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-bold text-sm transition-all hover:scale-105"
               aria-label="Share app"
             >
               <FaShareAlt />
@@ -240,42 +231,7 @@ function Navbar() {
           {/* Notification Center */}
           {user && <NotificationCenter />}
 
-          {/* Theme toggle (always visible) */}
-          <button
-            className="p-2 rounded-lg cursor-pointer flex items-center justify-center"
-            onClick={() =>
-              setTheme(theme === THEMES.DARK ? THEMES.LIGHT : THEMES.DARK)
-            }
-            aria-label="Toggle theme"
-          >
-            <AnimatePresence mode="wait" initial={false}>
-              {theme === THEMES.DARK ? (
-                <motion.span
-                  key="sun"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-yellow-400 text-xl"
-                >
-                  <FaSun />
-                </motion.span>
-              ) : (
-                <motion.span
-                  key="moon"
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  transition={{ duration: 0.15 }}
-                  className="text-purple-300 text-xl"
-                >
-                  <FaMoon />
-                </motion.span>
-              )}
-            </AnimatePresence>
-          </button>
-
-          {/* User avatar / Login (always visible) */}
+          {/* User avatar / Login (always visible) - Spotify Style */}
           {user ? (
             <div className="relative" ref={avatarRef}>
               <motion.button
@@ -285,18 +241,15 @@ function Navbar() {
                 className="focus:outline-none relative group"
                 aria-label="User menu"
               >
-                <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-purple-500 rounded-full blur-md opacity-50 group-hover:opacity-100 transition-opacity duration-300" />
                 <img
                   src={user.image || avatarFromEmail(user.email)}
                   alt="avatar"
-                  className="w-12 h-12 rounded-full border-3 border-fuchsia-400 shadow-2xl relative z-10 ring-2 ring-purple-500/50 group-hover:ring-fuchsia-400 transition-all duration-300 object-cover"
+                  className="w-8 h-8 rounded-full relative z-10 object-cover"
                   loading="eager"
                   onError={(e) => {
                     e.target.src = avatarFromEmail(user.email);
                   }}
                 />
-                {/* Online status indicator */}
-                <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-gray-900 z-20 animate-pulse" />
               </motion.button>
               <AnimatePresence>
                 {dropdown && (
@@ -305,55 +258,44 @@ function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: -10 }}
                     transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute right-0 mt-3 w-64 bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 border-2 border-purple-500/40 rounded-2xl shadow-2xl backdrop-blur-xl z-[9999] py-2 overflow-hidden"
+                    className="absolute right-0 mt-3 w-64 bg-[#282828] rounded-lg shadow-2xl z-[9999] py-2 overflow-hidden"
                     style={{ zIndex: 9999 }}
                   >
-                    {/* Glassmorphism overlay */}
-                    <div className="absolute inset-0 bg-white/5 backdrop-blur-xl" />
-
-                    {/* User profile section with image */}
-                    <div className="relative px-4 py-4 border-b border-purple-500/30 flex items-center gap-3">
-                      <div className="relative">
-                        <div className="absolute inset-0 bg-gradient-to-r from-fuchsia-500 to-purple-500 rounded-full blur-sm opacity-60" />
-                        <img
-                          src={user.image || avatarFromEmail(user.email)}
-                          alt="Profile"
-                          className="w-14 h-14 rounded-full border-3 border-purple-400 shadow-lg relative z-10 object-cover"
-                          onError={(e) => {
-                            e.target.src = avatarFromEmail(user.email);
-                          }}
-                        />
-                        {/* Online indicator */}
-                        <div className="absolute bottom-0 right-0 w-3.5 h-3.5 bg-green-400 rounded-full border-2 border-gray-900 z-20" />
-                      </div>
+                    {/* User profile section with image - Spotify Style */}
+                    <div className="px-4 py-4 border-b border-gray-700 flex items-center gap-3">
+                      <img
+                        src={user.image || avatarFromEmail(user.email)}
+                        alt="Profile"
+                        className="w-10 h-10 rounded-full object-cover"
+                        onError={(e) => {
+                          e.target.src = avatarFromEmail(user.email);
+                        }}
+                      />
                       <div className="flex-1 min-w-0">
-                        <p className="text-xs font-semibold text-purple-200 mb-0.5">
-                          Signed in as
-                        </p>
-                        <p className="text-sm text-white font-bold truncate">
+                        <p className="text-sm text-white font-semibold truncate">
                           {user.name || user.email}
                         </p>
-                        <p className="text-xs text-purple-300 capitalize">
+                        <p className="text-xs text-gray-400 capitalize">
                           {user.type || "User"}
                         </p>
                       </div>
                     </div>
 
-                    <div className="relative py-2">
+                    <div className="py-2">
                       <Link
                         to="/profile"
-                        className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg hover:bg-purple-600/40 text-white transition-all duration-200 font-semibold group"
+                        className="flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors font-medium"
                         onClick={() => setDropdown(false)}
                       >
-                        <FaUser className="group-hover:scale-110 transition-transform" />
+                        <FaUser />
                         <span>Profile</span>
                       </Link>
                       <Link
                         to="/playlists"
-                        className="flex items-center gap-3 px-4 py-2.5 mx-2 rounded-lg hover:bg-purple-600/40 text-white transition-all duration-200 font-semibold group"
+                        className="flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors font-medium"
                         onClick={() => setDropdown(false)}
                       >
-                        <FaListUl className="group-hover:scale-110 transition-transform" />
+                        <FaListUl />
                         <span>My Playlists</span>
                       </Link>
 
@@ -365,20 +307,20 @@ function Navbar() {
                             setDropdown(false);
                           }}
                           disabled={isInstalled}
-                          className={`flex items-center gap-3 px-4 py-2.5 mx-2 w-[calc(100%-1rem)] text-left rounded-lg transition-all duration-200 font-semibold group ${
+                          className={`flex items-center gap-3 px-4 py-2.5 w-full text-left transition-colors font-medium ${
                             isInstalled
-                              ? 'bg-green-600/20 text-green-300 cursor-not-allowed'
-                              : 'hover:bg-purple-600/40 text-white'
+                              ? 'text-gray-500 cursor-not-allowed'
+                              : 'text-white hover:bg-white/10'
                           }`}
                         >
                           {isInstalled ? (
                             <>
-                              <FaCheckCircle className="group-hover:scale-110 transition-transform" />
+                              <FaCheckCircle />
                               <span>App Installed</span>
                             </>
                           ) : (
                             <>
-                              <FaDownload className="group-hover:scale-110 transition-transform" />
+                              <FaDownload />
                               <span>Install App</span>
                             </>
                           )}
@@ -391,22 +333,22 @@ function Navbar() {
                           handleShareClick();
                           setDropdown(false);
                         }}
-                        className="flex items-center gap-3 px-4 py-2.5 mx-2 w-[calc(100%-1rem)] text-left rounded-lg hover:bg-purple-600/40 text-white transition-all duration-200 font-semibold group"
+                        className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-white hover:bg-white/10 transition-colors font-medium"
                       >
-                        <FaShareAlt className="group-hover:scale-110 transition-transform" />
+                        <FaShareAlt />
                         <span>Share App</span>
                       </button>
 
-                      <div className="my-2 mx-4 border-t border-purple-500/30" />
+                      <div className="my-2 border-t border-gray-700" />
 
                       <button
                         onClick={() => {
                           logout();
                           setDropdown(false);
                         }}
-                        className="flex items-center gap-3 px-4 py-2.5 mx-2 w-[calc(100%-1rem)] text-left rounded-lg hover:bg-red-900/40 text-red-300 hover:text-red-200 transition-all duration-200 font-semibold group"
+                        className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-white hover:bg-white/10 transition-colors font-medium"
                       >
-                        <FaSignOutAlt className="group-hover:scale-110 group-hover:translate-x-1 transition-transform" />
+                        <FaSignOutAlt />
                         <span>Logout</span>
                       </button>
                     </div>
@@ -418,19 +360,19 @@ function Navbar() {
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
               <Link
                 to="/login"
-                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white font-bold shadow-lg hover:shadow-fuchsia-500/50 transition-all duration-300 border-2 border-purple-400/50"
+                className="px-6 py-2.5 rounded-full bg-white text-black font-bold transition-all hover:scale-105"
               >
                 Login
               </Link>
             </motion.div>
           )}
 
-          {/* Mobile hamburger: visible on small and sm screens (hidden from md upwards) */}
+          {/* Mobile hamburger: visible on small and sm screens (hidden from md upwards) - Spotify Style */}
           <motion.button
             ref={hamburgerRef}
             whileHover={{ scale: 1.05 }}
             whileTap={{ scale: 0.95 }}
-            className="md:hidden p-2.5 ml-2 rounded-xl bg-gradient-to-br from-purple-700 to-fuchsia-700 hover:from-purple-600 hover:to-fuchsia-600 border-2 border-purple-400/50 shadow-lg transition-all duration-300 focus:outline-none focus:ring-2 focus:ring-fuchsia-400"
+            className="md:hidden p-2 ml-2 rounded-full text-gray-400 hover:text-white transition-colors focus:outline-none"
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((v) => !v)}
@@ -492,20 +434,20 @@ function Navbar() {
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
             transition={{ duration: 0.2, ease: "easeOut" }}
-            className="md:hidden absolute left-0 right-0 top-full bg-gradient-to-b from-gray-900/98 via-purple-900/98 to-fuchsia-900/98 backdrop-blur-2xl border-t border-purple-500/30 z-[9997] overflow-hidden shadow-2xl"
+            className="md:hidden absolute left-0 right-0 top-full bg-[#181818] border-t border-gray-800 z-[9997] overflow-hidden shadow-2xl"
             style={{ zIndex: 9997 }}
           >
-            <div className="px-4 py-5 space-y-1.5 max-h-[70vh] overflow-y-auto">
+            <div className="px-4 py-5 space-y-1 max-h-[70vh] overflow-y-auto">
               <Link
                 to="/"
                 onClick={() => setMobileOpen(false)}
-                className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white font-medium ${
                   location.pathname === "/"
-                    ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                    ? "bg-white/10"
                     : "hover:bg-white/10"
                 }`}
               >
-                <FaHome className="group-hover:scale-110 transition-transform" />
+                <FaHome />
                 <span className="text-base">Home</span>
               </Link>
 
@@ -515,13 +457,13 @@ function Navbar() {
                   <Link
                     to="/dashboard"
                     onClick={() => setMobileOpen(false)}
-                    className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                    className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white font-medium ${
                       location.pathname.startsWith("/dashboard")
-                        ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                        ? "bg-white/10"
                         : "hover:bg-white/10"
                     }`}
                   >
-                    <FaTachometerAlt className="group-hover:scale-110 transition-transform" />
+                    <FaTachometerAlt />
                     <span className="text-base">Dashboard</span>
                   </Link>
                 )}
@@ -530,13 +472,13 @@ function Navbar() {
                 <Link
                   to="/playlists"
                   onClick={() => setMobileOpen(false)}
-                  className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 text-white font-semibold group ${
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white font-medium ${
                     location.pathname === "/playlists"
-                      ? "bg-gradient-to-r from-purple-700 to-fuchsia-700 shadow-lg"
+                      ? "bg-white/10"
                       : "hover:bg-white/10"
                   }`}
                 >
-                  <FaListUl className="group-hover:scale-110 transition-transform" />
+                  <FaListUl />
                   <span className="text-base">My Playlists</span>
                 </Link>
               )}
@@ -549,7 +491,7 @@ function Navbar() {
                       handleShareClick();
                       setMobileOpen(false);
                     }}
-                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-xl bg-gradient-to-r from-fuchsia-600 to-pink-600 hover:from-fuchsia-700 hover:to-pink-700 text-white font-bold shadow-lg transition-all duration-300"
+                    className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-full bg-white text-black font-bold transition-all hover:scale-105"
                   >
                     <FaShareAlt />
                     Share App
@@ -558,19 +500,19 @@ function Navbar() {
                   <Link
                     to="/login"
                     onClick={() => setMobileOpen(false)}
-                    className="block w-full text-center px-4 py-3 rounded-xl bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 text-white font-bold shadow-lg hover:shadow-fuchsia-500/50 transition-all duration-300 border-2 border-purple-400/50"
+                    className="block w-full text-center px-4 py-3 rounded-full bg-white text-black font-bold transition-all hover:scale-105"
                   >
                     Login
                   </Link>
                 </div>
               ) : (
-                <div className="pt-3 mt-2 border-t border-purple-500/30 space-y-1.5">
+                <div className="pt-3 mt-2 border-t border-gray-700 space-y-1">
                   <Link
                     to="/profile"
                     onClick={() => setMobileOpen(false)}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-600/40 transition-all duration-200 text-white font-semibold group"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white font-medium"
                   >
-                    <FaUser className="group-hover:scale-110 transition-transform" />
+                    <FaUser />
                     <span className="text-base">Profile</span>
                   </Link>
 
@@ -582,20 +524,20 @@ function Navbar() {
                         setMobileOpen(false);
                       }}
                       disabled={isInstalled}
-                      className={`flex items-center gap-3 px-4 py-3 rounded-xl transition-all duration-200 font-semibold w-full text-left group ${
+                      className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors font-medium w-full text-left ${
                         isInstalled
-                          ? 'bg-green-600/20 text-green-300 cursor-not-allowed'
-                          : 'hover:bg-purple-600/40 text-white'
+                          ? 'text-gray-500 cursor-not-allowed'
+                          : 'text-white hover:bg-white/10'
                       }`}
                     >
                       {isInstalled ? (
                         <>
-                          <FaCheckCircle className="transition-transform" />
+                          <FaCheckCircle />
                           <span className="text-base">App Installed</span>
                         </>
                       ) : (
                         <>
-                          <FaDownload className="transition-transform" />
+                          <FaDownload />
                           <span className="text-base">Install App</span>
                         </>
                       )}
@@ -608,9 +550,9 @@ function Navbar() {
                       handleShareClick();
                       setMobileOpen(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-purple-600/40 transition-all duration-200 text-white font-semibold w-full text-left group"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white font-medium w-full text-left"
                   >
-                    <FaShareAlt className="group-hover:scale-110 transition-transform" />
+                    <FaShareAlt />
                     <span className="text-base">Share App</span>
                   </button>
 
@@ -619,9 +561,9 @@ function Navbar() {
                       logout();
                       setMobileOpen(false);
                     }}
-                    className="flex items-center gap-3 px-4 py-3 rounded-xl hover:bg-red-900/40 transition-all duration-200 text-red-300 hover:text-red-200 font-semibold w-full text-left group"
+                    className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white font-medium w-full text-left"
                   >
-                    <FaSignOutAlt className="group-hover:scale-110 group-hover:translate-x-1 transition-transform" />
+                    <FaSignOutAlt />
                     <span className="text-base">Logout</span>
                   </button>
                 </div>
@@ -634,40 +576,22 @@ function Navbar() {
   );
 }
 
-// Enhanced NavLink component with active state
+// Enhanced NavLink component with active state - Spotify Style
 function NavLink({ to, label, active = false }) {
   return (
     <Link
       to={to}
       className="relative inline-flex items-center gap-2 px-3 py-2 group"
     >
-      {/* Label with underline effect */}
+      {/* Label - Spotify Style */}
       <span
-        className={`hidden md:inline relative font-semibold text-base transition-all duration-300 ${
+        className={`hidden md:inline relative font-semibold text-sm transition-colors ${
           active
             ? "text-white"
-            : "text-purple-200 group-hover:text-white"
+            : "text-gray-400 group-hover:text-white"
         }`}
       >
         {label}
-        
-        {/* Animated underline */}
-        <span
-          className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-purple-400 via-fuchsia-400 to-pink-400 transition-all duration-300 ${
-            active
-              ? "w-full"
-              : "w-0 group-hover:w-full"
-          }`}
-        />
-        
-        {/* Glow effect on active */}
-        {active && (
-          <motion.span
-            layoutId="activeNavLink"
-            className="absolute -bottom-1 left-0 right-0 h-0.5 bg-gradient-to-r from-fuchsia-400 to-purple-400 blur-sm"
-            transition={{ type: "spring", stiffness: 380, damping: 30 }}
-          />
-        )}
       </span>
     </Link>
   );

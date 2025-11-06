@@ -142,7 +142,7 @@
 ├─────────────────────────────────────────────────┤
 │  Text: #7c3aed (purple)                         │
 │  Background: #18181b (gray-900)                 │
-│  ✅ Perfect contrast, clean look                │
+│  Perfect contrast, clean look                │
 └─────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────┐
@@ -150,7 +150,7 @@
 ├─────────────────────────────────────────────────┤
 │  Background: #a21caf (fuchsia)                  │
 │  Text: #ffffff (white)                          │
-│  ✅ High contrast, attention-grabbing           │
+│  High contrast, attention-grabbing           │
 └─────────────────────────────────────────────────┘
 
 ┌─────────────────────────────────────────────────┐
@@ -158,7 +158,7 @@
 ├─────────────────────────────────────────────────┤
 │  From: #7c3aed (purple)                         │
 │  To: #a21caf (fuchsia)                          │
-│  ✅ Smooth, branded gradient                    │
+│  Smooth, branded gradient                    │
 └─────────────────────────────────────────────────┘
 ```
 
@@ -289,17 +289,17 @@ Dark:    #86198f  RGB(134, 25, 143)   HSL(296, 70%, 33%)
 
 ---
 
-## ✅ **Accessibility Check**
+## **Accessibility Check**
 
 All color combinations meet **WCAG AA standards**:
 
 | Foreground | Background | Contrast | Status |
 |------------|------------|----------|--------|
-| White | ACCENT | 6.8:1 | ✅ AAA |
-| White | PRIMARY | 7.2:1 | ✅ AAA |
-| White | SECONDARY | 18.2:1 | ✅ AAA |
-| PRIMARY | SECONDARY | 4.9:1 | ✅ AA |
-| ACCENT | SECONDARY | 5.1:1 | ✅ AA |
+| White | ACCENT | 6.8:1 | AAA |
+| White | PRIMARY | 7.2:1 | AAA |
+| White | SECONDARY | 18.2:1 | AAA |
+| PRIMARY | SECONDARY | 4.9:1 | AA |
+| ACCENT | SECONDARY | 5.1:1 | AA |
 
 ---
 

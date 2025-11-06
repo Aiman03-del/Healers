@@ -40,65 +40,51 @@ const SongCard = memo(
         className="relative group cursor-pointer"
         onClick={handleCardClick}
       >
-        <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
-
+        <div className="relative bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors group">
           {/* Album Cover */}
-          <div className="relative w-full aspect-square bg-gradient-to-br from-purple-900/30 to-fuchsia-900/30">
+          <div className="relative w-full aspect-square mb-4">
             <img
               src={song.cover || "/healers.png"}
               alt={song.title}
-              className="w-full h-full object-cover"
+              className="w-full h-full object-cover rounded"
               loading="lazy"
               decoding="async"
               onError={(e) => {
                 e.target.src = "/healers.png";
               }}
             />
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             
-            {/* Play/Pause button overlay */}
+            {/* Play/Pause button overlay - Spotify Style */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl">
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-colors"
+              >
                 {isCurrent && isCurrentPlaying ? (
                   <FaPause className="text-xl" />
                 ) : (
                   <FaPlay className="text-xl ml-1" />
                 )}
-              </div>
+              </motion.button>
             </div>
 
-            {/* Now Playing indicator */}
+            {/* Now Playing indicator - Spotify Style */}
             {isCurrent && (
-              <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
-                {isCurrentPlaying ? "Playing" : "Paused"}
+              <div className="absolute top-2 right-2 w-3 h-3 rounded-full bg-[#1db954] shadow-lg flex items-center justify-center">
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
               </div>
             )}
           </div>
 
-          {/* Song Info */}
-          <div className="p-3">
-            <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+          {/* Song Info - Spotify Style */}
+          <div>
+            <h3 className="font-semibold text-sm text-white truncate mb-1 group-hover:underline cursor-pointer">
               {song.title}
             </h3>
-            <p className="text-xs text-purple-200 truncate mt-1">
+            <p className="text-xs text-gray-400 truncate">
               {song.artist}
             </p>
-            {song.genre && song.genre.length > 0 && (
-              <div className="flex gap-1 mt-2 flex-wrap">
-                {song.genre.slice(0, 2).map((g, idx) => (
-                  <span
-                    key={idx}
-                    className="text-xs px-2 py-0.5 rounded-full bg-purple-600/50 text-purple-100"
-                  >
-                    {g}
-                  </span>
-                ))}
-              </div>
-            )}
           </div>
         </div>
       </motion.div>
@@ -408,27 +394,73 @@ function HomeContent({ searchQuery = "" }) {
   }, [searchQuery]);
 
   return (
-    <div className="space-y-8">
+    <div className="space-y-8 py-6">
 
       {loading ? (
-        <div className="grid md:grid-cols-4 gap-6">
-          {[...Array(6)].map((_, i) => (
-            <div
-              key={i}
-              className="animate-pulse bg-gradient-to-br from-purple-100 via-gray-100 to-gray-50 dark:from-purple-900 dark:via-gray-900 dark:to-gray-800 p-5 rounded-2xl shadow-xl flex flex-col items-center"
-            >
-              <div className="w-28 h-28 mb-4 rounded-xl bg-gray-700" />
-              <div className="h-4 w-2/3 bg-gray-700 rounded mb-2" />
-              <div className="h-3 w-1/2 bg-gray-800 rounded mb-1" />
-              <div className="h-3 w-1/3 bg-gray-800 rounded mb-1" />
-              <div className="h-3 w-1/4 bg-gray-800 rounded mb-1" />
-              <div className="flex gap-3 mt-2">
-                <div className="w-10 h-10 rounded-full bg-gray-700" />
-                <div className="w-10 h-10 rounded-full bg-gray-700" />
-              </div>
+        <>
+          {/* Skeleton for Trending Playlists */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="h-8 w-48 bg-gray-800 rounded animate-pulse" />
+              <div className="h-5 w-20 bg-gray-800 rounded animate-pulse" />
             </div>
-          ))}
-        </div>
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-[#181818] rounded-lg p-4 animate-pulse"
+                >
+                  <div className="w-full aspect-square mb-4 rounded bg-gray-700" />
+                  <div className="h-4 w-3/4 bg-gray-700 rounded mb-2" />
+                  <div className="h-3 w-1/2 bg-gray-800 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skeleton for Made For You */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <div className="h-8 w-40 bg-gray-800 rounded animate-pulse" />
+                <div className="h-5 w-24 bg-gray-800 rounded animate-pulse" />
+              </div>
+              <div className="h-5 w-20 bg-gray-800 rounded animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-[#181818] rounded-lg p-4 animate-pulse"
+                >
+                  <div className="w-full aspect-square mb-4 rounded bg-gray-700" />
+                  <div className="h-4 w-3/4 bg-gray-700 rounded mb-2" />
+                  <div className="h-3 w-1/2 bg-gray-800 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Skeleton for Trending Now */}
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div className="h-8 w-36 bg-gray-800 rounded animate-pulse" />
+              <div className="h-5 w-20 bg-gray-800 rounded animate-pulse" />
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
+              {[...Array(6)].map((_, i) => (
+                <div
+                  key={i}
+                  className="bg-[#181818] rounded-lg p-4 animate-pulse"
+                >
+                  <div className="w-full aspect-square mb-4 rounded bg-gray-700" />
+                  <div className="h-4 w-3/4 bg-gray-700 rounded mb-2" />
+                  <div className="h-3 w-1/2 bg-gray-800 rounded" />
+                </div>
+              ))}
+            </div>
+          </div>
+        </>
       ) : (
         <>
           {/* Trending Public Playlists Section */}
@@ -442,84 +474,70 @@ function HomeContent({ searchQuery = "" }) {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/trending-playlists"
-                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                    className="text-2xl font-bold text-white hover:underline transition-colors cursor-pointer"
                   >
                     Trending Playlists
                   </Link>
-                  <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold flex items-center gap-1">
-                    <FaFire className="text-xs" />
-                    Hot
-                  </span>
                 </div>
                 <Link
                   to="/trending-playlists"
-                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-sm text-gray-400 hover:text-white transition-colors font-semibold"
                 >
-                  View All →
+                  Show all
                 </Link>
               </div>
-              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {trendingPlaylists.map((playlist, idx) => (
                   <motion.div
                     key={playlist._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
-                    whileHover={{ scale: 1.02, y: -2 }}
                     onClick={() => navigate(`/public/playlist/${playlist._id}`)}
                     className="relative group cursor-pointer h-full"
                   >
-                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all h-full flex flex-col">
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
-
+                    <div className="relative bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors h-full flex flex-col group cursor-pointer">
                       {/* Cover Image */}
-                      <div className="relative w-full aspect-square">
+                      <div className="relative w-full aspect-square mb-4">
                         {playlist.firstSongCover ? (
                           <img
                             src={playlist.firstSongCover}
                             alt={playlist.name}
-                            className="w-full h-full object-cover"
+                            className="w-full h-full object-cover rounded"
                             loading="lazy"
                             decoding="async"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-700 via-fuchsia-700 to-pink-700 flex items-center justify-center">
-                            <BiSolidPlaylist className="text-5xl text-white/80" />
+                          <div className="w-full h-full bg-[#333] rounded flex items-center justify-center">
+                            <BiSolidPlaylist className="text-5xl text-gray-500" />
                           </div>
                         )}
 
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-                        {/* Play count badge */}
-                        {playlist.playCount > 0 && (
-                          <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
-                            <FaFire className="text-xs" />
-                            {playlist.playCount}
-                          </div>
-                        )}
-
-                        {/* Song count */}
-                        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                          <span className="text-white text-xs font-semibold flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
-                            <FaMusic className="text-xs" />
-                            {playlist.songs?.length || 0}
-                          </span>
+                        {/* Play button overlay - Spotify Style */}
+                        <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-colors"
+                          >
+                            <FaPlay className="text-xl ml-1" />
+                          </motion.button>
                         </div>
                       </div>
 
-                      {/* Info */}
-                      <div className="p-3 min-h-[60px] flex flex-col justify-between">
-                        <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+                      {/* Info - Spotify Style */}
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm text-white truncate mb-1 group-hover:underline">
                           {playlist.name}
                         </h3>
                         {playlist.description ? (
-                          <p className="text-xs text-purple-200 truncate mt-1">
+                          <p className="text-xs text-gray-400 truncate">
                             {playlist.description}
                           </p>
                         ) : (
-                          <div className="mt-1 h-4"></div>
+                          <p className="text-xs text-gray-400">
+                            Playlist
+                          </p>
                         )}
                       </div>
                     </div>
@@ -537,24 +555,23 @@ function HomeContent({ searchQuery = "" }) {
               transition={{ duration: 0.2 }}
             >
               <div className="flex items-center gap-3 mb-4">
-                <h2 className="text-2xl font-bold text-gray-900 dark:text-white">
+                <h2 className="text-2xl font-bold text-white">
                   Your Genre Mixes
                 </h2>
-                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
+                <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300 font-medium">
                   Personalized
                 </span>
               </div>
-              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+              <p className="text-sm text-gray-400 mb-4">
                 Curated playlists based on your favorite genres
               </p>
-              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3">
                 {genrePlaylists.map((playlist, idx) => (
                   <motion.div
                     key={playlist._id}
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
-                    whileHover={{ scale: 1.02, y: -2 }}
                     onClick={() => {
                       if (playlist.songs.length > 0) {
                         playSong(playlist.songs[0], 0, playlist.songs);
@@ -563,50 +580,35 @@ function HomeContent({ searchQuery = "" }) {
                     }}
                     className="relative group cursor-pointer h-full"
                   >
-                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all h-full flex flex-col">
-                      {/* Glow effect */}
-                      <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
-
+                    <div className="relative bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors h-full flex flex-col group cursor-pointer">
                       {/* Cover Image */}
-                      <div className="relative w-full aspect-square flex-shrink-0">
+                      <div className="relative w-full aspect-square mb-4">
                         <img
                           src={playlist.firstSongCover}
                           alt={playlist.name}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-cover rounded"
                           loading="lazy"
                           decoding="async"
                         />
 
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-
-                        {/* Play button overlay */}
+                        {/* Play button overlay - Spotify Style */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl">
+                          <motion.button
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-colors"
+                          >
                             <FaPlay className="text-xl ml-1" />
-                          </div>
-                        </div>
-
-                        {/* Genre badge */}
-                        <div className="absolute top-2 left-2 px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white text-xs font-bold shadow-lg">
-                          {playlist.genre}
-                        </div>
-
-                        {/* Song count */}
-                        <div className="absolute bottom-2 left-2 right-2 flex items-center justify-between">
-                          <span className="text-white text-xs font-semibold flex items-center gap-1 bg-black/50 px-2 py-1 rounded-full backdrop-blur-sm">
-                            <FaMusic className="text-xs" />
-                            {playlist.songCount} songs
-                          </span>
+                          </motion.button>
                         </div>
                       </div>
 
-                      {/* Info */}
-                      <div className="p-3 min-h-[60px] flex flex-col justify-between flex-shrink-0">
-                        <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+                      {/* Info - Spotify Style */}
+                      <div className="flex-1">
+                        <h3 className="font-semibold text-sm text-white truncate mb-1 group-hover:underline">
                           {playlist.name}
                         </h3>
-                        <p className="text-xs text-purple-200 truncate mt-1">
+                        <p className="text-xs text-gray-400 truncate">
                           {playlist.description}
                         </p>
                       </div>
@@ -628,22 +630,22 @@ function HomeContent({ searchQuery = "" }) {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/for-you"
-                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                    className="text-2xl font-bold text-white hover:underline transition-colors cursor-pointer"
                   >
                     {isPersonalized ? "Made For You" : "Popular Picks"}
                   </Link>
-                </div>
-                <div className="flex items-center gap-3">
                   {isPersonalized && (
-                    <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
+                    <span className="text-xs px-2 py-1 rounded-full bg-gray-800 text-gray-300 font-medium">
                       Personalized
                     </span>
                   )}
+                </div>
+                <div className="flex items-center gap-3">
                   <Link
                     to="/for-you"
-                    className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                    className="text-sm text-gray-400 hover:text-white transition-colors font-semibold"
                   >
-                    View All →
+                    Show all
                   </Link>
                 </div>
               </div>
@@ -675,16 +677,16 @@ function HomeContent({ searchQuery = "" }) {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/recently-played"
-                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                    className="text-2xl font-bold text-white hover:underline transition-colors cursor-pointer"
                   >
                     Recently Played
                   </Link>
                 </div>
                 <Link
                   to="/recently-played"
-                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-sm text-gray-400 hover:text-white transition-colors font-semibold"
                 >
-                  View All →
+                  Show all
                 </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
@@ -715,16 +717,16 @@ function HomeContent({ searchQuery = "" }) {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/trending"
-                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                    className="text-2xl font-bold text-white hover:underline transition-colors cursor-pointer"
                   >
                     Trending Now
                   </Link>
                 </div>
                 <Link
                   to="/trending"
-                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-sm text-gray-400 hover:text-white transition-colors font-semibold"
                 >
-                  View All →
+                  Show all
                 </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
@@ -755,16 +757,16 @@ function HomeContent({ searchQuery = "" }) {
                 <div className="flex items-center gap-3">
                   <Link
                     to="/new-releases"
-                    className="text-2xl font-bold text-gray-900 dark:text-white hover:text-purple-400 transition-colors cursor-pointer"
+                    className="text-2xl font-bold text-white hover:underline transition-colors cursor-pointer"
                   >
                     New Releases
                   </Link>
                 </div>
                 <Link
                   to="/new-releases"
-                  className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
+                  className="text-sm text-gray-400 hover:text-white transition-colors font-semibold"
                 >
-                  View All →
+                  Show all
                 </Link>
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-6 gap-3">
@@ -791,7 +793,7 @@ function HomeContent({ searchQuery = "" }) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.2 }}
             >
-              <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-4">
+              <h2 className="text-2xl font-bold text-white mb-4">
                 Search Results ({searchResults.length})
               </h2>
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
@@ -810,11 +812,11 @@ function HomeContent({ searchQuery = "" }) {
               </div>
               {searchResults.length === 0 && (
                 <div className="text-center py-12">
-                  <FaMusic className="text-6xl text-gray-400 mx-auto mb-4" />
-                  <p className="text-xl text-gray-500 dark:text-gray-400">
+                  <FaMusic className="text-6xl text-gray-600 mx-auto mb-4" />
+                  <p className="text-xl text-white mb-2">
                     No songs found matching "{search}"
                   </p>
-                  <p className="text-sm text-gray-400 mt-2">
+                  <p className="text-sm text-gray-400">
                     Try searching for a different song, artist, or genre
                   </p>
                 </div>

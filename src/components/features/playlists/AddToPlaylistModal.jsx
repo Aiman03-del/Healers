@@ -37,12 +37,12 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
       if (res.data.message === "Already added" || res.data.message === "Song already in playlist") {
         toast.error("⚠️ Song already in this playlist");
       } else {
-        toast.success("✅ Song added to playlist!");
+        toast.success("Song added to playlist!");
       }
       onClose();
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Failed to add song to playlist";
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(` ${errorMessage}`);
     }
   }, [put, songId, onClose]);
 
@@ -57,13 +57,13 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
         description: "",
         userId: user.uid,
       });
-      toast.success("✅ Playlist created!");
+      toast.success("Playlist created!");
       await handleAddToPlaylist(res.data.id);
       setNewPlaylistName("");
       setShowCreateForm(false); // Close the form after success
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Failed to create playlist";
-      toast.error(`❌ ${errorMessage}`);
+      toast.error(`${errorMessage}`);
     }
   }, [newPlaylistName, post, user?.uid, handleAddToPlaylist]);
 
@@ -71,45 +71,36 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
     <>
       {/* Backdrop */}
       <motion.div
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[9998]"
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-[10000]"
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         exit={{ opacity: 0 }}
         onClick={onClose}
       />
       
-      {/* Drawer from Bottom */}
+      {/* Drawer from Bottom - Spotify Style */}
       <motion.div
-        className="fixed bottom-0 left-0 right-0 bg-gradient-to-br from-gray-900 via-purple-900/95 to-fuchsia-900/90 rounded-t-3xl shadow-2xl border-t-2 border-purple-500/40 backdrop-blur-xl z-[9999] max-h-[85vh] overflow-hidden"
+        className="fixed bottom-0 left-0 right-0 bg-[#121212] rounded-t-3xl shadow-2xl border-t border-gray-800 z-[10001] max-h-[85vh] overflow-hidden"
         initial={{ y: "100%" }}
         animate={{ y: 0 }}
         exit={{ y: "100%" }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
         ref={modalRef}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Drag Handle */}
         <div className="flex justify-center pt-3 pb-2">
-          <div className="w-12 h-1.5 rounded-full bg-purple-400/50" />
+          <div className="w-12 h-1.5 rounded-full bg-gray-700" />
         </div>
 
-        {/* Header */}
-        <div className="px-6 pb-4 border-b border-purple-500/30">
+        {/* Header - Spotify Style */}
+        <div className="px-6 pb-4 border-b border-gray-800">
           <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="p-3 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl shadow-lg">
-                <BiSolidPlaylist className="text-white text-2xl" />
-              </div>
-              <div>
-                <h2 className="text-xl font-bold text-white">
-                  Add to Playlist
-                </h2>
-                <p className="text-sm text-purple-200">
-                  Choose a playlist or create one
-                </p>
-              </div>
-            </div>
+            <h2 className="text-2xl font-bold text-white">
+              Add to Playlist
+            </h2>
             <button
-              className="p-2 rounded-full hover:bg-white/10 transition-colors text-gray-400 hover:text-white focus:outline-none"
+              className="p-2 rounded-full hover:bg-gray-800 transition-colors text-gray-400 hover:text-white focus:outline-none"
               onClick={onClose}
               aria-label="Close"
             >
@@ -120,104 +111,97 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
           </div>
         </div>
 
-        {/* Content */}
+        {/* Content - Spotify Style */}
         <div className="px-6 py-4 overflow-y-auto max-h-[calc(85vh-120px)]">
           {playlistLoading ? (
             <div className="flex justify-center items-center py-12">
-              <span className="animate-spin rounded-full h-10 w-10 border-t-2 border-b-2 border-purple-400"></span>
-              <span className="ml-3 text-purple-200 text-base">
+              <div className="animate-spin rounded-full h-8 w-8 border-2 border-gray-600 border-t-white"></div>
+              <span className="ml-3 text-gray-400 text-sm">
                 Loading playlists...
               </span>
             </div>
           ) : Array.isArray(userPlaylists) && userPlaylists.length === 0 ? (
-            <div>
-              <div className="text-purple-200 mb-4 text-center text-sm">
+            <div className="py-8">
+              <div className="text-gray-400 mb-6 text-center text-sm">
                 No playlists yet. Create your first one!
               </div>
               <div className="space-y-3">
-                <div className="flex items-center gap-2">
-                  <span className="text-purple-400">
-                    <BiSolidPlaylist />
-                  </span>
-                  <input
-                    type="text"
-                    className="flex-1 px-3 py-2.5 rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                    placeholder="New playlist name"
-                    value={newPlaylistName}
-                    onChange={(e) => setNewPlaylistName(e.target.value)}
-                    onKeyPress={(e) => e.key === 'Enter' && handleCreateAndAdd()}
-                    autoFocus
-                  />
-                </div>
+                <input
+                  type="text"
+                  className="w-full px-4 py-3 rounded-md bg-white/10 border border-gray-700 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                  placeholder="Playlist name"
+                  value={newPlaylistName}
+                  onChange={(e) => setNewPlaylistName(e.target.value)}
+                  onKeyPress={(e) => e.key === 'Enter' && handleCreateAndAdd()}
+                  autoFocus
+                />
                 <button
-                  className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white rounded-lg py-2.5 font-bold shadow-lg transition-all"
+                  className="w-full bg-white text-black rounded-full py-3 font-bold hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                   onClick={handleCreateAndAdd}
                   disabled={!newPlaylistName.trim()}
                 >
-                  <span className="inline-flex items-center justify-center gap-2">
-                    <BiSolidPlaylist className="text-lg" /> Create & Add
-                  </span>
+                  Create
                 </button>
               </div>
             </div>
           ) : (
             <div>
-              <div className="mb-3 text-purple-200 text-sm font-semibold">
-                Select a playlist:
-              </div>
-              <div className="space-y-2 max-h-48 overflow-y-auto custom-scrollbar">
+              <div className="space-y-1 mb-4">
                 {(Array.isArray(userPlaylists) ? userPlaylists : []).map((pl) => (
                   <button
                     key={pl._id}
-                    className="w-full flex items-center gap-2 px-3 py-2.5 rounded-lg bg-white/5 hover:bg-white/10 border border-purple-500/20 hover:border-purple-400/40 text-white transition-all focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="w-full flex items-center gap-3 px-4 py-3 rounded-md hover:bg-white/10 text-white transition-colors text-left group"
                     onClick={() => handleAddToPlaylist(pl._id)}
                   >
-                    <BiSolidPlaylist className="text-purple-400" />
-                    <span className="truncate">{pl.name}</span>
+                    <div className="w-12 h-12 rounded bg-gradient-to-br from-purple-500 to-pink-500 flex items-center justify-center flex-shrink-0">
+                      <BiSolidPlaylist className="text-white text-xl" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="text-white font-medium truncate">{pl.name}</div>
+                      <div className="text-gray-400 text-sm">Playlist</div>
+                    </div>
+                    <div className="opacity-0 group-hover:opacity-100 transition-opacity">
+                      <svg className="w-6 h-6 text-white" fill="currentColor" viewBox="0 0 20 20">
+                        <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-8.707l-3-3a1 1 0 00-1.414 1.414L10.586 9H7a1 1 0 100 2h3.586l-1.293 1.293a1 1 0 101.414 1.414l3-3a1 1 0 000-1.414z" clipRule="evenodd" />
+                      </svg>
+                    </div>
                   </button>
                 ))}
               </div>
-              <div className="mt-4 border-t border-purple-500/30 pt-4">
+              <div className="mt-4 pt-4 border-t border-gray-800">
                 {!showCreateForm ? (
                   <button
                     onClick={() => setShowCreateForm(true)}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white font-bold shadow-lg hover:shadow-xl transition-all"
+                    className="w-full flex items-center justify-center gap-2 px-4 py-3 rounded-full bg-white text-black font-bold transition-all"
                   >
-                    <BiSolidPlaylist className="text-lg" />
-                    <span>Create New Playlist</span>
+                    <BiPlus className="text-xl" />
+                    <span>Create playlist</span>
                   </button>
                 ) : (
                   <div className="space-y-3">
-                    <div className="flex items-center gap-2">
-                      <span className="text-purple-400">
-                        <BiSolidPlaylist />
-                      </span>
-                      <input
-                        type="text"
-                        className="flex-1 px-3 py-2.5 rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all"
-                        placeholder="New playlist name"
-                        value={newPlaylistName}
-                        onChange={(e) => setNewPlaylistName(e.target.value)}
-                        onKeyPress={(e) => e.key === 'Enter' && handleCreateAndAdd()}
-                        autoFocus
-                      />
-                    </div>
+                    <input
+                      type="text"
+                      className="w-full px-4 py-3 rounded-md bg-white/10 border border-gray-700 text-white placeholder:text-gray-500 focus:outline-none focus:ring-2 focus:ring-white focus:border-transparent transition-all"
+                      placeholder="Playlist name"
+                      value={newPlaylistName}
+                      onChange={(e) => setNewPlaylistName(e.target.value)}
+                      onKeyPress={(e) => e.key === 'Enter' && handleCreateAndAdd()}
+                      autoFocus
+                    />
                     <div className="flex gap-2">
                       <button
-                        className="flex-1 bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 text-white rounded-lg py-2.5 font-bold shadow-lg transition-all"
+                        className="flex-1 bg-white text-black rounded-full py-3 font-bold hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100"
                         onClick={handleCreateAndAdd}
                         disabled={!newPlaylistName.trim()}
                       >
-                        <span className="inline-flex items-center justify-center gap-1">
-                          <BiSolidPlaylist className="text-lg" /> Create & Add
-                        </span>
+                        Create
                       </button>
                       <button
                         onClick={() => {
                           setShowCreateForm(false);
                           setNewPlaylistName("");
                         }}
-                        className="px-4 py-2.5 rounded-lg bg-gray-700 hover:bg-gray-600 text-white font-semibold transition-all"
+                        className="px-6 py-3 rounded-full bg-transparent border border-gray-700 text-white font-semibold hover:border-white transition-all"
                       >
                         Cancel
                       </button>
