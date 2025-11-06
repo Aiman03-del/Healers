@@ -23,12 +23,9 @@ export const SongCard = memo(
         className="relative group cursor-pointer"
         onClick={handleCardClick}
       >
-        <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl shadow-xl hover:shadow-2xl hover:shadow-purple-500/30 overflow-hidden border border-purple-500/20 hover:border-purple-400/40 transition-all">
-          {/* Glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-br from-purple-500/0 via-fuchsia-500/0 to-pink-500/0 group-hover:from-purple-500/10 group-hover:via-fuchsia-500/10 group-hover:to-pink-500/10 rounded-xl transition-all duration-150" />
-
+        <div className="relative bg-[#181818] rounded-lg p-2 hover:bg-[#282828] transition-all duration-200 group">
           {/* Album Cover */}
-          <div className="relative w-full aspect-square bg-gradient-to-br from-purple-900/30 to-fuchsia-900/30">
+          <div className="relative w-full aspect-square rounded-md overflow-hidden mb-3 bg-[#282828]">
             <img
               src={song.cover || "/healers.png"}
               alt={song.title}
@@ -39,35 +36,37 @@ export const SongCard = memo(
                 e.target.src = "/healers.png";
               }}
             />
-            {/* Gradient overlay */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
             
-            {/* Play/Pause button overlay */}
+            {/* Play/Pause button overlay - Spotify style */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              <div className="w-14 h-14 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center shadow-2xl">
+              <motion.div
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.95 }}
+                className="w-14 h-14 rounded-full bg-[#1db954] text-white flex items-center justify-center shadow-2xl cursor-pointer"
+              >
                 {isCurrent && isCurrentPlaying ? (
                   <FaPause className="text-xl" />
                 ) : (
                   <FaPlay className="text-xl ml-1" />
                 )}
-              </div>
+              </motion.div>
             </div>
 
-            {/* Now Playing indicator */}
+            {/* Now Playing indicator - Spotify style */}
             {isCurrent && (
-              <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-gradient-to-r from-green-500 to-emerald-500 text-white text-xs font-bold shadow-lg flex items-center gap-1">
-                <div className="w-2 h-2 rounded-full bg-white animate-pulse" />
+              <div className="absolute top-2 left-2 px-2 py-1 rounded-full bg-[#1db954] text-white text-xs font-semibold flex items-center gap-1.5">
+                <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse" />
                 {isCurrentPlaying ? "Playing" : "Paused"}
               </div>
             )}
           </div>
 
           {/* Song Info */}
-          <div className="p-3">
-            <h3 className="font-bold text-sm text-white truncate group-hover:text-yellow-300 transition-colors">
+          <div className="px-1 pb-1">
+            <h3 className="font-semibold text-sm text-white truncate mb-1">
               {song.title}
             </h3>
-            <p className="text-xs text-purple-200 truncate mt-1">
+            <p className="text-xs text-gray-400 truncate">
               {song.artist}
             </p>
             {song.genre && song.genre.length > 0 && (
@@ -75,7 +74,7 @@ export const SongCard = memo(
                 {song.genre.slice(0, 2).map((g, idx) => (
                   <span
                     key={idx}
-                    className="text-xs px-2 py-0.5 rounded-full bg-purple-600/50 text-purple-100"
+                    className="text-xs px-2 py-0.5 rounded-full bg-white/10 text-gray-300"
                   >
                     {g}
                   </span>

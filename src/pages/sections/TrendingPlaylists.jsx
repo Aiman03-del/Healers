@@ -63,7 +63,7 @@ export default function TrendingPlaylists() {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   Trending Playlists
                 </h1>
-                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold flex items-center gap-1">
+                <span className="text-xs px-3 py-1 rounded-full bg-[#1db954] text-white font-semibold flex items-center gap-1">
                   <FaFire className="text-xs" />
                   Hot
                 </span>
@@ -81,10 +81,10 @@ export default function TrendingPlaylists() {
                     onClick={() => navigate(`/public/playlist/${playlist._id}`)}
                     className="relative group cursor-pointer flex-shrink-0"
                   >
-                    <div className="relative bg-gradient-to-br from-gray-900 via-purple-900/80 to-fuchsia-900/60 rounded-xl overflow-hidden border border-purple-500/20 transition-all flex flex-row h-32 w-80">
+                    <div className="relative bg-[#181818] rounded-lg p-3 hover:bg-[#282828] transition-all duration-200 flex flex-row h-32 w-80 group">
 
                       {/* Cover Image - Left Side */}
-                      <div className="relative w-32 h-full flex-shrink-0">
+                      <div className="relative w-28 h-full flex-shrink-0 rounded-md overflow-hidden bg-[#282828]">
                         {playlist.firstSongCover ? (
                           <img
                             src={playlist.firstSongCover}
@@ -94,24 +94,25 @@ export default function TrendingPlaylists() {
                             decoding="async"
                           />
                         ) : (
-                          <div className="w-full h-full bg-gradient-to-br from-purple-700 via-fuchsia-700 to-pink-700 flex items-center justify-center">
-                            <BiSolidPlaylist className="text-4xl text-white/80" />
+                          <div className="w-full h-full bg-[#282828] flex items-center justify-center">
+                            <BiSolidPlaylist className="text-3xl text-gray-400" />
                           </div>
                         )}
 
-                        {/* Gradient overlay */}
-                        <div className="absolute inset-0 bg-gradient-to-r from-black/80 via-black/40 to-transparent" />
-
-                        {/* Play button overlay */}
+                        {/* Play button overlay - Spotify style */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <div className="w-12 h-12 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white flex items-center justify-center">
-                            <FaPlay className="text-lg ml-0.5" />
-                          </div>
+                          <motion.div
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.95 }}
+                            className="w-12 h-12 rounded-full bg-[#1db954] text-white flex items-center justify-center shadow-lg cursor-pointer"
+                          >
+                            <FaPlay className="text-base ml-0.5" />
+                          </motion.div>
                         </div>
 
-                        {/* Play count badge */}
+                        {/* Play count badge - Spotify style */}
                         {playlist.playCount > 0 && (
-                          <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white text-xs font-bold flex items-center gap-1">
+                          <div className="absolute top-2 right-2 px-2 py-1 rounded-full bg-[#1db954] text-white text-xs font-semibold flex items-center gap-1">
                             <FaFire className="text-xs" />
                             {playlist.playCount}
                           </div>
@@ -119,19 +120,19 @@ export default function TrendingPlaylists() {
                       </div>
 
                       {/* Content - Right Side */}
-                      <div className="flex-1 p-4 flex flex-col justify-between">
+                      <div className="flex-1 p-3 flex flex-col justify-between">
                         <div>
-                          <h3 className="font-bold text-lg text-white group-hover:text-yellow-300 transition-colors mb-1">
+                          <h3 className="font-semibold text-base text-white mb-1 line-clamp-1">
                             {playlist.name}
                           </h3>
                           {playlist.description ? (
-                            <p className="text-sm text-purple-200 line-clamp-2">
+                            <p className="text-sm text-gray-400 line-clamp-2">
                               {playlist.description}
                             </p>
                           ) : null}
                         </div>
                         <div className="flex items-center gap-2 mt-2">
-                          <span className="text-xs text-purple-300 flex items-center gap-1">
+                          <span className="text-xs text-gray-400 flex items-center gap-1">
                             <FaMusic className="text-xs" />
                             {playlist.songs?.length || 0} songs
                           </span>

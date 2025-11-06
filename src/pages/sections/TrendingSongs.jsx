@@ -130,7 +130,7 @@ export default function TrendingSongs() {
                 <h1 className="text-3xl font-bold text-gray-900 dark:text-white">
                   Trending Now
                 </h1>
-                <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-orange-500 to-red-500 text-white font-semibold flex items-center gap-1">
+                <span className="text-xs px-3 py-1 rounded-full bg-[#1db954] text-white font-semibold flex items-center gap-1">
                   <FaFire className="text-xs" />
                   Hot
                 </span>

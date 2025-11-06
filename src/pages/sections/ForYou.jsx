@@ -137,7 +137,7 @@ export default function ForYou() {
                     {isPersonalized ? "Made For You" : "Popular Picks"}
                   </h1>
                   {isPersonalized && (
-                    <span className="text-xs px-3 py-1 rounded-full bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white font-semibold">
+                    <span className="text-xs px-3 py-1 rounded-full bg-[#1db954] text-white font-semibold">
                       Personalized
                     </span>
                   )}
