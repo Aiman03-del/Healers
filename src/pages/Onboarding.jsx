@@ -154,34 +154,7 @@ export default function Onboarding() {
   ];
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-purple-950 via-fuchsia-950 to-black p-4 relative overflow-hidden">
-      {/* Animated background elements */}
-      <div className="absolute inset-0 opacity-10">
-        <motion.div
-          animate={{
-            scale: [1, 1.2, 1],
-            rotate: [0, 90, 0],
-          }}
-          transition={{
-            duration: 20,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500 rounded-full blur-3xl"
-        />
-        <motion.div
-          animate={{
-            scale: [1.2, 1, 1.2],
-            rotate: [0, -90, 0],
-          }}
-          transition={{
-            duration: 15,
-            repeat: Infinity,
-            ease: "linear",
-          }}
-          className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-fuchsia-500 rounded-full blur-3xl"
-        />
-      </div>
+    <div className="min-h-screen flex items-center justify-center bg-[#121212] p-4 relative overflow-hidden">
 
       <div className="max-w-3xl w-full relative z-10">
         {/* Progress Steps */}
@@ -192,20 +165,20 @@ export default function Onboarding() {
                 initial={false}
                 animate={{
                   scale: currentStep === index ? 1.1 : 1,
-                  backgroundColor: currentStep >= index ? "#a855f7" : "#4c1d95",
+                  backgroundColor: currentStep >= index ? "#1db954" : "#181818",
                 }}
                 className={`w-12 h-12 rounded-full flex items-center justify-center text-white font-bold border-4 ${
-                  currentStep >= index ? "border-purple-400" : "border-purple-800"
+                  currentStep >= index ? "border-[#1db954]" : "border-gray-700"
                 }`}
               >
                 {currentStep > index ? <FaCheckCircle /> : index + 1}
               </motion.div>
               {index < steps.length - 1 && (
-                <div className="hidden md:block absolute top-6 w-full h-1 bg-purple-900 -z-10" style={{ left: '50%', width: 'calc(100% - 48px)' }}>
+                <div className="hidden md:block absolute top-6 w-full h-1 bg-gray-700 -z-10" style={{ left: '50%', width: 'calc(100% - 48px)' }}>
                   <motion.div
                     initial={false}
                     animate={{ width: currentStep > index ? "100%" : "0%" }}
-                    className="h-full bg-purple-500"
+                    className="h-full bg-[#1db954]"
                     transition={{ duration: 0.3 }}
                   />
                 </div>
@@ -214,27 +187,27 @@ export default function Onboarding() {
           ))}
         </div>
 
-        {/* Main Card */}
+        {/* Main Card - Spotify Style */}
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-gradient-to-br from-gray-900/90 via-purple-900/80 to-fuchsia-900/70 backdrop-blur-2xl p-8 md:p-12 rounded-3xl shadow-2xl border border-purple-500/30"
+          className="bg-[#181818] p-8 md:p-12 rounded-lg shadow-2xl border border-gray-800"
         >
-          {/* Step Icon & Title */}
+          {/* Step Icon & Title - Spotify Style */}
           <div className="text-center mb-8">
             <motion.div
               key={currentStep}
               initial={{ scale: 0, rotate: -180 }}
               animate={{ scale: 1, rotate: 0 }}
               transition={{ type: "spring", stiffness: 200 }}
-              className="text-yellow-400 flex justify-center mb-4"
+              className="text-[#1db954] flex justify-center mb-4"
             >
               {steps[currentStep].icon}
             </motion.div>
             <h2 className="text-3xl md:text-4xl font-bold text-white mb-2">
               {steps[currentStep].title}
             </h2>
-            <p className="text-purple-200 text-lg">
+            <p className="text-gray-400 text-lg">
               {steps[currentStep].subtitle}
             </p>
           </div>
@@ -249,10 +222,10 @@ export default function Onboarding() {
               transition={{ duration: 0.3 }}
               className="min-h-[300px]"
             >
-              {/* Step 0: Genres */}
+              {/* Step 0: Genres - Spotify Style */}
               {currentStep === 0 && (
                 <div className="space-y-4">
-                  <p className="text-purple-300 text-sm mb-4">
+                  <p className="text-gray-400 text-sm mb-4">
                     Selected: {preferences.favoriteGenres.length} genre{preferences.favoriteGenres.length !== 1 ? 's' : ''}
                   </p>
                   <div className="flex flex-wrap gap-3 max-h-[400px] overflow-y-auto pr-2">
@@ -262,10 +235,10 @@ export default function Onboarding() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => toggleGenre(genre)}
-                        className={`px-6 py-3 rounded-xl font-semibold transition-all duration-200 ${
+                        className={`px-6 py-3 rounded-full font-semibold transition-all duration-200 ${
                           preferences.favoriteGenres.includes(genre)
-                            ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg border-2 border-purple-400"
-                            : "bg-white/10 text-purple-200 border-2 border-purple-500/30 hover:border-purple-400"
+                            ? "bg-white text-black shadow-lg"
+                            : "bg-white/10 text-gray-400 border border-gray-700 hover:text-white hover:bg-white/20"
                         }`}
                       >
                         {genre}
@@ -278,10 +251,10 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {/* Step 1: Artists */}
+              {/* Step 1: Artists - Spotify Style */}
               {currentStep === 1 && (
                 <div className="space-y-4">
-                  <p className="text-purple-300 text-sm mb-4">
+                  <p className="text-gray-400 text-sm mb-4">
                     Selected: {preferences.favoriteArtists.length} artist{preferences.favoriteArtists.length !== 1 ? 's' : ''}
                   </p>
                   <div className="flex flex-wrap gap-3 max-h-[400px] overflow-y-auto pr-2">
@@ -291,10 +264,10 @@ export default function Onboarding() {
                         whileHover={{ scale: 1.05 }}
                         whileTap={{ scale: 0.95 }}
                         onClick={() => toggleArtist(artist)}
-                        className={`px-5 py-2.5 rounded-xl font-semibold transition-all duration-200 ${
+                        className={`px-5 py-2.5 rounded-full font-semibold transition-all duration-200 ${
                           preferences.favoriteArtists.includes(artist)
-                            ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 text-white shadow-lg border-2 border-purple-400"
-                            : "bg-white/10 text-purple-200 border-2 border-purple-500/30 hover:border-purple-400"
+                            ? "bg-white text-black shadow-lg"
+                            : "bg-white/10 text-gray-400 border border-gray-700 hover:text-white hover:bg-white/20"
                         }`}
                       >
                         {artist}
@@ -305,7 +278,7 @@ export default function Onboarding() {
                     ))}
                   </div>
                   {allArtists.length === 0 && (
-                    <div className="text-center text-purple-300 py-12">
+                    <div className="text-center text-gray-400 py-12">
                       <FaMusic className="text-4xl mx-auto mb-3 opacity-50" />
                       <p>No artists available yet. Skip this step.</p>
                     </div>
@@ -313,10 +286,10 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {/* Step 2: Moods */}
+              {/* Step 2: Moods - Spotify Style */}
               {currentStep === 2 && (
                 <div className="space-y-4">
-                  <p className="text-purple-300 text-sm mb-4">
+                  <p className="text-gray-400 text-sm mb-4">
                     Selected: {preferences.moods.length} mood{preferences.moods.length !== 1 ? 's' : ''}
                   </p>
                   <div className="grid grid-cols-2 gap-4">
@@ -326,18 +299,17 @@ export default function Onboarding() {
                         whileHover={{ scale: 1.03 }}
                         whileTap={{ scale: 0.97 }}
                         onClick={() => toggleMood(mood.id)}
-                        className={`p-4 rounded-2xl font-semibold transition-all duration-200 relative overflow-hidden ${
+                        className={`p-4 rounded-lg font-semibold transition-all duration-200 relative overflow-hidden ${
                           preferences.moods.includes(mood.id)
-                            ? "border-2 border-purple-400 shadow-xl"
-                            : "bg-white/10 border-2 border-purple-500/30 hover:border-purple-400"
+                            ? "border-2 border-[#1db954] shadow-xl bg-white/10"
+                            : "bg-white/10 border-2 border-gray-700 hover:border-gray-600"
                         }`}
                       >
-                        <div className={`absolute inset-0 bg-gradient-to-br ${mood.color} opacity-${preferences.moods.includes(mood.id) ? '80' : '0'} transition-opacity`} />
                         <div className="relative z-10 flex flex-col items-center gap-2">
                           <span className="text-3xl">{mood.icon}</span>
                           <span className="text-white font-bold">{mood.label}</span>
                           {preferences.moods.includes(mood.id) && (
-                            <FaCheckCircle className="text-white text-xl" />
+                            <FaCheckCircle className="text-[#1db954] text-xl" />
                           )}
                         </div>
                       </motion.button>
@@ -346,7 +318,7 @@ export default function Onboarding() {
                 </div>
               )}
 
-              {/* Step 3: Listening Habits */}
+              {/* Step 3: Listening Habits - Spotify Style */}
               {currentStep === 3 && (
                 <div className="space-y-4">
                   <div className="grid gap-4">
@@ -356,26 +328,26 @@ export default function Onboarding() {
                         whileHover={{ scale: 1.02 }}
                         whileTap={{ scale: 0.98 }}
                         onClick={() => setPreferences({ ...preferences, listeningHabits: habit.id })}
-                        className={`p-5 rounded-2xl text-left transition-all duration-200 ${
+                        className={`p-5 rounded-lg text-left transition-all duration-200 ${
                           preferences.listeningHabits === habit.id
-                            ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 border-2 border-purple-400 shadow-xl"
-                            : "bg-white/10 border-2 border-purple-500/30 hover:border-purple-400"
+                            ? "bg-white text-black border-2 border-[#1db954] shadow-xl"
+                            : "bg-white/10 border-2 border-gray-700 hover:border-gray-600"
                         }`}
                       >
                         <div className="flex items-start gap-3">
                           <div className={`p-3 rounded-full ${
                             preferences.listeningHabits === habit.id
-                              ? "bg-white/20"
-                              : "bg-purple-500/30"
+                              ? "bg-black/20"
+                              : "bg-white/10"
                           }`}>
-                            <FaMusic />
+                            <FaMusic className={preferences.listeningHabits === habit.id ? "text-black" : "text-gray-400"} />
                           </div>
                           <div className="flex-1">
-                            <h4 className="font-bold text-white text-lg mb-1">{habit.label}</h4>
-                            <p className="text-purple-200 text-sm">{habit.desc}</p>
+                            <h4 className={`font-bold text-lg mb-1 ${preferences.listeningHabits === habit.id ? "text-black" : "text-white"}`}>{habit.label}</h4>
+                            <p className={preferences.listeningHabits === habit.id ? "text-gray-700 text-sm" : "text-gray-400 text-sm"}>{habit.desc}</p>
                           </div>
                           {preferences.listeningHabits === habit.id && (
-                            <FaCheckCircle className="text-white text-2xl flex-shrink-0" />
+                            <FaCheckCircle className="text-black text-2xl flex-shrink-0" />
                           )}
                         </div>
                       </motion.button>
@@ -386,14 +358,14 @@ export default function Onboarding() {
             </motion.div>
           </AnimatePresence>
 
-          {/* Navigation Buttons */}
+          {/* Navigation Buttons - Spotify Style */}
           <div className="flex gap-4 mt-8">
             {currentStep > 0 && (
               <motion.button
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleBack}
-                className="px-6 py-3 rounded-xl bg-white/10 hover:bg-white/20 text-white font-semibold transition-all duration-200 flex items-center gap-2 border border-purple-500/30"
+                className="px-6 py-3 rounded-full bg-transparent hover:bg-white/10 text-white font-semibold transition-all duration-200 flex items-center gap-2 border border-gray-700 hover:border-gray-600"
               >
                 <FaChevronLeft /> Back
               </motion.button>
@@ -404,7 +376,7 @@ export default function Onboarding() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleNext}
-                className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+                className="flex-1 px-6 py-3 rounded-full bg-white text-black hover:scale-105 font-bold transition-all duration-200 flex items-center justify-center gap-2"
               >
                 Next <FaChevronRight />
               </motion.button>
@@ -413,19 +385,19 @@ export default function Onboarding() {
                 whileHover={{ scale: 1.02 }}
                 whileTap={{ scale: 0.98 }}
                 onClick={handleSubmit}
-                className="flex-1 px-6 py-3 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white font-bold transition-all duration-200 flex items-center justify-center gap-2 shadow-lg"
+                className="flex-1 px-6 py-3 rounded-full bg-white text-black hover:scale-105 font-bold transition-all duration-200 flex items-center justify-center gap-2"
               >
                 Complete Setup <FaCheckCircle />
               </motion.button>
             )}
           </div>
 
-          {/* Skip Button */}
+          {/* Skip Button - Spotify Style */}
           <motion.button
             whileHover={{ scale: 1.02 }}
             whileTap={{ scale: 0.98 }}
             onClick={() => navigate("/")}
-            className="w-full mt-4 text-purple-300 hover:text-white transition-colors text-sm"
+            className="w-full mt-4 text-gray-400 hover:text-white transition-colors text-sm"
           >
             Skip for now
           </motion.button>

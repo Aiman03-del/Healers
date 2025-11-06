@@ -7,8 +7,8 @@ const SidebarLink = ({ to, label, icon, location }) => (
     to={to}
     className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
       location.pathname === to
-        ? 'bg-purple-700 text-white shadow'
-        : 'hover:bg-purple-800/60 text-purple-200'
+        ? 'bg-white/10 text-white'
+        : 'hover:bg-white/10 text-gray-400 hover:text-white'
     }`}
   >
     <span className="text-lg">{icon}</span>
@@ -22,16 +22,16 @@ const DashboardSidebar = ({ onLogout }) => {
 
   return (
     <>
-      <div className="flex flex-col items-center py-8 bg-purple-900/80 rounded-b-3xl shadow-lg">
-        <h2 className="text-2xl font-extrabold mb-2 flex items-center gap-2">
-          <FaChartBar className="text-purple-300" /> Dashboard
+      <div className="flex flex-col items-center py-8 bg-[#000000]">
+        <h2 className="text-2xl font-bold mb-2 flex items-center gap-2 text-white">
+          <FaChartBar className="text-gray-400" /> Dashboard
         </h2>
-        <div className="w-16 h-16 rounded-full bg-purple-700 flex items-center justify-center mb-2 shadow-lg">
+        <div className="w-16 h-16 rounded-full bg-[#181818] flex items-center justify-center mb-2">
           <span className="text-3xl font-bold text-white">{user?.name?.[0] || user?.email?.[0] || "U"}</span>
         </div>
-        <p className="text-xs text-purple-200">{user?.email}</p>
+        <p className="text-xs text-gray-400">{user?.email}</p>
       </div>
-      <nav className="flex-1 px-4 py-8 space-y-2">
+      <nav className="flex-1 px-4 py-8 space-y-1">
         <SidebarLink
           to="/"
           label="Home"
@@ -72,7 +72,7 @@ const DashboardSidebar = ({ onLogout }) => {
       <div className="px-4 pb-6 mt-auto">
         <button
           onClick={onLogout}
-          className="w-full flex items-center justify-center gap-2 text-sm bg-red-600 px-3 py-2 rounded-lg hover:bg-red-700 transition font-semibold shadow"
+          className="w-full flex items-center justify-center gap-2 text-sm bg-transparent border border-gray-700 px-3 py-2 rounded-full hover:border-gray-600 transition font-semibold text-white"
         >
           <FaSignOutAlt /> Logout
         </button>

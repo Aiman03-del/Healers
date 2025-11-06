@@ -20,8 +20,10 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
   const searchInputRef = useRef();
 
   useEffect(() => {
-    fetchSongsAndSuggestions();
-  }, [user]);
+    if (playlistId) {
+      fetchSongsAndSuggestions();
+    }
+  }, [user, playlistId]);
 
   // Focus search input when modal opens
   useEffect(() => {
@@ -46,18 +48,25 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
     try {
       // Fetch current playlist to get existing songs
       const playlistRes = await get(`/api/playlists/${playlistId}`);
-      const existingSongs = playlistRes.data.songs || [];
+      const existingSongs = playlistRes.data?.songs || playlistRes.data || [];
       const existingIds = existingSongs.map(s => s._id || s.id).filter(Boolean);
       setExistingSongIds(existingIds);
 
       // Fetch all songs
       const songsRes = await get("/api/songs");
-      const allSongsData = songsRes.data.songs || [];
+      const allSongsData = songsRes.data?.songs || [];
+      
+      console.log("All songs fetched:", allSongsData.length);
+      console.log("Existing song IDs:", existingIds);
       
       // Filter out songs that are already in the playlist
-      const availableSongs = allSongsData.filter(song => 
-        !existingIds.includes(song._id)
-      );
+      const availableSongs = allSongsData.filter(song => {
+        const songId = song._id?.toString();
+        const isExisting = existingIds.some(id => id?.toString() === songId);
+        return !isExisting;
+      });
+      
+      console.log("Available songs:", availableSongs.length);
       
       setAllSongs(availableSongs);
       setFilteredSongs(availableSongs);
@@ -156,11 +165,14 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
         setSuggestedSongs(popular);
       }
     } catch (error) {
+      console.error("Error fetching songs:", error);
       toast.error("Failed to load songs");
       setAllSongs([]);
       setFilteredSongs([]);
+      setSuggestedSongs([]);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // Handle search
@@ -208,13 +220,13 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
     const [imageError, setImageError] = useState(false);
 
     return (
-      <div className="flex items-center gap-3 p-3 rounded-lg bg-white/5 hover:bg-white/10 border border-purple-500/20 hover:border-purple-400/40 transition-all group">
+      <div className="flex items-center gap-3 p-3 rounded-lg bg-[#181818] hover:bg-[#282828] transition-colors group">
         {/* Album Cover */}
-        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded-lg overflow-hidden bg-gradient-to-br from-purple-700 to-fuchsia-700 flex-shrink-0 relative">
+        <div className="w-12 h-12 sm:w-14 sm:h-14 rounded overflow-hidden bg-[#282828] flex-shrink-0 relative">
           {/* Placeholder/Loading state */}
           {!imageLoaded && !imageError && (
-            <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-purple-700 to-fuchsia-700">
-              <FaMusic className="text-white/40 text-lg" />
+            <div className="absolute inset-0 flex items-center justify-center bg-[#282828]">
+              <FaMusic className="text-gray-600 text-lg" />
             </div>
           )}
           
@@ -235,7 +247,7 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
           />
           {isSuggested && imageLoaded && (
             <div className="absolute top-0.5 right-0.5">
-              <FaStar className="text-yellow-400 text-xs drop-shadow-lg" />
+              <FaStar className="text-[#1db954] text-xs" />
             </div>
           )}
         </div>
@@ -245,17 +257,17 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
         <h4 className="text-white font-semibold text-sm sm:text-base truncate">
           {song.title}
         </h4>
-        <p className="text-purple-200 text-xs sm:text-sm truncate">
+        <p className="text-gray-400 text-xs sm:text-sm truncate">
           {song.artist}
         </p>
         <div className="flex items-center gap-2 mt-1">
           {song.genre && song.genre.slice(0, 2).map((g, i) => (
-            <span key={i} className="text-xs px-1.5 py-0.5 rounded bg-purple-600/30 text-purple-200">
+            <span key={i} className="text-xs px-1.5 py-0.5 rounded bg-gray-800 text-gray-300 border border-gray-700">
               {g}
             </span>
           ))}
           {song.playCount > 0 && (
-            <span className="text-xs text-orange-400 flex items-center gap-1">
+            <span className="text-xs text-gray-400 flex items-center gap-1">
               <FaFire className="text-xs" />
               {song.playCount}
             </span>
@@ -264,16 +276,14 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
       </div>
 
       {/* Add Button */}
-      <motion.button
-        whileHover={{ scale: 1.05 }}
-        whileTap={{ scale: 0.95 }}
+      <button
         onClick={() => handleAddSong(song._id)}
         disabled={adding === song._id}
-        className="px-3 py-2 sm:px-4 sm:py-2 rounded-lg bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold shadow-lg transition-all disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 text-sm"
+        className="px-3 py-2 sm:px-4 sm:py-2 rounded-full bg-white text-black font-bold hover:scale-105 transition-all disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex items-center gap-2 text-sm"
       >
         {adding === song._id ? (
           <>
-            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+            <div className="w-4 h-4 border-2 border-black border-t-transparent rounded-full animate-spin" />
             <span className="hidden sm:inline">Adding...</span>
           </>
         ) : (
@@ -282,7 +292,7 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
             <span className="hidden sm:inline">Add</span>
           </>
         )}
-      </motion.button>
+      </button>
     </div>
   );
   }, (prevProps, nextProps) => {
@@ -302,21 +312,21 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
     >
       <motion.div
         ref={modalRef}
-        className="relative bg-gradient-to-br from-gray-900 via-purple-900/90 to-fuchsia-900/80 rounded-2xl shadow-2xl border border-purple-500/30 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
+        className="relative bg-[#121212] rounded-lg shadow-2xl border border-gray-800 w-full max-w-3xl max-h-[85vh] flex flex-col overflow-hidden"
         initial={{ scale: 0.9, y: 20 }}
         animate={{ scale: 1, y: 0 }}
         exit={{ scale: 0.9, y: 20 }}
         transition={{ type: "spring", stiffness: 300, damping: 30 }}
       >
-        {/* Header */}
-        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-purple-500/20">
+        {/* Header - Spotify Style */}
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-800 bg-[#181818]">
           <div className="flex items-center gap-3">
-            <div className="p-2 sm:p-3 bg-gradient-to-br from-purple-500 to-fuchsia-500 rounded-xl shadow-lg">
-              <BiSolidPlaylist className="text-white text-xl sm:text-2xl" />
+            <div className="p-2 sm:p-3 bg-[#282828] rounded-lg">
+              <BiSolidPlaylist className="text-gray-400 text-xl sm:text-2xl" />
             </div>
             <div>
               <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">Add Song to Playlist</h2>
-              <p className="text-xs sm:text-sm text-purple-200">
+              <p className="text-xs sm:text-sm text-gray-400">
               Search or select from suggestions</p>
             </div>
           </div>
@@ -329,28 +339,28 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
           </button>
         </div>
 
-        {/* Search Bar */}
-        <div className="p-4 sm:p-6 border-b border-purple-500/20">
+        {/* Search Bar - Spotify Style */}
+        <div className="p-4 sm:p-6 border-b border-gray-800 bg-[#181818]">
           <div className="relative">
-            <FaSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-purple-300" />
+            <FaSearch className="absolute left-3 sm:left-4 top-1/2 -translate-y-1/2 text-gray-400" />
             <input
               ref={searchInputRef}
               type="text"
               placeholder="Search by song, artist, or genre..."
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-lg bg-white/10 backdrop-blur-sm border border-purple-400/40 text-white placeholder:text-gray-400 focus:ring-2 focus:ring-purple-500 focus:border-transparent outline-none transition-all text-sm sm:text-base"
+              className="w-full pl-10 sm:pl-12 pr-4 py-2.5 sm:py-3 rounded-full bg-white/10 border border-transparent text-white placeholder:text-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all text-sm sm:text-base"
             />
           </div>
         </div>
 
-        {/* Content */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 custom-scrollbar">
+        {/* Content - Spotify Style */}
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 bg-[#121212] custom-scrollbar">
           {loading ? (
             <div className="flex items-center justify-center py-12">
               <div className="flex flex-col items-center gap-3">
-                <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin" />
-                <p className="text-purple-200">Loading songs...</p>
+                <div className="w-12 h-12 border-2 border-gray-600 border-t-white rounded-full animate-spin" />
+                <p className="text-gray-400">Loading songs...</p>
               </div>
             </div>
           ) : (
@@ -359,12 +369,12 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
               {searchQuery === "" && suggestedSongs.length > 0 && (
                 <div className="space-y-3">
                   <div className="flex items-center gap-2">
-                    <FaStar className="text-yellow-400" />
+                    <FaStar className="text-[#1db954]" />
                     <h3 className="text-base sm:text-lg font-bold text-white">
                       Suggested for You
                     </h3>
                   </div>
-                  <p className="text-xs sm:text-sm text-purple-200 -mt-2">
+                  <p className="text-xs sm:text-sm text-gray-400 -mt-2">
                     Based on your listening preferences
                   </p>
                   <div className="space-y-2">
@@ -379,23 +389,23 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <FaMusic className="text-purple-400" />
+                    <FaMusic className="text-gray-400" />
                     <h3 className="text-base sm:text-lg font-bold text-white">
                       {searchQuery ? "Search Results" : "All Songs"}
                     </h3>
                   </div>
-                  <span className="text-xs sm:text-sm text-purple-300">
+                  <span className="text-xs sm:text-sm text-gray-400">
                     {filteredSongs.length} songs
                   </span>
                 </div>
                 
                 {filteredSongs.length === 0 ? (
                   <div className="text-center py-8 sm:py-12">
-                    <FaCheckCircle className="text-4xl sm:text-5xl text-green-400/70 mx-auto mb-3" />
+                    <FaCheckCircle className="text-4xl sm:text-5xl text-[#1db954] mx-auto mb-3" />
                     <p className="text-white text-sm sm:text-base font-semibold mb-1">
                       {searchQuery ? "No matching songs found" : "All songs added!"}
                     </p>
-                    <p className="text-purple-300/70 text-xs sm:text-sm mt-1">
+                    <p className="text-gray-400 text-xs sm:text-sm mt-1">
                       {searchQuery 
                         ? "Try a different search term" 
                         : "You've added all available songs to this playlist"}
@@ -407,7 +417,7 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
                       <SongItem key={song._id} song={song} />
                     ))}
                     {filteredSongs.length > 20 && (
-                      <p className="text-center text-purple-300 text-xs sm:text-sm py-2">
+                      <p className="text-center text-gray-400 text-xs sm:text-sm py-2">
                         Showing 20 of {filteredSongs.length} songs
                       </p>
                     )}
@@ -419,7 +429,7 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
         </div>
       </motion.div>
 
-      {/* Custom Scrollbar Styles */}
+      {/* Custom Scrollbar Styles - Spotify Style */}
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 8px;
@@ -429,11 +439,11 @@ const AddSongToPlaylistModal = ({ playlistId, onClose, onSongAdded }) => {
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: linear-gradient(to bottom, #a855f7, #ec4899);
+          background: #535353;
           border-radius: 10px;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: linear-gradient(to bottom, #9333ea, #db2777);
+          background: #727272;
         }
       `}</style>
     </motion.div>

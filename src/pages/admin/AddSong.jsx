@@ -187,23 +187,14 @@ const AddSong = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
-      {/* Animated background gradient overlay */}
-      <div
-        className="fixed inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent pointer-events-none"
-        style={{
-          backgroundSize: "200% 100%",
-          animation: "shimmer 8s ease-in-out infinite",
-        }}
-      />
-
+    <div className="min-h-screen bg-[#121212] py-6 sm:py-8 md:py-12 px-4 sm:px-6 lg:px-8">
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
         transition={{ duration: 0.6 }}
         className="max-w-4xl mx-auto relative z-10"
       >
-        {/* Header */}
+        {/* Header - Spotify Style */}
         <div className="text-center mb-6 sm:mb-8 md:mb-10">
           <motion.div
             initial={{ scale: 0.8 }}
@@ -212,26 +203,21 @@ const AddSong = () => {
             className="inline-block mb-4"
           >
             <div className="relative">
-              <div className="absolute inset-0 bg-gradient-to-r from-purple-500 to-fuchsia-500 rounded-full blur-2xl opacity-60" />
-              <div className="relative bg-gradient-to-br from-purple-600 to-fuchsia-600 rounded-full p-4 sm:p-5 md:p-6">
+              <div className="relative bg-[#181818] rounded-full p-4 sm:p-5 md:p-6">
                 <FaMusic className="text-3xl sm:text-4xl md:text-5xl text-white" />
               </div>
             </div>
           </motion.div>
           <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold text-white mb-2 sm:mb-3">
-            <span className="bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent">
-              Add New Song
-            </span>
+            Add New Song
           </h1>
-          <p className="text-purple-300 text-sm sm:text-base md:text-lg">
+          <p className="text-gray-400 text-sm sm:text-base md:text-lg">
             Upload your music and let the magic begin ✨
           </p>
         </div>
 
-        {/* Main Form Card */}
-        <div className="bg-gradient-to-br from-gray-900/80 via-purple-900/80 to-fuchsia-900/80 backdrop-blur-2xl rounded-2xl sm:rounded-3xl shadow-2xl border-2 border-purple-500/30 p-4 sm:p-6 md:p-8 relative overflow-hidden">
-          {/* Glassmorphism overlay */}
-          <div className="absolute inset-0 bg-white/5 backdrop-blur-xl pointer-events-none" />
+        {/* Main Form Card - Spotify Style */}
+        <div className="bg-[#181818] rounded-lg shadow-2xl border border-gray-800 p-4 sm:p-6 md:p-8 relative overflow-hidden">
 
           <form onSubmit={handleSubmit} className="space-y-6 sm:space-y-8 relative z-10">
             {/* Upload Section - Grid Layout for Desktop */}
@@ -241,8 +227,8 @@ const AddSong = () => {
                 whileHover={{ scale: 1.02 }}
                 className="space-y-3"
               >
-                <label className="flex items-center gap-2 text-sm sm:text-base font-semibold text-purple-200">
-                  <FaImage className="text-fuchsia-400" />
+                <label className="flex items-center gap-2 text-sm sm:text-base font-semibold text-white">
+                  <FaImage className="text-gray-400" />
                   Cover Image
                 </label>
                 
@@ -252,10 +238,10 @@ const AddSong = () => {
                   onDragOver={(e) => handleDrag(e, 'cover')}
                   onDrop={(e) => handleDrop(e, 'cover')}
                   onClick={() => coverInputRef.current?.click()}
-                  className={`relative border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 cursor-pointer transition-all duration-300 ${
+                  className={`relative border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 cursor-pointer transition-all duration-300 ${
                     dragActive.cover
-                      ? 'border-fuchsia-400 bg-fuchsia-500/20'
-                      : 'border-purple-500/50 hover:border-purple-400 bg-white/5 hover:bg-white/10'
+                      ? 'border-[#1db954] bg-[#1db954]/10'
+                      : 'border-gray-700 hover:border-gray-600 bg-white/5 hover:bg-white/10'
                   }`}
                 >
                   <input
@@ -282,16 +268,16 @@ const AddSong = () => {
                     <div className="text-center">
                       {uploadingCover ? (
                         <div className="flex flex-col items-center gap-3">
-                          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-purple-500 border-t-fuchsia-500" />
-                          <p className="text-xs sm:text-sm text-purple-300">Uploading...</p>
+                          <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-2 border-gray-600 border-t-white" />
+                          <p className="text-xs sm:text-sm text-gray-400">Uploading...</p>
                         </div>
                       ) : (
                         <>
-                          <FaCloudUploadAlt className="mx-auto text-4xl sm:text-5xl md:text-6xl text-purple-400 mb-3 sm:mb-4" />
+                          <FaCloudUploadAlt className="mx-auto text-4xl sm:text-5xl md:text-6xl text-gray-400 mb-3 sm:mb-4" />
                           <p className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
                             Drop cover image here
                           </p>
-                          <p className="text-xs sm:text-sm text-purple-300">
+                          <p className="text-xs sm:text-sm text-gray-400">
                             or click to browse
                           </p>
                         </>
@@ -306,11 +292,11 @@ const AddSong = () => {
                 whileHover={{ scale: 1.02 }}
                 className="space-y-3"
               >
-                <label className="flex items-center gap-2 text-sm sm:text-base font-semibold text-purple-200">
-                  <FaCompactDisc className="text-fuchsia-400" />
+                <label className="flex items-center gap-2 text-sm sm:text-base font-semibold text-white">
+                  <FaCompactDisc className="text-gray-400" />
                   Audio File
                 </label>
-                <p className="text-xs text-purple-300/70">
+                <p className="text-xs text-gray-500">
                   💡 Tip: Name as "Artist - Title.mp3" for auto-fill
                 </p>
                 
@@ -320,10 +306,10 @@ const AddSong = () => {
                   onDragOver={(e) => handleDrag(e, 'audio')}
                   onDrop={(e) => handleDrop(e, 'audio')}
                   onClick={() => audioInputRef.current?.click()}
-                  className={`relative border-2 border-dashed rounded-xl sm:rounded-2xl p-4 sm:p-6 md:p-8 cursor-pointer transition-all duration-300 ${
+                  className={`relative border-2 border-dashed rounded-lg p-4 sm:p-6 md:p-8 cursor-pointer transition-all duration-300 ${
                     dragActive.audio
-                      ? 'border-fuchsia-400 bg-fuchsia-500/20'
-                      : 'border-purple-500/50 hover:border-purple-400 bg-white/5 hover:bg-white/10'
+                      ? 'border-[#1db954] bg-[#1db954]/10'
+                      : 'border-gray-700 hover:border-gray-600 bg-white/5 hover:bg-white/10'
                   }`}
                 >
                   <input
@@ -338,8 +324,8 @@ const AddSong = () => {
                   <div className="text-center">
                     {uploadingAudio ? (
                       <div className="flex flex-col items-center gap-3">
-                        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-4 border-purple-500 border-t-fuchsia-500" />
-                        <p className="text-xs sm:text-sm text-purple-300">Uploading audio...</p>
+                        <div className="animate-spin rounded-full h-10 w-10 sm:h-12 sm:w-12 border-2 border-gray-600 border-t-white" />
+                        <p className="text-xs sm:text-sm text-gray-400">Uploading audio...</p>
                       </div>
                     ) : audioName ? (
                       <div className="flex flex-col items-center gap-3">
@@ -347,24 +333,24 @@ const AddSong = () => {
                           animate={{ scale: [1, 1.1, 1] }}
                           transition={{ duration: 1, repeat: Infinity }}
                         >
-                          <FaCheckCircle className="text-4xl sm:text-5xl md:text-6xl text-green-400" />
+                          <FaCheckCircle className="text-4xl sm:text-5xl md:text-6xl text-[#1db954]" />
                         </motion.div>
                         <div>
                           <p className="text-sm sm:text-base font-semibold text-white mb-1">
                             Audio uploaded!
                           </p>
-                          <p className="text-xs sm:text-sm text-purple-300 truncate max-w-[200px]">
+                          <p className="text-xs sm:text-sm text-gray-400 truncate max-w-[200px]">
                             {audioName}
                           </p>
                         </div>
                       </div>
                     ) : (
                       <>
-                        <FaCloudUploadAlt className="mx-auto text-4xl sm:text-5xl md:text-6xl text-purple-400 mb-3 sm:mb-4" />
+                        <FaCloudUploadAlt className="mx-auto text-4xl sm:text-5xl md:text-6xl text-gray-400 mb-3 sm:mb-4" />
                         <p className="text-sm sm:text-base font-semibold text-white mb-1 sm:mb-2">
                           Drop audio file here
                         </p>
-                        <p className="text-xs sm:text-sm text-purple-300">
+                        <p className="text-xs sm:text-sm text-gray-400">
                           or click to browse
                         </p>
                       </>
@@ -374,17 +360,17 @@ const AddSong = () => {
               </motion.div>
             </div>
 
-            {/* Song Details Section */}
+            {/* Song Details Section - Spotify Style */}
             <div className="space-y-4 sm:space-y-5">
-              <div className="flex items-center gap-2 border-b border-purple-500/30 pb-2">
-                <FaGuitar className="text-fuchsia-400 text-lg sm:text-xl" />
-                <h3 className="text-lg sm:text-xl font-bold text-white">Song Details</h3>
+              <div className="flex items-center gap-2 border-b border-gray-700 pb-2">
+                <FaGuitar className="text-gray-400 text-lg sm:text-xl" />
+                <h3 className="text-lg sm:text-xl font-semibold text-white">Song Details</h3>
               </div>
 
               {/* Title & Artist - Grid for larger screens */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
                 <div>
-                  <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-purple-200">
+                  <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-white">
                     <FaMusic className="text-xs" />
                     Title
                   </label>
@@ -394,13 +380,13 @@ const AddSong = () => {
                     value={form.title}
                     onChange={handleChange}
                     placeholder="Song Title"
-                    className="w-full p-3 sm:p-3.5 rounded-xl bg-white/10 border-2 border-purple-400/50 text-white placeholder-purple-300/50 focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 focus:outline-none transition-all duration-300 text-sm sm:text-base"
+                    className="w-full p-3 sm:p-3.5 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300 text-sm sm:text-base"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-purple-200">
+                  <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-white">
                     <FaMicrophone className="text-xs" />
                     Artist
                   </label>
@@ -410,7 +396,7 @@ const AddSong = () => {
                     value={form.artist}
                     onChange={handleChange}
                     placeholder="Artist Name"
-                    className="w-full p-3 sm:p-3.5 rounded-xl bg-white/10 border-2 border-purple-400/50 text-white placeholder-purple-300/50 focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 focus:outline-none transition-all duration-300 text-sm sm:text-base"
+                    className="w-full p-3 sm:p-3.5 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300 text-sm sm:text-base"
                     required
                   />
                 </div>
@@ -418,7 +404,7 @@ const AddSong = () => {
 
               {/* Genre */}
               <div>
-                <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-purple-200">
+                <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-white">
                   <FaCompactDisc className="text-xs" />
                   Genres
                 </label>
@@ -428,16 +414,16 @@ const AddSong = () => {
                   value={form.genre}
                   onChange={handleChange}
                   placeholder="e.g. Pop, Rock, Jazz"
-                  className="w-full p-3 sm:p-3.5 rounded-xl bg-white/10 border-2 border-purple-400/50 text-white placeholder-purple-300/50 focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 focus:outline-none transition-all duration-300 text-sm sm:text-base"
+                  className="w-full p-3 sm:p-3.5 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300 text-sm sm:text-base"
                   required
                 />
-                <p className="text-xs text-purple-300/70 mt-2">
+                <p className="text-xs text-gray-500 mt-2">
                   Separate multiple genres with commas
                 </p>
               </div>
             </div>
 
-            {/* Submit Button */}
+            {/* Submit Button - Spotify Style */}
             <motion.button
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
@@ -452,7 +438,7 @@ const AddSong = () => {
                 !form.artist ||
                 !form.genre
               }
-              className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 transition-all duration-300 px-4 py-3.5 sm:py-4 rounded-xl text-white font-bold text-base sm:text-lg shadow-lg hover:shadow-fuchsia-500/50 border-2 border-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full bg-white text-black hover:scale-105 transition-all duration-300 px-4 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {loading ? (
                 <span className="flex items-center justify-center gap-2">
@@ -471,36 +457,6 @@ const AddSong = () => {
             </motion.button>
           </form>
         </div>
-
-        {/* Floating music notes decoration */}
-        <motion.div
-          animate={{
-            y: [0, -20, 0],
-            rotate: [0, 10, 0],
-          }}
-          transition={{
-            duration: 4,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="fixed top-20 right-10 text-purple-400/20 text-6xl pointer-events-none hidden lg:block"
-        >
-          ♪
-        </motion.div>
-        <motion.div
-          animate={{
-            y: [0, 20, 0],
-            rotate: [0, -10, 0],
-          }}
-          transition={{
-            duration: 5,
-            repeat: Infinity,
-            ease: "easeInOut",
-          }}
-          className="fixed bottom-20 left-10 text-fuchsia-400/20 text-7xl pointer-events-none hidden lg:block"
-        >
-          ♫
-        </motion.div>
       </motion.div>
     </div>
   );

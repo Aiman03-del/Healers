@@ -230,11 +230,11 @@ const MyProfile = () => {
             <div className="flex flex-col md:flex-row items-center gap-6 md:gap-8">
               {/* Profile Picture - Spotify Style */}
               <div className="relative flex-shrink-0">
-                <img
-                  src={editing ? (editImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(editName || user.email)}`) : (user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}`)}
-                  alt="Profile"
+                  <img
+                    src={editing ? (editImage || `https://ui-avatars.com/api/?name=${encodeURIComponent(editName || user.email)}`) : (user.image || `https://ui-avatars.com/api/?name=${encodeURIComponent(user.name || user.email)}`)}
+                    alt="Profile"
                   className="w-24 h-24 sm:w-32 sm:h-32 md:w-40 md:h-40 rounded-full shadow-lg object-cover"
-                />
+                  />
               </div>
 
               {/* Profile Info - Spotify Style */}
@@ -322,7 +322,7 @@ const MyProfile = () => {
             >
               <div className="bg-[#282828] rounded-lg shadow-2xl p-6 sm:p-8 border border-gray-800">
                 <div className="mb-6">
-                  <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
+                    <h2 className="text-2xl font-bold text-white">Edit Profile</h2>
                   <p className="text-gray-400 text-sm mt-1">Update your personal information</p>
                 </div>
 

@@ -405,9 +405,9 @@ function HomeContent({ searchQuery = "" }) {
               <div className="h-5 w-20 bg-gray-800 rounded animate-pulse" />
             </div>
             <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
-              {[...Array(6)].map((_, i) => (
-                <div
-                  key={i}
+          {[...Array(6)].map((_, i) => (
+            <div
+              key={i}
                   className="bg-[#181818] rounded-lg p-4 animate-pulse"
                 >
                   <div className="w-full aspect-square mb-4 rounded bg-gray-700" />
@@ -456,9 +456,9 @@ function HomeContent({ searchQuery = "" }) {
                   <div className="w-full aspect-square mb-4 rounded bg-gray-700" />
                   <div className="h-4 w-3/4 bg-gray-700 rounded mb-2" />
                   <div className="h-3 w-1/2 bg-gray-800 rounded" />
-                </div>
-              ))}
             </div>
+          ))}
+        </div>
           </div>
         </>
       ) : (

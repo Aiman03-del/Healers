@@ -48,10 +48,10 @@ const DashboardLayout = () => {
   }, []);
 
   return (
-    <div className="flex flex-col md:flex-row min-h-screen bg-gray-900 text-white">
-      {/* Sidebar for desktop */}
+    <div className="flex flex-col md:flex-row min-h-screen bg-[#121212] text-white">
+      {/* Sidebar for desktop - Spotify Style */}
       <aside
-        className="sticky top-0 h-[60px] md:h-screen w-full md:w-64 bg-gradient-to-b from-purple-900 via-gray-900 to-gray-800 p-0 shadow-2xl border-b md:border-b-0 md:border-r border-purple-900 flex md:flex-col z-30"
+        className="sticky top-0 h-[60px] md:h-screen w-full md:w-64 bg-[#000000] p-0 shadow-2xl border-b md:border-b-0 md:border-r border-gray-800 flex md:flex-col z-30"
       >
         <div className="hidden md:block w-full h-full">
           <DashboardSidebar onLogout={logout} />
@@ -59,25 +59,25 @@ const DashboardLayout = () => {
         {/* Mobile sidebar toggle area (empty for desktop) */}
         <div className="md:hidden w-full h-full"></div>
       </aside>
-      {/* Sidebar for mobile (slide-in) */}
+      {/* Sidebar for mobile (slide-in) - Spotify Style */}
       <div
         className={`fixed inset-0 z-40 md:hidden transition-all duration-300 ${sidebarOpen ? "block" : "pointer-events-none"}`}
         {...(!sidebarOpen ? { inert: true } : {})}
       >
         {/* Backdrop */}
         <div
-          className={`fixed inset-0 bg-black/40 transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0"}`}
+          className={`fixed inset-0 bg-black/60 transition-opacity duration-300 ${sidebarOpen ? "opacity-100" : "opacity-0"}`}
           onClick={() => setSidebarOpen(false)}
         />
-        {/* Sidebar panel */}
+        {/* Sidebar panel - Spotify Style */}
         <aside
-          className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-gradient-to-b from-purple-900 via-gray-900 to-gray-800 shadow-2xl border-r border-purple-900 flex flex-col z-50 transform transition-transform duration-300 ${
+          className={`fixed top-0 left-0 h-full w-4/5 max-w-xs bg-[#000000] shadow-2xl border-r border-gray-800 flex flex-col z-50 transform transition-transform duration-300 ${
             sidebarOpen ? "translate-x-0" : "-translate-x-full"
           }`}
         >
-          {/* Close button */}
+          {/* Close button - Spotify Style */}
           <button
-            className="absolute top-4 right-4 text-2xl text-purple-200 hover:text-white"
+            className="absolute top-4 right-4 text-2xl text-gray-400 hover:text-white transition-colors"
             onClick={() => setSidebarOpen(false)}
             aria-label="Close sidebar"
           >
@@ -86,17 +86,17 @@ const DashboardLayout = () => {
           <DashboardSidebar onLogout={logout} />
         </aside>
       </div>
-      {/* Toggle button (hamburger) */}
+      {/* Toggle button (hamburger) - Spotify Style */}
       <button
-        className="fixed top-4 left-4 z-50 bg-purple-700 text-white p-2 rounded-full shadow-lg hover:bg-purple-800 transition md:hidden"
+        className="fixed top-4 left-4 z-50 bg-[#181818] text-white p-2 rounded-full shadow-lg hover:bg-[#282828] transition md:hidden"
         onClick={() => setSidebarOpen(true)}
         aria-label="Open sidebar"
         style={{ display: sidebarOpen ? "none" : "block" }}
       >
         <FaBars />
       </button>
-      {/* Main */}
-      <main className="flex-1 w-full px-2 py-2 sm:px-4 sm:py-4 md:px-8 md:py-8 transition-all duration-300 overflow-x-auto">
+      {/* Main - Spotify Style */}
+      <main className="flex-1 w-full px-2 py-2 sm:px-4 sm:py-4 md:px-8 md:py-8 transition-all duration-300 overflow-x-auto bg-[#121212]">
         <div className="w-full max-w-7xl mx-auto">
           <Outlet />
         </div>
@@ -110,8 +110,8 @@ const SidebarLink = ({ to, label, icon, location }) => (
     to={to}
     className={`flex items-center gap-3 px-4 py-3 rounded-lg font-medium transition ${
       location.pathname === to
-        ? 'bg-purple-700 text-white shadow'
-        : 'hover:bg-purple-800/60 text-purple-200'
+        ? 'bg-white/10 text-white'
+        : 'hover:bg-white/10 text-gray-400 hover:text-white'
     }`}
   >
     <span className="text-lg">{icon}</span>

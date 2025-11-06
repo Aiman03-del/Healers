@@ -40,15 +40,7 @@ function Login() {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-gray-900 via-purple-900 to-fuchsia-900 text-white relative overflow-hidden">
-      {/* Animated background gradient overlay */}
-      <div
-        className="absolute inset-0 bg-gradient-to-r from-transparent via-white/5 to-transparent animate-shimmer pointer-events-none"
-        style={{
-          backgroundSize: "200% 100%",
-          animation: "shimmer 8s ease-in-out infinite",
-        }}
-      />
+    <div className="min-h-screen flex bg-[#121212] text-white relative overflow-hidden">
 
       <div className="w-full flex flex-col lg:flex-row relative z-10">
         {/* Left Side - Branding & Content */}
@@ -72,18 +64,17 @@ function Login() {
               className="flex items-center gap-4 mb-8"
             >
               <div className="relative">
-                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-full blur-2xl opacity-60" />
                 <img
                   src={logo}
                   alt="Healers Logo"
-                  className="w-20 h-20 object-cover rounded-full border-3 border-purple-400 shadow-2xl relative z-10"
+                  className="w-20 h-20 object-cover rounded-full relative z-10"
                 />
               </div>
               <div>
-                <h1 className="text-4xl font-bold bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent">
+                <h1 className="text-4xl font-bold text-white">
                   Healers
                 </h1>
-                <p className="text-purple-300 text-sm flex items-center gap-2">
+                <p className="text-gray-400 text-sm flex items-center gap-2">
                   <FaMusic className="text-xs" />
                   Music that heals your soul
                 </p>
@@ -93,13 +84,13 @@ function Login() {
             {/* Main Content */}
             <div className="space-y-8">
               <div>
-                <h2 className="text-4xl font-bold mb-4 leading-tight">
+                <h2 className="text-4xl font-bold mb-4 leading-tight text-white">
                   Welcome Back to Your
-                  <span className="block bg-gradient-to-r from-fuchsia-400 to-purple-400 bg-clip-text text-transparent">
+                  <span className="block text-white">
                     Musical Journey
                   </span>
                 </h2>
-                <p className="text-purple-200 text-lg leading-relaxed">
+                <p className="text-gray-400 text-lg leading-relaxed">
                   Continue exploring thousands of healing melodies crafted just for you.
                 </p>
               </div>
@@ -108,74 +99,45 @@ function Login() {
               <div className="space-y-4">
                 <motion.div
                   whileHover={{ x: 10 }}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-purple-500/30"
+                  className="flex items-center gap-4 p-4 rounded-lg bg-[#181818] hover:bg-[#282828] border border-gray-800 transition-colors"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-fuchsia-600 flex items-center justify-center">
-                    <FaHeadphones className="text-2xl" />
+                  <div className="w-12 h-12 rounded-lg bg-[#282828] flex items-center justify-center">
+                    <FaHeadphones className="text-2xl text-gray-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">Unlimited Music</h3>
-                    <p className="text-sm text-purple-300">Stream your favorite songs anytime</p>
+                    <p className="text-sm text-gray-400">Stream your favorite songs anytime</p>
                   </div>
                 </motion.div>
 
                 <motion.div
                   whileHover={{ x: 10 }}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-purple-500/30"
+                  className="flex items-center gap-4 p-4 rounded-lg bg-[#181818] hover:bg-[#282828] border border-gray-800 transition-colors"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-fuchsia-600 to-pink-600 flex items-center justify-center">
-                    <FaHeart className="text-2xl" />
+                  <div className="w-12 h-12 rounded-lg bg-[#282828] flex items-center justify-center">
+                    <FaHeart className="text-2xl text-gray-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">Personalized Playlists</h3>
-                    <p className="text-sm text-purple-300">Create and share your collections</p>
+                    <p className="text-sm text-gray-400">Create and share your collections</p>
                   </div>
                 </motion.div>
 
                 <motion.div
                   whileHover={{ x: 10 }}
-                  className="flex items-center gap-4 p-4 rounded-2xl bg-white/5 backdrop-blur-sm border border-purple-500/30"
+                  className="flex items-center gap-4 p-4 rounded-lg bg-[#181818] hover:bg-[#282828] border border-gray-800 transition-colors"
                 >
-                  <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center">
-                    <FaGuitar className="text-2xl" />
+                  <div className="w-12 h-12 rounded-lg bg-[#282828] flex items-center justify-center">
+                    <FaGuitar className="text-2xl text-gray-400" />
                   </div>
                   <div>
                     <h3 className="font-semibold text-white">High Quality Audio</h3>
-                    <p className="text-sm text-purple-300">Experience music like never before</p>
+                    <p className="text-sm text-gray-400">Experience music like never before</p>
                   </div>
                 </motion.div>
               </div>
             </div>
 
-            {/* Floating music notes */}
-            <motion.div
-              animate={{
-                y: [0, -20, 0],
-                rotate: [0, 10, 0],
-              }}
-              transition={{
-                duration: 4,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute top-10 right-10 text-purple-400/20 text-6xl"
-            >
-              ♪
-            </motion.div>
-            <motion.div
-              animate={{
-                y: [0, 20, 0],
-                rotate: [0, -10, 0],
-              }}
-              transition={{
-                duration: 5,
-                repeat: Infinity,
-                ease: "easeInOut",
-              }}
-              className="absolute bottom-10 left-10 text-fuchsia-400/20 text-7xl"
-            >
-              ♫
-            </motion.div>
           </div>
         </motion.div>
 
@@ -194,38 +156,34 @@ function Login() {
                 whileTap={{ scale: 0.95 }}
                 className="relative mb-4"
               >
-                <div className="absolute inset-0 bg-gradient-to-br from-fuchsia-500 to-purple-600 rounded-full blur-xl opacity-60" />
                 <img
                   src={logo}
                   alt="Healers Logo"
-                  className="w-20 h-20 object-cover rounded-full border-3 border-purple-400 shadow-2xl relative z-10"
+                  className="w-20 h-20 object-cover rounded-full relative z-10"
                 />
               </motion.div>
-              <h1 className="text-3xl font-bold bg-gradient-to-r from-purple-200 via-fuchsia-200 to-pink-200 bg-clip-text text-transparent mb-2">
+              <h1 className="text-3xl font-bold text-white mb-2">
                 Welcome Back
               </h1>
-              <p className="text-purple-300 text-sm flex items-center gap-2">
+              <p className="text-gray-400 text-sm flex items-center gap-2">
                 <FaMusic className="text-xs" />
                 Continue your healing journey
               </p>
             </div>
 
-            <div className="bg-gradient-to-br from-gray-900/80 via-purple-900/80 to-fuchsia-900/80 backdrop-blur-2xl rounded-3xl shadow-2xl border-2 border-purple-500/30 p-8 relative overflow-hidden">
-              {/* Glassmorphism overlay */}
-              <div className="absolute inset-0 bg-white/5 backdrop-blur-xl pointer-events-none" />
-          
+            <div className="bg-[#181818] rounded-lg shadow-2xl border border-gray-800 p-8 relative overflow-hidden">
               {/* Content */}
               <div className="relative z-10">
                 {/* Desktop Title */}
                 <div className="hidden lg:block mb-8">
                   <h2 className="text-3xl font-bold text-white mb-2">Login to Healers</h2>
-                  <p className="text-purple-300">Enter your credentials to continue</p>
+                  <p className="text-gray-400">Enter your credentials to continue</p>
                 </div>
 
                 <form onSubmit={handleSubmit} className="space-y-5">
-                  {/* Email Field */}
+                  {/* Email Field - Spotify Style */}
                   <div>
-                    <label className="flex items-center gap-2 mb-2 text-sm text-purple-200 font-semibold">
+                    <label className="flex items-center gap-2 mb-2 text-sm text-white font-semibold">
                       <FaEnvelope className="text-xs" />
                       Email Address
                     </label>
@@ -233,7 +191,7 @@ function Login() {
                       <input
                         type="email"
                         placeholder="your@email.com"
-                        className="w-full p-3.5 rounded-xl bg-white/10 border-2 border-purple-400/50 text-white placeholder-purple-300/50 focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 focus:outline-none transition-all duration-300"
+                        className="w-full p-3.5 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300"
                         value={form.email}
                         onChange={(e) => setForm({ ...form, email: e.target.value })}
                         required
@@ -241,9 +199,9 @@ function Login() {
                     </div>
                   </div>
 
-                  {/* Password Field */}
+                  {/* Password Field - Spotify Style */}
                   <div>
-                    <label className="flex items-center gap-2 mb-2 text-sm text-purple-200 font-semibold">
+                    <label className="flex items-center gap-2 mb-2 text-sm text-white font-semibold">
                       <FaLock className="text-xs" />
                       Password
                     </label>
@@ -251,14 +209,14 @@ function Login() {
                       <input
                         type={showPassword ? "text" : "password"}
                         placeholder="Enter your password"
-                        className="w-full p-3.5 rounded-xl bg-white/10 border-2 border-purple-400/50 text-white placeholder-purple-300/50 pr-12 focus:ring-2 focus:ring-fuchsia-400 focus:border-fuchsia-400 focus:outline-none transition-all duration-300"
+                        className="w-full p-3.5 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 pr-12 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300"
                         value={form.password}
                         onChange={(e) => setForm({ ...form, password: e.target.value })}
                         required
                       />
                       <button
                         type="button"
-                        className="absolute right-4 top-1/2 -translate-y-1/2 text-lg text-purple-300 hover:text-fuchsia-300 transition-colors"
+                        className="absolute right-4 top-1/2 -translate-y-1/2 text-lg text-gray-400 hover:text-white transition-colors"
                         onClick={() => setShowPassword((v) => !v)}
                         tabIndex={-1}
                         aria-label={showPassword ? "Hide password" : "Show password"}
@@ -279,13 +237,13 @@ function Login() {
                     </motion.div>
                   )}
 
-                    {/* Login Button */}
+                    {/* Login Button - Spotify Style */}
                     <motion.button
                       whileHover={{ scale: 1.02 }}
                       whileTap={{ scale: 0.98 }}
                       type="submit"
                       disabled={loading}
-                      className="w-full bg-gradient-to-r from-purple-600 via-fuchsia-600 to-pink-600 hover:from-purple-700 hover:via-fuchsia-700 hover:to-pink-700 transition-all duration-300 px-4 py-3.5 rounded-xl text-white font-bold shadow-lg hover:shadow-fuchsia-500/50 border-2 border-purple-400/50 disabled:opacity-50 disabled:cursor-not-allowed"
+                      className="w-full bg-white text-black hover:scale-105 transition-all duration-300 px-4 py-3.5 rounded-full font-bold disabled:opacity-50 disabled:cursor-not-allowed"
                     >
                     {loading ? (
                       <span className="flex items-center justify-center gap-2">
@@ -303,29 +261,29 @@ function Login() {
                 
                 {/* Divider */}
                 <div className="flex items-center gap-3 my-6">
-                  <div className="flex-1 h-px bg-purple-500/40" />
-                  <span className="text-purple-300 text-sm font-semibold">OR</span>
-                  <div className="flex-1 h-px bg-purple-500/40" />
+                  <div className="flex-1 h-px bg-gray-700" />
+                  <span className="text-gray-400 text-sm font-semibold">OR</span>
+                  <div className="flex-1 h-px bg-gray-700" />
                 </div>
 
-                {/* Google Login Button */}
+                {/* Google Login Button - Spotify Style */}
                 <motion.button
                   whileHover={{ scale: 1.02 }}
                   whileTap={{ scale: 0.98 }}
                   onClick={handleGoogleLogin}
                   disabled={loading}
-                  className="w-full flex items-center justify-center gap-3 bg-white hover:bg-gray-100 text-gray-800 font-bold px-4 py-3.5 rounded-xl transition-all duration-300 border-2 border-purple-400/50 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="w-full flex items-center justify-center gap-3 bg-white hover:scale-105 text-black font-bold px-4 py-3.5 rounded-full transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                   <FcGoogle className="text-2xl" />
                   Continue with Google
                 </motion.button>
 
-                {/* Sign up link */}
-                <p className="mt-6 text-center text-sm text-purple-200">
+                {/* Sign up link - Spotify Style */}
+                <p className="mt-6 text-center text-sm text-gray-400">
                   Don't have an account?{' '}
                   <Link 
                     to="/register" 
-                    className="text-fuchsia-300 hover:text-fuchsia-200 font-bold underline transition-colors"
+                    className="text-white hover:underline font-semibold transition-colors"
                   >
                     Sign up now
                   </Link>

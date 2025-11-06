@@ -26,10 +26,7 @@ export const PlaylistDetails = () => {
   const { user } = useAuth();
   const [likedSongIds, setLikedSongIds] = useState([]); // Local liked state
   const [likeEffectId, setLikeEffectId] = useState(null); // For animation
-  const { get, put, post } = useAxios(); // 🆕
-
-  // Use window.__theme or fallback to "dark"
-  const theme = typeof window !== "undefined" ? window.__theme || "dark" : "dark";
+  const { get, put, post } = useAxios();
 
   // Fetch playlist details
   useEffect(() => {
@@ -198,61 +195,34 @@ export const PlaylistDetails = () => {
     setTimeout(() => setLikeEffectId(null), 800);
   };
 
-  // Helper for dynamic classes
-  const bgCard =
-    theme === "light"
-      ? "bg-gradient-to-br from-purple-100 via-pink-100 to-blue-100"
-      : "bg-gradient-to-br from-purple-900 via-gray-900 to-gray-800";
-  const bgInner =
-    theme === "light"
-      ? "bg-white/70"
-      : "bg-white/10";
-  const textMain =
-    theme === "light"
-      ? "text-gray-900"
-      : "text-white";
-  const textSub =
-    theme === "light"
-      ? "text-purple-700"
-      : "text-purple-200";
-  const borderCard =
-    theme === "light"
-      ? "border border-purple-200"
-      : "border-4 border-purple-700";
-  const shadowCard =
-    theme === "light"
-      ? "shadow-xl"
-      : "shadow-xl";
+  // Spotify-style: Remove theme-based classes, use consistent dark theme
 
   if (loading) return (
     <MainLayout>
-      <div className="max-w-3xl mx-auto py-10 px-4">
-        <div className="animate-pulse bg-gradient-to-br from-purple-900 via-gray-900 to-gray-800 rounded-2xl shadow-xl p-8 mb-8 flex flex-col md:flex-row items-center gap-8">
-          <div className="w-32 h-32 rounded-xl bg-gray-700" />
+      <div className="max-w-6xl mx-auto py-10 px-4 bg-[#121212] min-h-screen">
+        <div className="animate-pulse bg-[#181818] rounded-lg p-8 mb-8 flex flex-col md:flex-row items-center gap-8">
+          <div className="w-32 h-32 rounded bg-[#282828]" />
           <div className="flex-1 space-y-4">
-            <div className="h-8 w-1/2 bg-gray-700 rounded" />
-            <div className="h-4 w-1/3 bg-gray-800 rounded" />
-            <div className="h-4 w-1/4 bg-gray-800 rounded" />
+            <div className="h-8 w-1/2 bg-[#282828] rounded" />
+            <div className="h-4 w-1/3 bg-[#282828] rounded" />
+            <div className="h-4 w-1/4 bg-[#282828] rounded" />
             <div className="flex gap-2 mt-2">
-              <div className="w-10 h-10 rounded-full bg-gray-700" />
-              <div className="w-10 h-10 rounded-full bg-gray-700" />
-              <div className="w-10 h-10 rounded-full bg-gray-700" />
+              <div className="w-12 h-12 rounded-full bg-[#282828]" />
+              <div className="w-12 h-12 rounded-full bg-[#282828]" />
+              <div className="w-12 h-12 rounded-full bg-[#282828]" />
             </div>
           </div>
         </div>
-        <div className="bg-white/10 rounded-xl shadow-lg p-6">
+        <div className="bg-[#181818] rounded-lg p-6">
           <div className="space-y-4">
             {[...Array(4)].map((_, i) => (
               <div key={i} className="flex items-center gap-4 animate-pulse">
-                <div className="w-16 h-16 rounded-lg bg-gray-700" />
+                <div className="w-16 h-16 rounded bg-[#282828]" />
                 <div className="flex-1 space-y-2">
-                  <div className="h-4 w-1/2 bg-gray-700 rounded" />
-                  <div className="h-3 w-1/3 bg-gray-800 rounded" />
-                  <div className="h-3 w-1/4 bg-gray-800 rounded" />
+                  <div className="h-4 w-1/2 bg-[#282828] rounded" />
+                  <div className="h-3 w-1/3 bg-[#282828] rounded" />
                 </div>
-                <div className="flex flex-col gap-2">
-                  <div className="w-8 h-8 rounded-full bg-gray-700" />
-                </div>
+                <div className="w-8 h-8 rounded-full bg-[#282828]" />
               </div>
             ))}
           </div>
@@ -285,211 +255,185 @@ export const PlaylistDetails = () => {
 
   return (
     <MainLayout>
-      <div className={`max-w-3xl mx-auto py-10 px-4`}>
-        {/* Back Button */}
-        <motion.button
+      <div className="max-w-6xl mx-auto py-10 px-4 bg-[#121212] min-h-screen">
+        {/* Back Button - Spotify Style */}
+        <button
           onClick={() => navigate(-1)}
-          className={`mb-6 flex items-center gap-2 px-4 py-2 rounded-lg ${
-            theme === "light"
-              ? "bg-gradient-to-r from-purple-100 to-pink-100 text-purple-700 hover:from-purple-200 hover:to-pink-200"
-              : "bg-gradient-to-r from-purple-900/50 to-fuchsia-900/50 text-purple-200 hover:from-purple-800/60 hover:to-fuchsia-800/60"
-          } backdrop-blur-sm shadow-lg hover:shadow-xl transition-all border ${
-            theme === "light" ? "border-purple-200" : "border-purple-700/40"
-          }`}
+          className="mb-6 flex items-center gap-2 px-4 py-2 rounded-full text-gray-400 hover:text-white transition-colors"
         >
           <FaChevronLeft className="text-lg" />
           <span className="font-semibold">Back</span>
-        </motion.button>
+        </button>
 
-        {/* Playlist Info Card */}
-        <div className={`${bgCard} ${shadowCard} ${borderCard} rounded-2xl p-8 mb-8 flex flex-col md:flex-row items-center gap-8 transition-all`}>
-        <div className="flex-shrink-0 flex flex-col items-center">
-          <div className={`w-32 h-32 rounded-xl overflow-hidden shadow-lg ${borderCard} bg-gray-700 flex items-center justify-center`}>
-            {/* Playlist Cover: first song cover or fallback */}
-            {playlist.songs?.[0]?.cover ? (
-              <img src={playlist.songs[0].cover} alt="cover" className="w-full h-full object-cover" />
-            ) : (
-              <MdPlaylistPlay className={`text-6xl ${theme === "light" ? "text-purple-400" : "text-purple-300"}`} />
+        {/* Playlist Info Card - Spotify Style */}
+        <div className="bg-gradient-to-b from-[#1db954]/20 via-transparent to-transparent rounded-lg p-6 md:p-8 mb-8 flex flex-col md:flex-row items-center gap-6 md:gap-8">
+          <div className="flex-shrink-0 flex flex-col items-center">
+            <div className="w-48 h-48 md:w-56 md:h-56 rounded-lg overflow-hidden shadow-2xl bg-[#282828] flex items-center justify-center">
+              {/* Playlist Cover: first song cover or fallback */}
+              {playlist.songs?.[0]?.cover ? (
+                <img src={playlist.songs[0].cover} alt="cover" className="w-full h-full object-cover" />
+              ) : (
+                <MdPlaylistPlay className="text-6xl md:text-7xl text-gray-400" />
+              )}
+            </div>
+            <div className="mt-4 text-xs text-gray-400">
+              {playlist.songs?.length || 0} Song{playlist.songs?.length === 1 ? '' : 's'}
+            </div>
+          </div>
+          <div className="flex-1 text-center md:text-left">
+            <h1 className="text-4xl md:text-5xl font-bold mb-2 text-white">{playlist.name}</h1>
+            {playlist.description && (
+              <p className="mb-4 text-gray-400 text-sm md:text-base">{playlist.description}</p>
             )}
-          </div>
-          <div className={`mt-4 text-xs ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-            {playlist.songs?.length || 0} Song{playlist.songs?.length === 1 ? '' : 's'}
-          </div>
-        </div>
-        <div className="flex-1">
-          <h1 className={`text-3xl font-bold mb-2 ${textMain}`}>{playlist.name}</h1>
-          {playlist.description && (
-            <p className={`mb-3 ${theme === "light" ? "text-gray-700" : "text-gray-300"}`}>{playlist.description}</p>
-          )}
-          <div className="flex flex-wrap items-center gap-3 mb-3">
-            <span className={`bg-purple-200 text-xs px-2 py-1 rounded ${theme === "light" ? "text-purple-800" : "bg-purple-700 text-white"}`}>
-              Created: {playlist.createdAt ? new Date(playlist.createdAt).toLocaleDateString() : 'N/A'}
-            </span>
-            <span className={`bg-pink-200 text-xs px-2 py-1 rounded ${theme === "light" ? "text-pink-800" : "bg-pink-700 text-white"}`}>
-              Played: {playlist.playCount || 0} times
-            </span>
-          </div>
-          <div className="flex flex-wrap gap-2 mt-2">
-            <button
-              onClick={handlePlayAllToggle}
-              className={`px-4 py-2 rounded font-semibold ${textMain} shadow flex items-center justify-center text-xl bg-transparent backdrop-blur-sm hover:bg-purple-700/30`}
-              aria-label={isPlaylistPlaying ? "Pause All" : "Play All"}
-            >
-              {isPlaylistPlaying ? <FaPause /> : <FaPlay />}
-            </button>
-            <button
-              onClick={() => playShuffledPlaylist(playlist.songs)}
-              className={`px-4 py-2 rounded font-semibold ${textMain} shadow flex items-center justify-center text-xl bg-transparent backdrop-blur-sm hover:bg-pink-700/30`}
-              aria-label="Shuffle Play"
-            >
-              <FaRandom />
-            </button>
-            <button
-              onClick={handleDownload}
-              className={`px-4 py-2 rounded ${textMain} font-semibold shadow flex items-center justify-center text-xl bg-transparent backdrop-blur-sm hover:bg-blue-700/30`}
-              aria-label="Download JSON"
-            >
-              <FaDownload />
-            </button>
-            <button
-              onClick={handleShare}
-              className={`px-4 py-2 rounded font-semibold shadow flex items-center justify-center text-xl bg-transparent backdrop-blur-sm hover:bg-yellow-600/30`}
-              aria-label="Copy Share Link"
-            >
-              <FaShareAlt />
-            </button>
-          </div>
-        </div>
-      </div>
-      {/* Song List */}
-      <div className={`${bgInner} rounded-xl shadow-lg p-6`}>
-        <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
-          <h2 className={`text-xl font-bold ${textSub} flex items-center gap-2`}>
-            <MdPlaylistPlay className="text-2xl" /> Songs in Playlist
-            {playlist.songs && playlist.songs.length > 0 && (
-              <span className="text-sm font-normal opacity-70">
-                ({playlist.songs.length})
+            <div className="flex flex-wrap items-center justify-center md:justify-start gap-3 mb-4 text-xs md:text-sm">
+              <span className="text-gray-400">
+                Created: {playlist.createdAt ? new Date(playlist.createdAt).toLocaleDateString() : 'N/A'}
               </span>
-            )}
-          </h2>
-          
-          {/* Add Song Button - Always visible */}
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            onClick={() => setShowAddModal(true)}
-            className={`flex items-center gap-2 px-4 py-2 rounded-lg font-semibold shadow-lg transition-all ${
-              theme === "light"
-                ? "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white"
-                : "bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white"
-            }`}
-          >
-            <FaPlus />
-            <span className="hidden sm:inline">Add Song</span>
-            <span className="sm:hidden">Add</span>
-          </motion.button>
-        </div>
-        
-        {(!playlist.songs || playlist.songs.length === 0) ? (
-          <div className="text-center py-12">
-            <FaMusic className="text-6xl text-purple-400/50 mx-auto mb-4" />
-            <p className={`text-lg font-semibold mb-2 ${textMain}`}>No songs yet</p>
-            <p className={`${theme === "light" ? "text-gray-500" : "text-gray-400"}`}>
-              Click the "Add Song" button above to get started!
-            </p>
+              <span className="text-gray-400">
+                • Played: {playlist.playCount || 0} times
+              </span>
+            </div>
+            <div className="flex flex-wrap gap-3 justify-center md:justify-start">
+              <button
+                onClick={handlePlayAllToggle}
+                className="px-6 py-3 rounded-full bg-[#1db954] hover:bg-[#1ed760] text-white font-bold flex items-center justify-center gap-2 transition-colors hover:scale-105"
+                aria-label={isPlaylistPlaying ? "Pause All" : "Play All"}
+              >
+                {isPlaylistPlaying ? <FaPause /> : <FaPlay />}
+                <span>{isPlaylistPlaying ? "Pause" : "Play"}</span>
+              </button>
+              <button
+                onClick={() => playShuffledPlaylist(playlist.songs)}
+                className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+                aria-label="Shuffle Play"
+              >
+                <FaRandom />
+                <span className="hidden sm:inline">Shuffle</span>
+              </button>
+              <button
+                onClick={handleDownload}
+                className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+                aria-label="Download JSON"
+              >
+                <FaDownload />
+                <span className="hidden sm:inline">Download</span>
+              </button>
+              <button
+                onClick={handleShare}
+                className="px-6 py-3 rounded-full bg-white/10 hover:bg-white/20 text-white font-semibold flex items-center justify-center gap-2 transition-colors"
+                aria-label="Copy Share Link"
+              >
+                <FaShareAlt />
+                <span className="hidden sm:inline">Share</span>
+              </button>
+            </div>
           </div>
-        ) : (
-          <ul className="space-y-4">
-            {playlist.songs.map((song, idx) => {
-              const isCurrent = currentSong && (currentSong._id === song._id || currentSong.id === song._id);
-              const isLiked = likedSongIds.includes(song._id);
-              return (
-                <li
-                  key={song._id}
-                  className={`flex items-center gap-4 ${theme === "light"
-                    ? "bg-gradient-to-r from-purple-100/60 to-blue-100/40"
-                    : "bg-gradient-to-r from-purple-800/30 to-gray-900/60"
-                  } rounded-lg p-4 hover:shadow-xl transition ${isCurrent ? 'ring-2 ring-purple-400' : ''}`}
-                >
-                  <div className="relative w-16 h-16 rounded-lg overflow-hidden bg-gray-700 flex-shrink-0 group">
-                    <img
-                      src={song.cover}
-                      alt={song.title}
-                      className="w-full h-full object-cover"
-                    />
-                    <button
-                      onClick={() => handlePlaySong(song)}
-                      className={`absolute inset-0 flex items-center justify-center bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity ${isCurrent && isPlaying ? 'opacity-100' : ''}`}
-                      aria-label={isCurrent && isPlaying ? "Pause" : "Play"}
-                    >
-                      {isCurrent && isPlaying ? (
-                        <FaPause className="text-white text-2xl" />
-                      ) : (
-                        <FaPlay className="text-white text-2xl" />
+        </div>
+        {/* Song List - Spotify Style */}
+        <div className="bg-[#181818] rounded-lg p-6">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 mb-6">
+            <h2 className="text-xl font-bold text-white flex items-center gap-2">
+              <MdPlaylistPlay className="text-2xl text-gray-400" /> Songs in Playlist
+              {playlist.songs && playlist.songs.length > 0 && (
+                <span className="text-sm font-normal text-gray-400">
+                  ({playlist.songs.length})
+                </span>
+              )}
+            </h2>
+            
+            {/* Add Song Button - Spotify Style */}
+            <button
+              onClick={() => setShowAddModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-bold hover:scale-105 transition-all"
+            >
+              <FaPlus />
+              <span className="hidden sm:inline">Add Song</span>
+              <span className="sm:hidden">Add</span>
+            </button>
+          </div>
+        
+          {(!playlist.songs || playlist.songs.length === 0) ? (
+            <div className="text-center py-12">
+              <MdPlaylistPlay className="text-6xl text-gray-600 mx-auto mb-4" />
+              <p className="text-lg font-semibold mb-2 text-white">No songs yet</p>
+              <p className="text-gray-400">
+                Click the "Add Song" button above to get started!
+              </p>
+            </div>
+          ) : (
+            <ul className="space-y-1">
+              {playlist.songs.map((song, idx) => {
+                const isCurrent = currentSong && (currentSong._id === song._id || currentSong.id === song._id);
+                const isLiked = likedSongIds.includes(song._id);
+                return (
+                  <li
+                    key={song._id}
+                    className={`flex items-center gap-4 bg-[#181818] hover:bg-[#282828] rounded-lg p-3 transition-colors group ${
+                      isCurrent ? 'bg-[#282828]' : ''
+                    }`}
+                  >
+                    <div className="relative w-12 h-12 rounded overflow-hidden bg-[#282828] flex-shrink-0">
+                      <img
+                        src={song.cover}
+                        alt={song.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <button
+                        onClick={() => handlePlaySong(song)}
+                        className="absolute inset-0 flex items-center justify-center bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity"
+                        aria-label={isCurrent && isPlaying ? "Pause" : "Play"}
+                      >
+                        {isCurrent && isPlaying ? (
+                          <FaPause className="text-white text-lg" />
+                        ) : (
+                          <FaPlay className="text-white text-lg" />
+                        )}
+                      </button>
+                    </div>
+                    <div className="flex-1 min-w-0 flex items-center gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="font-semibold truncate text-white flex items-center gap-2">
+                          {song.title}
+                          {isLiked && (
+                            <FaHeart className="text-[#1db954] text-sm flex-shrink-0" />
+                          )}
+                        </div>
+                        <div className="text-sm truncate text-gray-400">{song.artist}</div>
+                      </div>
+                      {song.duration && (
+                        <div className="text-xs text-gray-400 hidden sm:block">
+                          {Math.floor(song.duration / 60)}:{(song.duration % 60).toString().padStart(2, '0')}
+                        </div>
                       )}
-                    </button>
-                    {/* ❤️ Like Button Overlay */}
-                    <div className="absolute bottom-1 right-1">
-                      <motion.button
-                        whileTap={{ scale: 1.3 }}
-                        className={`rounded-full p-1 bg-white/80 hover:bg-pink-200 shadow ${isLiked ? "text-pink-600" : "text-gray-400"}`}
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           handleLikeSong(song._id);
                         }}
+                        className={`p-2 rounded-full transition-colors ${
+                          isLiked 
+                            ? "text-[#1db954] hover:text-[#1ed760]" 
+                            : "text-gray-400 hover:text-white"
+                        }`}
                         aria-label={isLiked ? "Unlike" : "Like"}
-                        style={{ outline: "none", border: "none" }}
                       >
-                        <FaHeart />
-                        {/* Water splash effect */}
-                        <AnimatePresence>
-                          {likeEffectId === song._id && (
-                            <motion.span
-                              className="absolute"
-                              initial={{ scale: 0, opacity: 0.7 }}
-                              animate={{
-                                scale: [0, 1.5, 1.2],
-                                opacity: [0.7, 0.5, 0],
-                              }}
-                              exit={{ opacity: 0 }}
-                              transition={{ duration: 0.7, ease: "easeOut" }}
-                              style={{
-                                left: -8,
-                                top: -8,
-                                width: 40,
-                                height: 40,
-                                borderRadius: "50%",
-                                background: "radial-gradient(circle, #f472b6 40%, transparent 70%)",
-                                pointerEvents: "none",
-                                zIndex: 10,
-                              }}
-                            />
-                          )}
-                        </AnimatePresence>
-                      </motion.button>
+                        <FaHeart className={isLiked ? "fill-current" : ""} />
+                      </button>
+                      <button
+                        onClick={() => handleRemove(song._id)}
+                        className="p-2 rounded-full text-gray-400 hover:text-white transition-colors"
+                        aria-label="Remove"
+                      >
+                        <FaTrashAlt />
+                      </button>
                     </div>
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className={`font-semibold truncate ${textMain}`}>{song.title}</div>
-                    <div className={`text-sm truncate ${textSub}`}>{song.artist}</div>
-                    <div className={`text-xs mt-1 ${theme === "light" ? "text-gray-600" : "text-gray-400"}`}>
-                      Duration: <span className="font-semibold">{song.duration}s</span>
-                    </div>
-                  </div>
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => handleRemove(song._id)}
-                      className="px-3 py-1 rounded text-white font-semibold text-lg flex items-center justify-center bg-transparent backdrop-blur-sm hover:bg-red-700/30"
-                      aria-label="Remove"
-                    >
-                      <FaTrashAlt />
-                    </button>
-                  </div>
-                </li>
-              );
-            })}
-          </ul>
-        )}
+                  </li>
+                );
+              })}
+            </ul>
+          )}
       </div>
       </div>
 

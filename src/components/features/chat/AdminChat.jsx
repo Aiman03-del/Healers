@@ -22,7 +22,7 @@ export const AdminChat = ({ isFloating = false }) => {
   const [isOpen, setIsOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
-  const [searching, setSearching] = useState(false);
+  const [allUsers, setAllUsers] = useState([]); // Store all users/staff for client-side filtering
   const messagesEndRef = useRef(null);
 
   // Load conversations function - memoized with useCallback
@@ -268,43 +268,44 @@ export const AdminChat = ({ isFloating = false }) => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
-  // Search users
-  const searchUsers = useCallback(async (query) => {
-    if (!query || query.trim().length < 2) {
+  // Load all users/staff for client-side filtering (same logic as ManageUsers)
+  useEffect(() => {
+    const loadAllUsers = async () => {
+      try {
+        const res = await getRef.current("/api/users");
+        const users = res.data?.users || [];
+        // Filter only users and staff (exclude admins)
+        const usersAndStaff = users.filter(u => (u.type || "user") === "user" || (u.type || "user") === "staff");
+        setAllUsers(usersAndStaff);
+      } catch (err) {
+        console.error("Failed to load users:", err);
+        setAllUsers([]);
+      }
+    };
+    
+    if (user?.type === "admin") {
+      loadAllUsers();
+    }
+  }, [user?.type]);
+
+  // Client-side filtering (same logic as ManageUsers.jsx)
+  useEffect(() => {
+    if (!searchQuery.trim()) {
       setSearchResults([]);
       return;
     }
     
-    try {
-      setSearching(true);
-      const searchQuery = query.trim();
-      console.log(`🔍 Frontend: Searching for: "${searchQuery}"`);
-      const res = await getRef.current(`/api/users/search?q=${encodeURIComponent(searchQuery)}`);
-      console.log(`🔍 Frontend: Search response:`, res.data);
-      const users = res.data?.users || [];
-      console.log(`🔍 Frontend: Found ${users.length} users`);
-      setSearchResults(users);
-    } catch (err) {
-      console.error(" Failed to search users:", err);
-      console.error(" Error details:", err.response?.data || err.message);
-      setSearchResults([]);
-    } finally {
-      setSearching(false);
-    }
-  }, []); // Empty dependency - use ref
-
-  // Debounced search
-  useEffect(() => {
-    const timeoutId = setTimeout(() => {
-      if (searchQuery.trim().length >= 2) {
-        searchUsers(searchQuery);
-      } else {
-        setSearchResults([]);
-      }
-    }, 300);
-
-    return () => clearTimeout(timeoutId);
-  }, [searchQuery, searchUsers]);
+    const query = searchQuery.toLowerCase().trim();
+    
+    // Filter users/staff by name or email (same logic as ManageUsers)
+    const filtered = allUsers.filter(u => {
+      const name = (u.name || "").toLowerCase();
+      const email = (u.email || "").toLowerCase();
+      return name.includes(query) || email.includes(query);
+    });
+    
+    setSearchResults(filtered);
+  }, [searchQuery, allUsers]);
 
   // Start chat with user
   const handleStartChatWithUser = async (user) => {
@@ -490,23 +491,30 @@ export const AdminChat = ({ isFloating = false }) => {
               {/* Conversations List */}
               {!selectedChat && (
                 <div className="w-full flex flex-col">
-                  {/* Search Bar - Spotify Style */}
+                  {/* Search Bar - Spotify Style (Same as ManageUsers) */}
                   <div className="p-2 sm:p-3 border-b border-gray-700">
-                    <div className="relative">
-                      <FaSearch className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
+                    <div className="relative max-w-md">
+                      <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
                       <input
                         type="text"
                         value={searchQuery}
                         onChange={(e) => setSearchQuery(e.target.value)}
-                        placeholder="Search users..."
-                        className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
+                        placeholder="Search by name or email..."
+                        className="w-full pl-12 pr-10 py-2 sm:py-3 rounded-full bg-white/10 border border-transparent text-white placeholder-gray-500 text-xs sm:text-sm focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300"
                       />
+                      {searchQuery && (
+                        <button
+                          onClick={() => setSearchQuery("")}
+                          className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                          aria-label="Clear search"
+                        >
+                          <FaTimes className="text-xs sm:text-sm" />
+                        </button>
+                      )}
                     </div>
-                    {searchQuery.trim().length >= 2 && (
+                    {searchQuery.trim() && (
                       <div className="mt-2 max-h-40 sm:max-h-48 overflow-y-auto custom-scrollbar">
-                        {searching ? (
-                          <div className="text-center text-gray-400 py-2 text-xs">Searching...</div>
-                        ) : searchResults.length > 0 ? (
+                        {searchResults.length > 0 ? (
                           <div className="space-y-1">
                             {searchResults.map((user) => (
                               <div
@@ -779,23 +787,30 @@ export const AdminChat = ({ isFloating = false }) => {
               </p>
             </div>
             
-            {/* Search Bar - Spotify Style */}
+            {/* Search Bar - Spotify Style (Same as ManageUsers) */}
             <div className="p-3 sm:p-4 border-b border-gray-700">
-              <div className="relative">
-                <FaSearch className="absolute left-2 sm:left-3 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
+              <div className="relative max-w-md">
+                <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-xs sm:text-sm" />
                 <input
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Search users..."
-                  className="w-full pl-8 sm:pl-10 pr-2 sm:pr-3 py-1.5 sm:py-2 rounded-full bg-white/10 border border-gray-700 text-white placeholder-gray-500 text-xs sm:text-sm focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20"
+                  placeholder="Search by name or email..."
+                  className="w-full pl-12 pr-10 py-2 sm:py-3 rounded-full bg-white/10 border border-transparent text-white placeholder-gray-500 text-xs sm:text-sm focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery("")}
+                    className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+                    aria-label="Clear search"
+                  >
+                    <FaTimes className="text-xs sm:text-sm" />
+                  </button>
+                )}
               </div>
-              {searchQuery.trim().length >= 2 && (
+              {searchQuery.trim() && (
                 <div className="mt-2 max-h-40 sm:max-h-48 overflow-y-auto custom-scrollbar">
-                  {searching ? (
-                    <div className="text-center text-gray-400 py-2 text-xs">Searching...</div>
-                  ) : searchResults.length > 0 ? (
+                  {searchResults.length > 0 ? (
                     <div className="space-y-1">
                       {searchResults.map((user) => (
                         <div

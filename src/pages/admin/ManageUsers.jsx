@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import useAxios from "../../hooks/useAxios"; // 🆕
 import toast from "react-hot-toast";
-import { FaUser, FaUserShield, FaUserTie, FaCheckCircle } from "react-icons/fa";
+import { FaUser, FaUserShield, FaUserTie, FaCheckCircle, FaSearch, FaTimes } from "react-icons/fa";
 
 const ROLES = [
   { value: "user", label: "User", icon: <FaUser className="inline mr-1" /> },
@@ -10,9 +10,9 @@ const ROLES = [
 ];
 
 const roleColor = {
-  user: "text-purple-400 bg-purple-900/40",
-  staff: "text-blue-400 bg-blue-900/40",
-  admin: "text-pink-400 bg-pink-900/40",
+  user: "text-gray-400 bg-white/10",
+  staff: "text-gray-400 bg-white/10",
+  admin: "text-gray-400 bg-white/10",
 };
 
 const ManageUsers = () => {
@@ -21,6 +21,7 @@ const ManageUsers = () => {
   const [loading, setLoading] = useState(true);
   const [updatingUid, setUpdatingUid] = useState(null);
   const [activeTab, setActiveTab] = useState("user"); // "user" | "staff" | "admin"
+  const [searchQuery, setSearchQuery] = useState("");
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -87,24 +88,35 @@ const ManageUsers = () => {
     );
   };
 
-  // Filter users by active tab (role)
-  const filteredUsers = users.filter(u => (u.type || "user") === activeTab);
+  // Filter users by active tab (role) and search query
+  const filteredUsers = users.filter(u => {
+    const matchesRole = (u.type || "user") === activeTab;
+    if (!matchesRole) return false;
+    
+    if (!searchQuery.trim()) return true;
+    
+    const query = searchQuery.toLowerCase().trim();
+    const name = (u.name || "").toLowerCase();
+    const email = (u.email || "").toLowerCase();
+    
+    return name.includes(query) || email.includes(query);
+  });
 
   return (
     <div className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-3xl font-bold mb-8 flex items-center gap-2 text-purple-300">
-        <FaUserShield className="text-2xl" /> Manage Users
+      <h1 className="text-3xl font-bold mb-8 flex items-center gap-2 text-white">
+        <FaUserShield className="text-2xl text-gray-400" /> Manage Users
       </h1>
-      {/* Tabs */}
-      <div className="flex gap-2 mb-6">
+      {/* Tabs - Spotify Style */}
+      <div className="flex gap-1 mb-6">
         {ROLES.map((role) => (
           <button
             key={role.value}
-            className={`px-5 py-2 rounded-t-lg font-semibold flex items-center gap-2 border-b-2 transition
-              ${activeTab === role.value
-                ? "bg-purple-800 border-purple-400 text-white"
-                : "bg-gray-800 border-transparent text-purple-200 hover:bg-purple-900/60"}
-            `}
+            className={`px-5 py-2 rounded-full font-semibold flex items-center gap-2 transition ${
+              activeTab === role.value
+                ? "bg-white text-black"
+                : "text-gray-400 hover:text-white"
+            }`}
             onClick={() => setActiveTab(role.value)}
           >
             {role.icon}
@@ -112,13 +124,37 @@ const ManageUsers = () => {
           </button>
         ))}
       </div>
+
+      {/* Search Bar - Spotify Style */}
+      <div className="mb-6">
+        <div className="relative max-w-md">
+          <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 text-lg" />
+          <input
+            type="text"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            placeholder="Search by name or email..."
+            className="w-full pl-12 pr-10 py-3 rounded-full bg-white/10 border border-transparent text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300"
+          />
+          {searchQuery && (
+            <button
+              onClick={() => setSearchQuery("")}
+              className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400 hover:text-white transition-colors"
+            >
+              <FaTimes />
+            </button>
+          )}
+        </div>
+      </div>
       {loading ? (
-        <div className="text-gray-400 text-center py-10">Loading...</div>
+        <div className="text-gray-400 text-center py-10">
+          <div className="inline-block animate-spin rounded-full h-8 w-8 border-2 border-gray-600 border-t-white"></div>
+        </div>
       ) : (
-        <div className="overflow-x-auto rounded-xl shadow-lg bg-gray-900">
+        <div className="overflow-x-auto rounded-lg shadow-lg bg-[#181818] border border-gray-800">
           <table className="min-w-full">
             <thead>
-              <tr className="text-purple-200 text-left bg-gray-800">
+              <tr className="text-gray-400 text-left bg-[#181818] border-b border-gray-700">
                 <th className="py-3 px-4">Name</th>
                 <th className="py-3 px-4">Email</th>
                 <th className="py-3 px-4">Role</th>
@@ -134,16 +170,16 @@ const ManageUsers = () => {
                 </tr>
               ) : (
                 filteredUsers.map((u) => (
-                  <tr key={u.uid} className="border-b border-gray-800 hover:bg-gray-800/60 transition">
+                  <tr key={u.uid} className="border-b border-gray-700 hover:bg-white/5 transition-colors">
                     <td className="py-3 px-4 font-semibold flex items-center gap-2">
-                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-purple-800 text-white font-bold text-lg">
+                      <span className="inline-flex items-center justify-center w-8 h-8 rounded-full bg-[#282828] text-white font-bold text-lg">
                         {u.name?.[0]?.toUpperCase() || u.email?.[0]?.toUpperCase() || "U"}
                       </span>
                       {u.name || "-"}
                     </td>
-                    <td className="py-3 px-4">{u.email}</td>
+                    <td className="py-3 px-4 text-white">{u.email}</td>
                     <td className="py-3 px-4">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold ${roleColor[u.type || "user"]}`}>
+                      <span className="inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold bg-white/10 text-gray-400">
                         {ROLES.find(r => r.value === (u.type || "user"))?.icon}
                         {(u.type || "user").charAt(0).toUpperCase() + (u.type || "user").slice(1)}
                       </span>
@@ -154,28 +190,25 @@ const ManageUsers = () => {
                           <select
                             value={u.type || "user"}
                             onChange={(e) => handleRoleChange(u.uid, e.target.value)}
-                            className="appearance-none bg-gradient-to-r from-purple-900 via-gray-900 to-gray-800 text-purple-200 font-semibold rounded-lg px-4 py-2 pr-10 border-2 border-purple-700 focus:outline-none focus:ring-2 focus:ring-purple-500 shadow transition cursor-pointer hover:border-pink-500"
+                            className="appearance-none bg-white/10 border border-gray-700 text-white font-semibold rounded-lg px-4 py-2 pr-10 focus:outline-none focus:ring-2 focus:ring-white focus:bg-white/20 transition cursor-pointer hover:bg-white/10"
                             disabled={updatingUid === u.uid}
-                            style={{
-                              boxShadow: updatingUid === u.uid ? "0 0 0 2px #a21caf" : undefined,
-                            }}
                           >
                             {ROLES.map((role) => (
                               <option
                                 key={role.value}
                                 value={role.value}
-                                className="bg-gray-900 text-purple-300"
+                                className="bg-[#181818] text-white"
                               >
                                 {role.label}
                               </option>
                             ))}
                           </select>
-                          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-purple-400 text-lg">
+                          <span className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg">
                             ▼
                           </span>
                         </div>
                         <button
-                          className="bg-red-700 hover:bg-red-800 text-white px-3 py-1 rounded-lg font-semibold ml-2"
+                          className="bg-transparent border border-gray-700 hover:border-gray-600 text-white px-3 py-1 rounded-full font-semibold ml-2 transition"
                           onClick={() => handleDeleteUser(u.uid)}
                           disabled={updatingUid === u.uid}
                           title="Delete user"
@@ -183,7 +216,7 @@ const ManageUsers = () => {
                           Delete
                         </button>
                         {updatingUid === u.uid && (
-                          <FaCheckCircle className="text-green-400 animate-pulse ml-1" />
+                          <FaCheckCircle className="text-[#1db954] animate-pulse ml-1" />
                         )}
                       </div>
                     </td>
