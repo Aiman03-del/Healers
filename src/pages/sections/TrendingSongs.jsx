@@ -7,7 +7,7 @@ import { MainLayout } from "../../components/layout";
 import { SearchBar } from "../../components/features/search";
 import { Loading } from "../../components/common";
 import useAxios from "../../hooks/useAxios";
-import toast from "react-hot-toast";
+import toast from "../../utils/toast";
 import { SongCard } from "./SongCard";
 
 export default function TrendingSongs() {

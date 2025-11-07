@@ -34,11 +34,11 @@
 │  └─────────────────────────────────────────┘    │
 │                                                   │
 │  Use for:                                         │
-│  ✓ Navbar highlights                              │
-│  ✓ Icons & badges                                 │
-│  ✓ Borders & dividers                             │
-│  ✓ Active/focused states                          │
-│  ✓ Brand elements                                 │
+│   Navbar highlights                              │
+│   Icons & badges                                 │
+│   Borders & dividers                             │
+│   Active/focused states                          │
+│   Brand elements                                 │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -72,11 +72,11 @@
 │  └─────────────────────────────────────────┘    │
 │                                                   │
 │  Use for:                                         │
-│  ✓ Page backgrounds                               │
-│  ✓ Card containers                                │
-│  ✓ Modal backgrounds                              │
-│  ✓ Sidebars & panels                              │
-│  ✓ Input fields (dark mode)                       │
+│   Page backgrounds                               │
+│   Card containers                                │
+│   Modal backgrounds                              │
+│   Sidebars & panels                              │
+│   Input fields (dark mode)                       │
 └──────────────────────────────────────────────────┘
 ```
 
@@ -117,11 +117,11 @@
 │  └─────────────────────────────────────────┘    │
 │                                                   │
 │  Use for:                                         │
-│  ✓ Primary action buttons                         │
-│  ✓ Play/pause controls                            │
-│  ✓ Like/favorite buttons                          │
-│  ✓ Submit forms                                   │
-│  ✓ Important links                                │
+│   Primary action buttons                         │
+│   Play/pause controls                            │
+│   Like/favorite buttons                          │
+│   Submit forms                                   │
+│   Important links                                │
 └──────────────────────────────────────────────────┘
 ```
 

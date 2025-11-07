@@ -1,0 +1,36 @@
+.spotify-toast {
+  font-family: "Inter", "Circular", "Helvetica Neue", Arial, sans-serif;
+  transform-origin: center;
+  animation: spotify-toast-in 0.28s ease-out;
+  position: relative;
+  overflow: hidden;
+}
+
+.spotify-toast[data-type="success"]::after,
+.spotify-toast[data-type="error"]::after,
+.spotify-toast[data-type="loading"]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  background: linear-gradient(120deg, rgba(255, 255, 255, 0.08), transparent 55%);
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.spotify-toast:hover::after {
+  opacity: 1;
+}
+
+@keyframes spotify-toast-in {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+

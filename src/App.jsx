@@ -61,6 +61,8 @@ function App() {
       theme === THEMES.LIGHT ? "bg-white text-gray-900" : "bg-gray-900 text-white";
   }, [theme]);
 
+  const isLightTheme = theme === THEMES.LIGHT;
+
   return (
     <>
       {showConfetti && (
@@ -148,49 +150,59 @@ function App() {
       <Toaster
         position="top-right"
         reverseOrder={false}
+        gutter={18}
         toastOptions={{
-          duration: 3500,
+          duration: 3200,
+          className: "spotify-toast",
+   
           style: {
-            background:
-              theme === THEMES.LIGHT
-                ? "linear-gradient(90deg, #ede9fe 0%, #fce7f3 100%)"
-                : "linear-gradient(90deg, #7c3aed 0%, #a21caf 100%)",
-            color: theme === THEMES.LIGHT ? "#333" : "#fff",
-            border: "none",
-            boxShadow: "0 4px 24px 0 rgba(124,58,237,0.15)",
-            fontWeight: 500,
-            fontSize: "1rem",
-            borderRadius: "0.75rem",
-            padding: "1rem 1.5rem",
+            background: isLightTheme ? "rgba(255,255,255,0.98)" : "rgba(18,18,18,0.96)",
+            color: isLightTheme ? "#0f0f0f" : "#f9fafb",
+            borderRadius: "14px",
+            padding: "0.85rem 1.1rem",
+            display: "flex",
+            alignItems: "center",
+            gap: "0.75rem",
+            border: isLightTheme
+              ? "1px solid rgba(17,25,40,0.08)"
+              : "1px solid rgba(255,255,255,0.05)",
+            boxShadow: isLightTheme
+              ? "0 20px 40px rgba(15,23,42,0.15)"
+              : "0 24px 48px rgba(0,0,0,0.45)",
+            backdropFilter: "blur(18px)",
+            fontWeight: 600,
             letterSpacing: "0.01em",
+            fontSize: "0.95rem",
+            minWidth: "260px",
+            '--toast-progress-background': '#1DB954',
           },
           success: {
-            icon: "✓",
             style: {
-              background:
-                theme === THEMES.LIGHT
-                  ? "linear-gradient(90deg, #bbf7d0 0%, #bae6fd 100%)"
-                  : "linear-gradient(90deg, #16a34a 0%, #22d3ee 100%)",
-              color: theme === THEMES.LIGHT ? "#222" : "#fff",
+              borderLeft: "4px solid #1DB954",
+              boxShadow: isLightTheme
+                ? "0 18px 42px rgba(29,185,84,0.18)"
+                : "0 22px 40px rgba(17, 17, 17, 0.65)",
             },
           },
           error: {
-            icon: "✗",
+            
+          
             style: {
-              background:
-                theme === THEMES.LIGHT
-                  ? "linear-gradient(90deg, #fee2e2 0%, #fef3c7 100%)"
-                  : "linear-gradient(90deg, #dc2626 0%, #f59e42 100%)",
-              color: theme === THEMES.LIGHT ? "#222" : "#fff",
+              borderLeft: "4px solid #E91444",
+            },
+          },
+          loading: {
+            
+            style: {
+              borderLeft: "4px solid #1ED760",
             },
           },
         }}
-        gutter={16}
         containerStyle={{
           marginTop: "1.5rem",
+          marginRight: "1.5rem",
           zIndex: 9999,
         }}
-        // Confetti on success toast
         toast={(t) => {
           if (t.type === "success") handleToast("success");
         }}
