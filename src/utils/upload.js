@@ -1,26 +1,31 @@
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
+import apiClient from "../lib/apiClient";
 
 export async function uploadToImageKit(file) {
   const formData = new FormData();
   formData.append("file", file);
 
   // Choose endpoint based on file type
-  let endpoint = `${API_BASE_URL}/api/upload`;
+  let endpoint = "/api/upload";
   if (file.type && file.type.startsWith("audio/")) {
-    endpoint = `${API_BASE_URL}/api/upload-audio`;
+    endpoint = "/api/upload-audio";
   }
 
   try {
-    const response = await fetch(endpoint, {
-      method: "POST",
-      body: formData,
-    });
-    const data = await response.json();
-    if (!data.url) {
-      console.error("ImageKit error:", data);
+    const response = await apiClient.post(
+      endpoint,
+      formData,
+      {
+        headers: {
+          "Content-Type": "multipart/form-data",
+        },
+      }
+    );
+    const { url } = response.data ?? {};
+    if (!url) {
+      console.error("ImageKit error:", response.data);
       throw new Error("Image upload failed");
     }
-    return data.url;
+    return url;
   } catch (error) {
     console.error("Error uploading file:", error);
     throw error;

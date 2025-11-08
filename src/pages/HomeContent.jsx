@@ -49,6 +49,8 @@ const SongCard = memo(
               className="w-full h-full object-cover rounded"
               loading="lazy"
               decoding="async"
+              width={320}
+              height={320}
               onError={(e) => {
                 e.target.src = "/healers.png";
               }}
@@ -506,6 +508,8 @@ function HomeContent({ searchQuery = "" }) {
                             className="w-full h-full object-cover rounded"
                             loading="lazy"
                             decoding="async"
+                            width={320}
+                            height={320}
                           />
                         ) : (
                           <div className="w-full h-full bg-[#333] rounded flex items-center justify-center">
@@ -589,6 +593,8 @@ function HomeContent({ searchQuery = "" }) {
                           className="w-full h-full object-cover rounded"
                           loading="lazy"
                           decoding="async"
+                          width={320}
+                          height={320}
                         />
 
                         {/* Play button overlay - Spotify Style */}

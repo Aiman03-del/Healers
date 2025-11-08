@@ -5,6 +5,30 @@ import { motion, AnimatePresence } from "framer-motion";
 const InstallPWA = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showInstall, setShowInstall] = useState(false);
+  const [isReady, setIsReady] = useState(false);
+
+  useEffect(() => {
+    let idleHandle;
+    let timeoutId;
+
+    if (typeof window === "undefined") {
+      setIsReady(false);
+      return;
+    }
+
+    const idleCallback = window.requestIdleCallback;
+    if (typeof idleCallback === "function") {
+      idleHandle = idleCallback(() => setIsReady(true), { timeout: 800 });
+      return () => {
+        if (window.cancelIdleCallback) {
+          window.cancelIdleCallback(idleHandle);
+        }
+      };
+    }
+
+    timeoutId = setTimeout(() => setIsReady(true), 600);
+    return () => clearTimeout(timeoutId);
+  }, []);
 
   useEffect(() => {
     const handler = (e) => {
@@ -66,6 +90,10 @@ const InstallPWA = () => {
       }
     }
   }, []);
+
+  if (!isReady) {
+    return null;
+  }
 
   return (
     <AnimatePresence>

@@ -2,11 +2,10 @@
 import { Routes, Route } from "react-router-dom";
 import React, { useState, lazy, Suspense } from "react";
 import { Toaster } from "react-hot-toast";
-import Confetti from "react-confetti";
 import { THEMES, USER_ROLES } from "./constants";
 import { Loading, InstallPWA } from "./components/common";
 
-// Lazy load pages for better performance
+// Lazy load pages/components for better performance
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register"));
 const HomeLayout = lazy(() => import("./pages/HomeLayout"));
@@ -19,6 +18,7 @@ const MyProfile = lazy(() => import("./pages/MyProfile"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Forbidden = lazy(() => import("./pages/Forbidden"));
+const Confetti = lazy(() => import("react-confetti"));
 
 // Section pages (nested)
 const TrendingSongsNested = lazy(() => import("./pages/sections/TrendingSongsNested"));
@@ -66,7 +66,14 @@ function App() {
   return (
     <>
       {showConfetti && (
-        <Confetti width={window.innerWidth} height={window.innerHeight} />
+        <Suspense fallback={null}>
+          <Confetti
+            width={typeof window !== "undefined" ? window.innerWidth : 0}
+            height={typeof window !== "undefined" ? window.innerHeight : 0}
+            recycle={false}
+            numberOfPieces={220}
+          />
+        </Suspense>
       )}
       <InstallPWA />
       <main className="min-h-[calc(100vh-12.5vh)]">

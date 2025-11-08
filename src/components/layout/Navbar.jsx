@@ -15,11 +15,12 @@ import {
 } from "react-icons/fa";
 import { FaSun, FaMoon } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
-import { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect, Suspense } from "react";
 import logo from "../../assets/healers.png";
 import { USER_ROLES, THEMES } from "../../constants";
-import { NotificationCenter } from "../features/notifications";
 import toast from "react-hot-toast";
+
+const NotificationCenter = React.lazy(() => import("../features/notifications/NotificationCenter"));
 
 function Navbar() {
   const { user, logout } = useAuth();
@@ -191,6 +192,8 @@ function Navbar() {
               alt="Healers"
               className="w-10 h-10 object-cover rounded-full relative z-10"
               loading="eager"
+              width={40}
+              height={40}
             />
           </motion.div>
           <div className="hidden sm:flex flex-col">
@@ -244,7 +247,11 @@ function Navbar() {
           )}
 
           {/* Notification Center */}
-          {user && <NotificationCenter />}
+          {user && (
+            <Suspense fallback={null}>
+              <NotificationCenter />
+            </Suspense>
+          )}
 
           {/* User avatar / Login (always visible) - Spotify Style */}
           {user ? (
