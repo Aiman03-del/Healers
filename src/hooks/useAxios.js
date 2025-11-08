@@ -1,17 +1,40 @@
-import { useMemo } from "react";
-import apiClient from "../lib/apiClient";
+import { useAuth } from "../context/AuthContext";
+import axios from "axios";
+
+// Get baseURL from environment variable
+const baseURL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
 
 const useAxios = () => {
-  return useMemo(
-    () => ({
-      get: (url, config = {}) => apiClient.get(url, config),
-      post: (url, data, config = {}) => apiClient.post(url, data, config),
-      put: (url, data, config = {}) => apiClient.put(url, data, config),
-      del: (url, config = {}) => apiClient.delete(url, config),
-      axios: apiClient,
-    }),
-    []
-  );
+  const { user } = useAuth();
+
+  const instance = axios.create({
+    baseURL,
+    withCredentials: true,
+  });
+
+  // Optionally, you can add interceptors here for token refresh, error handling, etc.
+
+  // Example: GET request
+  const get = async (url, config = {}) => {
+    return instance.get(url, config);
+  };
+
+  // Example: POST request
+  const post = async (url, data, config = {}) => {
+    return instance.post(url, data, config);
+  };
+
+  // Example: PUT request
+  const put = async (url, data, config = {}) => {
+    return instance.put(url, data, config);
+  };
+
+  // Example: DELETE request
+  const del = async (url, config = {}) => {
+    return instance.delete(url, config);
+  };
+
+  return { get, post, put, del, axios: instance };
 };
 
 export default useAxios;

@@ -14,7 +14,6 @@ import {
   FaShareAlt,
 } from "react-icons/fa";
 import { FaSun, FaMoon } from "react-icons/fa";
-import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import logo from "../../assets/healers.png";
 import { USER_ROLES, THEMES } from "../../constants";
@@ -181,12 +180,7 @@ function Navbar() {
       {/* wrapper to center content and control responsive paddings */}
       <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 relative z-10">
         <Link to="/" className="flex items-center gap-3 group">
-          <motion.div
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            transition={{ type: "spring", stiffness: 400, damping: 17 }}
-            className="relative"
-          >
+          <div className="relative transition-transform duration-150 ease-out group-hover:scale-105 active:scale-95">
             <img
               src={logo}
               alt="Healers"
@@ -195,7 +189,7 @@ function Navbar() {
               width={40}
               height={40}
             />
-          </motion.div>
+          </div>
           <div className="hidden sm:flex flex-col">
             <span className="text-xl font-bold text-white tracking-wide">
               Healers
@@ -234,16 +228,14 @@ function Navbar() {
 
           {/* Share Button for non-logged users */}
           {!user && (
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+            <button
               onClick={handleShareClick}
-              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-bold text-sm transition-all hover:scale-105"
+              className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-bold text-sm transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
               aria-label="Share app"
             >
               <FaShareAlt />
               <span>Share</span>
-            </motion.button>
+            </button>
           )}
 
           {/* Notification Center */}
@@ -256,11 +248,9 @@ function Navbar() {
           {/* User avatar / Login (always visible) - Spotify Style */}
           {user ? (
             <div className="relative" ref={avatarRef}>
-              <motion.button
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
+              <button
                 onClick={() => setDropdown((v) => !v)}
-                className="focus:outline-none relative group"
+                className="focus:outline-none relative group transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
                 aria-label="User menu"
               >
                 <img
@@ -272,15 +262,10 @@ function Navbar() {
                     e.target.src = avatarFromEmail(user.email);
                   }}
                 />
-              </motion.button>
-              <AnimatePresence>
-                {dropdown && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -10 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    exit={{ opacity: 0, y: -10 }}
-                    transition={{ duration: 0.2, ease: "easeOut" }}
-                    className="absolute right-0 mt-3 w-64 bg-[#282828] rounded-lg shadow-2xl z-[9999] py-2 overflow-hidden"
+              </button>
+              {dropdown && (
+                  <div
+                    className="absolute right-0 mt-3 w-64 bg-[#282828] rounded-lg shadow-2xl z-[9999] py-2 overflow-hidden animate-dropdown"
                     style={{ zIndex: 9999 }}
                   >
                     {/* User profile section with image - Spotify Style */}
@@ -368,89 +353,70 @@ function Navbar() {
                         <span>Logout</span>
                       </button>
                     </div>
-                  </motion.div>
+                  </div>
                 )}
-              </AnimatePresence>
             </div>
           ) : (
-            <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+            <div className="transition-transform duration-150 ease-out hover:scale-105 active:scale-95">
               <Link
                 to="/login"
                 className="px-6 py-2.5 rounded-full bg-white text-black font-bold transition-all hover:scale-105"
               >
                 Login
               </Link>
-            </motion.div>
+            </div>
           )}
 
           {/* Mobile hamburger: visible on small and sm screens (hidden from md upwards) - Spotify Style */}
-          <motion.button
+          <button
             ref={hamburgerRef}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="md:hidden p-2 ml-2 rounded-full text-gray-400 hover:text-white transition-colors focus:outline-none"
+            className="md:hidden p-2 ml-2 rounded-full text-gray-400 hover:text-white transition-all duration-150 ease-out focus:outline-none hover:scale-105 active:scale-95"
             aria-label="Toggle menu"
             aria-expanded={mobileOpen}
             onClick={() => setMobileOpen((v) => !v)}
           >
-            {/* Use SVG icons to reliably show hamburger vs X */}
-            <AnimatePresence mode="wait" initial={false}>
-              {mobileOpen ? (
-                <motion.svg
-                  key="close"
-                  initial={{ rotate: -90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: 90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-6 h-6 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.5"
-                    d="M6 18L18 6M6 6l12 12"
-                  />
-                </motion.svg>
-              ) : (
-                <motion.svg
-                  key="menu"
-                  initial={{ rotate: 90, opacity: 0 }}
-                  animate={{ rotate: 0, opacity: 1 }}
-                  exit={{ rotate: -90, opacity: 0 }}
-                  transition={{ duration: 0.2 }}
-                  className="w-6 h-6 text-white"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2.5"
-                    d="M4 6h16M4 12h16M4 18h16"
-                  />
-                </motion.svg>
-              )}
-            </AnimatePresence>
-          </motion.button>
+            {mobileOpen ? (
+              <svg
+                key="close"
+                className="w-6 h-6 text-white transition-transform duration-150 ease-out rotate-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.5"
+                  d="M6 18L18 6M6 6l12 12"
+                />
+              </svg>
+            ) : (
+              <svg
+                key="menu"
+                className="w-6 h-6 text-white transition-transform duration-150 ease-out rotate-0"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2.5"
+                  d="M4 6h16M4 12h16M4 18h16"
+                />
+              </svg>
+            )}
+          </button>
         </div>
       </div>
 
       {/* Mobile menu panel (only on small and small-medium screens) */}
-      <AnimatePresence>
-        {mobileOpen && (
-          <motion.div
+      {mobileOpen && (
+          <div
             ref={mobileRef}
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -10 }}
-            transition={{ duration: 0.2, ease: "easeOut" }}
-            className="md:hidden absolute left-0 right-0 top-full bg-[#181818] border-t border-gray-800 z-[9997] overflow-hidden shadow-2xl"
+            className="md:hidden absolute left-0 right-0 top-full bg-[#181818] border-t border-gray-800 z-[9997] overflow-hidden shadow-2xl animate-dropdown"
             style={{ zIndex: 9997 }}
           >
             <div className="px-4 py-5 space-y-1 max-h-[70vh] overflow-y-auto">
@@ -579,9 +545,8 @@ function Navbar() {
                 </div>
               )}
             </div>
-          </motion.div>
+          </div>
         )}
-      </AnimatePresence>
     </nav>
   );
 }

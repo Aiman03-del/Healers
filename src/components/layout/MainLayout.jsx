@@ -5,8 +5,12 @@ import { useAudio } from "../../context/AudioContext";
 import { USER_ROLES } from "../../constants";
 
 const AudioPlayerLazy = React.lazy(() => import("../features/audio/AudioPlayer"));
-const ChatBoxLazy = React.lazy(() => import("../features/chat/ChatBox"));
-const AdminChatLazy = React.lazy(() => import("../features/chat/AdminChat"));
+const ChatBoxLazy = React.lazy(() =>
+  import("../features/chat/ChatBox").then((module) => ({ default: module.ChatBox }))
+);
+const AdminChatLazy = React.lazy(() =>
+  import("../features/chat/AdminChat").then((module) => ({ default: module.AdminChat }))
+);
 
 export default function MainLayout({ children }) {
   const { user } = useAuth();

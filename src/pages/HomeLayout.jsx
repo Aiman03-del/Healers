@@ -2,7 +2,6 @@ import { Outlet, useLocation, Link } from "react-router-dom";
 import { MainLayout } from "../components/layout";
 import { SearchBar } from "../components/features/search";
 import { useState, useMemo, useCallback } from "react";
-import { motion } from "framer-motion";
 
 export default function HomeLayout() {
   const location = useLocation();
@@ -71,14 +70,9 @@ export default function HomeLayout() {
         </div>
 
         {/* Content Area - Nested Routes */}
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0, y: 10 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.2 }}
-        >
+        <div key={location.pathname} className="animate-fade-slide">
           <Outlet context={{ search }} />
-        </motion.div>
+        </div>
       </div>
     </MainLayout>
   );

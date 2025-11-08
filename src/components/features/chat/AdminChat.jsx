@@ -34,7 +34,6 @@ export const AdminChat = ({ isFloating = false }) => {
 
   const loadConversations = useCallback(async () => {
     try {
-      console.log("🔄 Loading conversations for admin...");
       const res = await getRef.current("/api/chat/admin/conversations");
       
       // Handle different response formats
@@ -71,7 +70,6 @@ export const AdminChat = ({ isFloating = false }) => {
         return hasChanged ? newConversations : prev;
       });
       
-      console.log(`Loaded ${newConversations.length} conversations`);
     } catch (err) {
       console.error("Failed to load conversations:", err);
       // Don't clear conversations on error, keep existing ones
@@ -82,11 +80,8 @@ export const AdminChat = ({ isFloating = false }) => {
   // Initialize socket connection
   useEffect(() => {
     if (!user?.uid || user.type !== "admin") {
-      console.log("⚠️ AdminChat: User not admin or not logged in", { user });
       return;
     }
-
-    console.log("🔌 AdminChat: Initializing socket for admin:", user.uid);
 
     const newSocket = io(API_BASE_URL, {
       withCredentials: true,
@@ -94,7 +89,6 @@ export const AdminChat = ({ isFloating = false }) => {
 
     newSocket.on("connect", () => {
       newSocket.emit("join:user", user.uid);
-      console.log("Admin socket connected");
     });
 
     // Debounce conversation updates to prevent blinking
@@ -110,7 +104,6 @@ export const AdminChat = ({ isFloating = false }) => {
     };
 
     newSocket.on("chat:message", (newMessage) => {
-      console.log("New message received:", newMessage);
       // Check if message belongs to selected chat
       if (selectedChat && newMessage.chatId && selectedChat._id) {
         const messageChatId = typeof newMessage.chatId === 'string' ? newMessage.chatId : newMessage.chatId.toString();
@@ -152,20 +145,16 @@ export const AdminChat = ({ isFloating = false }) => {
 
     // Listen for admin-specific message events (broadcast to all admins)
     newSocket.on("chat:message:admin", (newMessage) => {
-      console.log("Admin message event received:", newMessage);
       // Debounced update to prevent blinking
       debouncedLoadConversations();
     });
 
-    newSocket.on("chat:new", ({ chatId, userId }) => {
-      console.log("New chat created:", { chatId, userId });
-      // Immediate update for new chats
+    newSocket.on("chat:new", ({ chatId }) => {
       loadConversations();
     });
 
     // Listen for request status updates
     newSocket.on("chat:request:updated", ({ messageId, status }) => {
-      console.log("Request status updated:", { messageId, status });
       setMessages((prev) =>
         prev.map((msg) => {
           const msgId = msg._id?.toString() || msg.id?.toString();
@@ -194,15 +183,12 @@ export const AdminChat = ({ isFloating = false }) => {
   // Load conversations on mount and periodically
   useEffect(() => {
     if (user?.type === "admin") {
-      console.log("🔄 AdminChat: Loading conversations on mount");
       loadConversations();
       // Refresh conversations every 10 seconds (reduced frequency to prevent blinking)
       const interval = setInterval(() => {
         loadConversations();
       }, 10000);
       return () => clearInterval(interval);
-    } else {
-      console.log("⚠️ AdminChat: User is not admin", { userType: user?.type, user });
     }
   }, [user?.type, loadConversations]); // Only depend on user.type, not entire user object
 
@@ -215,7 +201,6 @@ export const AdminChat = ({ isFloating = false }) => {
       
       // Only reload if chatId actually changed
       if (selectedChatIdRef.current !== chatId) {
-        console.log("📨 Loading messages for selected chat:", chatId);
         selectedChatIdRef.current = chatId;
         loadMessages(chatId);
         if (socket) {
@@ -351,7 +336,6 @@ export const AdminChat = ({ isFloating = false }) => {
 
   // Handle conversation selection
   const handleSelectConversation = (conv) => {
-    console.log("📩 Selecting conversation:", conv);
     setSelectedChat(conv);
     setShowChatWindow(true);
   };
@@ -425,18 +409,8 @@ export const AdminChat = ({ isFloating = false }) => {
   };
 
   if (!user || user.type !== "admin") {
-    console.log("⚠️ AdminChat: Not rendering - user check failed", { 
-      hasUser: !!user, 
-      userType: user?.type 
-    });
     return null;
   }
-
-  console.log("AdminChat: Rendering with", { 
-    conversationsCount: conversations.length,
-    selectedChat: selectedChat?._id,
-    isFloating
-  });
 
   // If floating mode, render as floating chat box
   if (isFloating) {

@@ -1,53 +1,39 @@
-import React, { useCallback, useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router-dom';
-import useAxios from '../hooks/useAxios';
+
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
 
 export const Playlist = () => {
   const { user } = useAuth();
-  const { get, post } = useAxios();
   const [playlists, setPlaylists] = useState([]);
   const [name, setName] = useState('');
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-
-  const loadPlaylists = useCallback(async () => {
-    if (!user?.uid) return;
-    try {
-      setError(null);
-      const res = await get(`/api/playlists/user/${user.uid}`);
-      const list =
-        res.data?.playlists ??
-        res.data ??
-        [];
-      setPlaylists(Array.isArray(list) ? list : []);
-    } catch (err) {
-      console.error("Failed to load playlists", err);
-      setError("Failed to load playlists.");
-      setPlaylists([]);
-    }
-  }, [get, user?.uid]);
 
   // Fetch user's playlists
   useEffect(() => {
-    loadPlaylists();
-  }, [loadPlaylists]);
+    if (!user?.uid) return;
+    fetch(`${API_BASE_URL}/api/playlists/user/${user.uid}`)
+      .then(res => res.json())
+      .then(data => setPlaylists(data.playlists || []));
+  }, [user]);
 
   // Create playlist
   const handleCreate = async (e) => {
     e.preventDefault();
     if (!name.trim()) return;
     setLoading(true);
-    try {
-      await post('/api/playlists', { name, userUid: user.uid });
-      setName('');
-      await loadPlaylists();
-    } catch (err) {
-      console.error("Failed to create playlist", err);
-      setError("Failed to create playlist.");
-    } finally {
-      setLoading(false);
-    }
+    await fetch(`${API_BASE_URL}/api/playlists`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ name, userUid: user.uid }),
+    });
+    setName('');
+    // Refresh playlists
+    const res = await fetch(`${API_BASE_URL}/api/playlists/user/${user.uid}`);
+    const data = await res.json();
+    setPlaylists(data.playlists || []);
+    setLoading(false);
   };
 
   return (
@@ -70,9 +56,6 @@ export const Playlist = () => {
           {loading ? "Creating..." : "Create"}
         </button>
       </form>
-      {error && (
-        <p className="mb-4 text-sm text-red-400">{error}</p>
-      )}
       <div>
         {playlists.length === 0 && <p>No playlists found.</p>}
         <ul className="space-y-2">

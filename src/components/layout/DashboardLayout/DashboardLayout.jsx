@@ -1,15 +1,15 @@
 // src/components/layout/DashboardLayout/DashboardLayout.jsx
-import { Link, Outlet, useLocation } from 'react-router-dom';
+import { Link, Outlet, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../../../context/AuthContext';
 import { useEffect, useState } from "react";
+import axios from "axios";
 import {  FaBars, FaTimes } from "react-icons/fa";
 import { DashboardSidebar } from '../';
-import useAxios from '../../../hooks/useAxios';
 
 const DashboardLayout = () => {
-  const { logout } = useAuth();
+  const { logout, user } = useAuth();
   const location = useLocation();
-  const { get } = useAxios();
+  const navigate = useNavigate();
 
   // Sidebar open/close state for mobile
   const [sidebarOpen, setSidebarOpen] = useState(false);
@@ -27,12 +27,13 @@ const DashboardLayout = () => {
   });
 
   useEffect(() => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:5000';
     const fetchStats = async () => {
       try {
         const [songsRes, usersRes, topSongsRes] = await Promise.all([
-          get('/api/songs'),
-          get('/api/users'),
-          get('/api/songs?sort=playCount&limit=5'),
+          axios.get(`${API_BASE_URL}/api/songs`),
+          axios.get(`${API_BASE_URL}/api/users`),
+          axios.get(`${API_BASE_URL}/api/songs?sort=playCount&limit=5`),
         ]);
         setStats({
           totalSongs: songsRes.data.songs?.length || 0,
@@ -44,7 +45,7 @@ const DashboardLayout = () => {
       }
     };
     fetchStats();
-  }, [get]);
+  }, []);
 
   return (
     <div className="flex flex-col md:flex-row min-h-screen bg-[#121212] text-white">

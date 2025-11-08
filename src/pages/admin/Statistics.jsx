@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
+import axios from "axios";
 import { FaMusic, FaUserFriends, FaFire, FaStar, FaChartLine, FaHeart, FaPlay } from "react-icons/fa";
-import useAxios from "../../hooks/useAxios";
 
 const Statistics = () => {
   const [stats, setStats] = useState({
@@ -12,16 +12,16 @@ const Statistics = () => {
   });
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const { get } = useAxios();
 
   useEffect(() => {
     const fetchStats = async () => {
       setLoading(true);
       setError(null);
       try {
+        const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
         const [songsRes, usersRes] = await Promise.all([
-          get("/api/songs"),
-          get("/api/users"),
+          axios.get(`${API_BASE}/api/songs`),
+          axios.get(`${API_BASE}/api/users`),
         ]);
         
         const users = usersRes.data.users || [];
@@ -30,7 +30,7 @@ const Statistics = () => {
         const userActivities = await Promise.all(
           users.map(async (user) => {
             try {
-              const activityRes = await get(`/api/activity/user/${user.uid}`);
+              const activityRes = await axios.get(`${API_BASE}/api/activity/user/${user.uid}`);
               return {
                 uid: user.uid,
                 name: user.name || user.email,
@@ -93,7 +93,7 @@ const Statistics = () => {
       }
     };
     fetchStats();
-  }, [get]);
+  }, []);
 
   const getRatingStars = (rating) => {
     return Array.from({ length: 5 }, (_, i) => (

@@ -11,7 +11,6 @@ import {
   FaStar,
 } from "react-icons/fa";
 import { BiSolidPlaylist } from "react-icons/bi";
-import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import useAxios from "../hooks/useAxios";
@@ -32,12 +31,9 @@ const SongCard = memo(
     };
 
     return (
-      <motion.div
+      <div
         key={song._id}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 0.2, delay: Math.min(index * 0.01, 0.3) }}
-        className="relative group cursor-pointer"
+        className="relative group cursor-pointer animate-fade-slide"
         onClick={handleCardClick}
       >
         <div className="relative bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors group">
@@ -58,17 +54,15 @@ const SongCard = memo(
             
             {/* Play/Pause button overlay - Spotify Style */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-              <motion.button
-                whileHover={{ scale: 1.1 }}
-                whileTap={{ scale: 0.9 }}
-                className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-colors"
+              <button
+                className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-transform duration-150 ease-out pointer-events-auto group-hover:scale-105 active:scale-95"
               >
                 {isCurrent && isCurrentPlaying ? (
                   <FaPause className="text-xl" />
                 ) : (
                   <FaPlay className="text-xl ml-1" />
                 )}
-              </motion.button>
+              </button>
             </div>
 
             {/* Now Playing indicator - Spotify Style */}
@@ -89,7 +83,7 @@ const SongCard = memo(
             </p>
           </div>
         </div>
-      </motion.div>
+      </div>
     );
   },
   (prevProps, nextProps) => {
@@ -467,11 +461,7 @@ function HomeContent({ searchQuery = "" }) {
         <>
           {/* Trending Public Playlists Section */}
           {trendingPlaylists.length > 0 && !search && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <section className="animate-fade-slide">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Link
@@ -490,13 +480,11 @@ function HomeContent({ searchQuery = "" }) {
               </div>
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-6 gap-3">
                 {trendingPlaylists.map((playlist, idx) => (
-                  <motion.div
+                  <div
                     key={playlist._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
                     onClick={() => navigate(`/public/playlist/${playlist._id}`)}
-                    className="relative group cursor-pointer h-full"
+                    className="relative group cursor-pointer h-full animate-fade-slide"
+                    style={{ animationDelay: `${Math.min(idx * 0.02, 0.3)}s` }}
                   >
                     <div className="relative bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors h-full flex flex-col group cursor-pointer">
                       {/* Cover Image */}
@@ -519,13 +507,11 @@ function HomeContent({ searchQuery = "" }) {
 
                         {/* Play button overlay - Spotify Style */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-colors"
+                          <button
+                            className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-transform duration-150 ease-out pointer-events-auto group-hover:scale-105 active:scale-95"
                           >
                             <FaPlay className="text-xl ml-1" />
-                          </motion.button>
+                          </button>
                         </div>
                       </div>
 
@@ -545,19 +531,15 @@ function HomeContent({ searchQuery = "" }) {
                         )}
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-            </motion.section>
+            </section>
           )}
 
           {/* Genre-Based Playlists Section */}
           {genrePlaylists.length > 0 && !search && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <section className="animate-fade-slide">
               <div className="flex items-center gap-3 mb-4">
                 <h2 className="text-2xl font-bold text-white">
                   Your Genre Mixes
@@ -571,18 +553,16 @@ function HomeContent({ searchQuery = "" }) {
               </p>
               <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 gap-3">
                 {genrePlaylists.map((playlist, idx) => (
-                  <motion.div
+                  <div
                     key={playlist._id}
-                    initial={{ opacity: 0 }}
-                    animate={{ opacity: 1 }}
-                    transition={{ duration: 0.2, delay: Math.min(idx * 0.02, 0.3) }}
+                    className="relative group cursor-pointer h-full animate-fade-slide"
+                    style={{ animationDelay: `${Math.min(idx * 0.02, 0.3)}s` }}
                     onClick={() => {
                       if (playlist.songs.length > 0) {
                         playSong(playlist.songs[0], 0, playlist.songs);
                         toast.success(`Playing ${playlist.name}!`);
                       }
                     }}
-                    className="relative group cursor-pointer h-full"
                   >
                     <div className="relative bg-[#181818] rounded-lg p-4 hover:bg-[#282828] transition-colors h-full flex flex-col group cursor-pointer">
                       {/* Cover Image */}
@@ -599,13 +579,11 @@ function HomeContent({ searchQuery = "" }) {
 
                         {/* Play button overlay - Spotify Style */}
                         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-colors"
+                          <button
+                            className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-transform duration-150 ease-out pointer-events-auto group-hover:scale-105 active:scale-95"
                           >
                             <FaPlay className="text-xl ml-1" />
-                          </motion.button>
+                          </button>
                         </div>
                       </div>
 
@@ -619,19 +597,15 @@ function HomeContent({ searchQuery = "" }) {
                         </p>
                       </div>
                     </div>
-                  </motion.div>
+                  </div>
                 ))}
               </div>
-            </motion.section>
+            </section>
           )}
 
           {/* For You Section (Personalized Recommendations) */}
           {forYouSongs.length > 0 && !search && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <section className="animate-fade-slide">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Link
@@ -669,16 +643,12 @@ function HomeContent({ searchQuery = "" }) {
                   />
                 ))}
               </div>
-            </motion.section>
+            </section>
           )}
 
           {/* Recently Played Section */}
           {recentlyPlayed.length > 0 && !search && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: 0.05 }}
-            >
+            <section className="animate-fade-slide" style={{ animationDelay: "0.05s" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Link
@@ -709,16 +679,12 @@ function HomeContent({ searchQuery = "" }) {
                   />
                 ))}
               </div>
-            </motion.section>
+            </section>
           )}
 
           {/* Trending Section */}
           {!search && trendingSongs.length > 0 && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: 0.1 }}
-            >
+            <section className="animate-fade-slide" style={{ animationDelay: "0.1s" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Link
@@ -749,16 +715,12 @@ function HomeContent({ searchQuery = "" }) {
                   />
                 ))}
               </div>
-            </motion.section>
+            </section>
           )}
 
           {/* New Releases Section */}
           {!search && newReleases.length > 0 && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2, delay: 0.15 }}
-            >
+            <section className="animate-fade-slide" style={{ animationDelay: "0.15s" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
                   <Link
@@ -789,16 +751,12 @@ function HomeContent({ searchQuery = "" }) {
                   />
                 ))}
               </div>
-            </motion.section>
+            </section>
           )}
 
           {/* Search Results */}
           {search && (
-            <motion.section
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.2 }}
-            >
+            <section className="animate-fade-slide">
               <h2 className="text-2xl font-bold text-white mb-4">
                 Search Results ({searchResults.length})
               </h2>
@@ -827,20 +785,15 @@ function HomeContent({ searchQuery = "" }) {
                   </p>
                 </div>
               )}
-            </motion.section>
+            </section>
           )}
         </>
       )}
 
       {/* Add to Playlist Drawer */}
-      <AnimatePresence>
-        {playlistModal.open && (
-            <AddToPlaylistModal
-              songId={playlistModal.songId}
-            onClose={closePlaylistModal}
-            />
-        )}
-      </AnimatePresence>
+      {playlistModal.open && (
+        <AddToPlaylistModal songId={playlistModal.songId} onClose={closePlaylistModal} />
+      )}
     </div>
   );
 }
