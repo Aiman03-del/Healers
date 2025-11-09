@@ -1,10 +1,10 @@
-import { FaSearch } from "react-icons/fa";
+import { Search } from "lucide-react";
 
 function SearchBar({ value, onChange, placeholder = "Search..." }) {
   return (
     <div className="mx-auto mt-4 w-full max-w-[400px] sm:max-w-[480px] relative">
       <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-lg pointer-events-none">
-        <FaSearch />
+        <Search className="w-[18px] h-[18px]" strokeWidth={2.2} />
       </span>
       <input
         type="text"

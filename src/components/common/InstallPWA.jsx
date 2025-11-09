@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { FaDownload, FaTimes } from "react-icons/fa";
+import { Download, X } from "lucide-react";
 
 const InstallPWA = () => {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
@@ -104,7 +104,7 @@ const InstallPWA = () => {
         <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3 flex-1">
             <div className="bg-white/20 p-3 rounded-xl">
-              <FaDownload className="text-2xl" />
+              <Download className="w-6 h-6" strokeWidth={2.2} />
             </div>
             <div className="flex-1">
               <h3 className="font-bold text-lg mb-1">
@@ -120,7 +120,7 @@ const InstallPWA = () => {
             className="text-white/70 hover:text-white transition-colors"
             aria-label="Dismiss"
           >
-            <FaTimes />
+            <X className="w-5 h-5" strokeWidth={2.2} />
           </button>
         </div>
         <div className="mt-4 flex gap-2">

@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['healers.png', 'pwa-192x192.png', 'favicon.ico'],
+      includeAssets: ['healers.png', 'healers.webp', 'pwa-192x192.png', 'favicon.ico'],
       manifest: {
         name: 'Healers - Music Streaming',
         short_name: 'Healers',

@@ -3,19 +3,19 @@ import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../../context/AuthContext";
 import { avatarFromEmail } from "../../utils/avatarFromEmail";
 import {
-  FaListUl,
-  FaHome,
-  FaTachometerAlt,
-  FaUser,
-  FaSignOutAlt,
-  FaMusic,
-  FaDownload,
-  FaCheckCircle,
-  FaShareAlt,
-} from "react-icons/fa";
-import { FaSun, FaMoon } from "react-icons/fa";
+  ListMusic,
+  Home,
+  LayoutDashboard,
+  User,
+  LogOut,
+  Music2,
+  Download,
+  CheckCircle2,
+  Share2,
+} from "lucide-react";
 import React, { useState, useRef, useEffect, Suspense } from "react";
-import logo from "../../assets/healers.png";
+import logoPng from "../../assets/healers.png";
+import logoWebp from "../../assets/healers.webp";
 import { USER_ROLES, THEMES } from "../../constants";
 import toast from "react-hot-toast";
 
@@ -181,21 +181,27 @@ function Navbar() {
       <div className="max-w-screen-xl mx-auto flex items-center justify-between px-4 sm:px-6 md:px-8 py-4 relative z-10">
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative transition-transform duration-150 ease-out group-hover:scale-105 active:scale-95">
-            <img
-              src={logo}
-              alt="Healers"
-              className="w-10 h-10 object-cover rounded-full relative z-10"
-              loading="eager"
-              width={40}
-              height={40}
-            />
+            <picture>
+              <source srcSet={logoWebp} type="image/webp" />
+              <source srcSet={logoPng} type="image/png" />
+              <img
+                src={logoPng}
+                alt="Healers"
+                className="w-10 h-10 object-cover rounded-full relative z-10 bg-[#1a1a1a]"
+                loading="eager"
+                fetchpriority="high"
+                decoding="async"
+                width={40}
+                height={40}
+              />
+            </picture>
           </div>
           <div className="hidden sm:flex flex-col">
             <span className="text-xl font-bold text-white tracking-wide">
               Healers
             </span>
             <span className="text-xs text-gray-400 flex items-center gap-1">
-              <FaMusic className="text-[10px]" /> Feel the rhythm
+              <Music2 className="w-3.5 h-3.5" strokeWidth={2.4} /> Feel the rhythm
             </span>
           </div>
         </Link>
@@ -233,7 +239,7 @@ function Navbar() {
               className="hidden sm:flex items-center gap-2 px-4 py-2 rounded-full bg-white text-black font-bold text-sm transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
               aria-label="Share app"
             >
-              <FaShareAlt />
+              <Share2 className="w-4 h-4" strokeWidth={2.4} />
               <span>Share</span>
             </button>
           )}
@@ -294,7 +300,7 @@ function Navbar() {
                         className="flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors font-medium"
                         onClick={() => setDropdown(false)}
                       >
-                        <FaUser />
+                        <User className="w-4 h-4" strokeWidth={2.2} />
                         <span>Profile</span>
                       </Link>
                       <Link
@@ -302,7 +308,7 @@ function Navbar() {
                         className="flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors font-medium"
                         onClick={() => setDropdown(false)}
                       >
-                        <FaListUl />
+                        <ListMusic className="w-4 h-4" strokeWidth={2.2} />
                         <span>My Playlists</span>
                       </Link>
 
@@ -315,7 +321,7 @@ function Navbar() {
                           }}
                           className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-white hover:bg-white/10 transition-colors font-medium"
                         >
-                          <FaDownload />
+                          <Download className="w-4 h-4" strokeWidth={2.2} />
                           <span>Install App</span>
                         </button>
                       )}
@@ -323,7 +329,7 @@ function Navbar() {
                       {/* Show installed status if app is installed */}
                       {isInstalled && (
                         <div className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-gray-400 cursor-default">
-                          <FaCheckCircle />
+                          <CheckCircle2 className="w-4 h-4" strokeWidth={2.2} />
                           <span>App Installed</span>
                         </div>
                       )}
@@ -336,7 +342,7 @@ function Navbar() {
                         }}
                         className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-white hover:bg-white/10 transition-colors font-medium"
                       >
-                        <FaShareAlt />
+                        <Share2 className="w-4 h-4" strokeWidth={2.2} />
                         <span>Share App</span>
                       </button>
 
@@ -349,7 +355,7 @@ function Navbar() {
                         }}
                         className="flex items-center gap-3 px-4 py-2.5 w-full text-left text-white hover:bg-white/10 transition-colors font-medium"
                       >
-                        <FaSignOutAlt />
+                        <LogOut className="w-4 h-4" strokeWidth={2.2} />
                         <span>Logout</span>
                       </button>
                     </div>
@@ -429,7 +435,7 @@ function Navbar() {
                     : "hover:bg-white/10"
                 }`}
               >
-                <FaHome />
+                <Home className="w-5 h-5" strokeWidth={2.2} />
                 <span className="text-base">Home</span>
               </Link>
 
@@ -445,7 +451,7 @@ function Navbar() {
                         : "hover:bg-white/10"
                     }`}
                   >
-                    <FaTachometerAlt />
+                    <LayoutDashboard className="w-5 h-5" strokeWidth={2.2} />
                     <span className="text-base">Dashboard</span>
                   </Link>
                 )}
@@ -460,7 +466,7 @@ function Navbar() {
                       : "hover:bg-white/10"
                   }`}
                 >
-                  <FaListUl />
+                  <ListMusic className="w-5 h-5" strokeWidth={2.2} />
                   <span className="text-base">My Playlists</span>
                 </Link>
               )}
@@ -475,7 +481,7 @@ function Navbar() {
                     }}
                     className="flex items-center justify-center gap-2 w-full px-4 py-3 rounded-full bg-white text-black font-bold transition-all hover:scale-105"
                   >
-                    <FaShareAlt />
+                    <Share2 className="w-4 h-4" strokeWidth={2.2} />
                     Share App
                   </button>
                   
@@ -494,7 +500,7 @@ function Navbar() {
                     onClick={() => setMobileOpen(false)}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white font-medium"
                   >
-                    <FaUser />
+                    <User className="w-5 h-5" strokeWidth={2.2} />
                     <span className="text-base">Profile</span>
                   </Link>
 
@@ -507,7 +513,7 @@ function Navbar() {
                       }}
                       className="flex items-center gap-3 px-4 py-3 rounded-lg text-white hover:bg-white/10 transition-colors font-medium w-full text-left"
                     >
-                      <FaDownload />
+                      <Download className="w-5 h-5" strokeWidth={2.2} />
                       <span className="text-base">Install App</span>
                     </button>
                   )}
@@ -515,7 +521,7 @@ function Navbar() {
                   {/* Show installed status if app is installed */}
                   {isInstalled && (
                     <div className="flex items-center gap-3 px-4 py-3 rounded-lg text-gray-400 cursor-default font-medium w-full text-left">
-                      <FaCheckCircle />
+                      <CheckCircle2 className="w-5 h-5" strokeWidth={2.2} />
                       <span className="text-base">App Installed</span>
                     </div>
                   )}
@@ -528,7 +534,7 @@ function Navbar() {
                     }}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white font-medium w-full text-left"
                   >
-                    <FaShareAlt />
+                    <Share2 className="w-5 h-5" strokeWidth={2.2} />
                     <span className="text-base">Share App</span>
                   </button>
 
@@ -539,7 +545,7 @@ function Navbar() {
                     }}
                     className="flex items-center gap-3 px-4 py-3 rounded-lg hover:bg-white/10 transition-colors text-white font-medium w-full text-left"
                   >
-                    <FaSignOutAlt />
+                    <LogOut className="w-5 h-5" strokeWidth={2.2} />
                     <span className="text-base">Logout</span>
                   </button>
                 </div>

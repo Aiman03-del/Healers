@@ -1,16 +1,7 @@
 import { useEffect, useState, memo, useCallback, useMemo } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
-import {
-  FaPause,
-  FaPlay,
-  FaMusic,
-  FaFire,
-  FaClock,
-  FaRandom,
-  FaStar,
-} from "react-icons/fa";
-import { BiSolidPlaylist } from "react-icons/bi";
+import { Pause, Play, Music2, ListMusic } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import useAxios from "../hooks/useAxios";
@@ -21,6 +12,8 @@ import { AddToPlaylistModal } from "../components/features/playlists";
 const SongCard = memo(
   ({ song, index, songs: songList, currentSongId, isCurrentPlaying, onPlay, onPause }) => {
     const isCurrent = currentSongId === song._id;
+    const shouldPrioritize = index === 0;
+    const shouldEagerLoad = index < 2;
 
     const handleCardClick = () => {
       if (isCurrent && isCurrentPlaying) {
@@ -40,15 +33,17 @@ const SongCard = memo(
           {/* Album Cover */}
           <div className="relative w-full aspect-square mb-4">
             <img
-              src={song.cover || "/healers.png"}
+              src={song.cover || "/healers.webp"}
               alt={song.title}
-              className="w-full h-full object-cover rounded"
-              loading="lazy"
+              className="w-full h-full object-cover rounded bg-[#1a1a1a]"
+              loading={shouldEagerLoad ? "eager" : "lazy"}
+              fetchpriority={shouldPrioritize ? "high" : "auto"}
               decoding="async"
               width={320}
               height={320}
               onError={(e) => {
-                e.target.src = "/healers.png";
+                e.target.src = "/healers.webp";
+                e.target.onerror = null;
               }}
             />
             
@@ -58,9 +53,9 @@ const SongCard = memo(
                 className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-transform duration-150 ease-out pointer-events-auto group-hover:scale-105 active:scale-95"
               >
                 {isCurrent && isCurrentPlaying ? (
-                  <FaPause className="text-xl" />
+                  <Pause className="w-5 h-5" strokeWidth={2.2} />
                 ) : (
-                  <FaPlay className="text-xl ml-1" />
+                  <Play className="w-5 h-5 ml-0.5" strokeWidth={2.2} />
                 )}
               </button>
             </div>
@@ -493,15 +488,20 @@ function HomeContent({ searchQuery = "" }) {
                           <img
                             src={playlist.firstSongCover}
                             alt={playlist.name}
-                            className="w-full h-full object-cover rounded"
-                            loading="lazy"
+                            className="w-full h-full object-cover rounded bg-[#1a1a1a]"
+                            loading={idx < 2 ? "eager" : "lazy"}
+                            fetchpriority={idx === 0 ? "high" : "auto"}
                             decoding="async"
                             width={320}
                             height={320}
+                            onError={(e) => {
+                              e.target.src = "/healers.webp";
+                              e.target.onerror = null;
+                            }}
                           />
                         ) : (
                           <div className="w-full h-full bg-[#333] rounded flex items-center justify-center">
-                            <BiSolidPlaylist className="text-5xl text-gray-500" />
+                            <ListMusic className="w-12 h-12 text-gray-500" strokeWidth={1.7} />
                           </div>
                         )}
 
@@ -510,7 +510,7 @@ function HomeContent({ searchQuery = "" }) {
                           <button
                             className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-transform duration-150 ease-out pointer-events-auto group-hover:scale-105 active:scale-95"
                           >
-                            <FaPlay className="text-xl ml-1" />
+                            <Play className="w-5 h-5 ml-0.5" strokeWidth={2.2} />
                           </button>
                         </div>
                       </div>
@@ -570,11 +570,16 @@ function HomeContent({ searchQuery = "" }) {
                         <img
                           src={playlist.firstSongCover}
                           alt={playlist.name}
-                          className="w-full h-full object-cover rounded"
-                          loading="lazy"
+                          className="w-full h-full object-cover rounded bg-[#1a1a1a]"
+                          loading={idx < 2 ? "eager" : "lazy"}
+                          fetchpriority={idx === 0 ? "high" : "auto"}
                           decoding="async"
                           width={320}
                           height={320}
+                          onError={(e) => {
+                            e.target.src = "/healers.webp";
+                            e.target.onerror = null;
+                          }}
                         />
 
                         {/* Play button overlay - Spotify Style */}
@@ -582,7 +587,7 @@ function HomeContent({ searchQuery = "" }) {
                           <button
                             className="w-14 h-14 rounded-full bg-[#1db954] text-black flex items-center justify-center shadow-2xl hover:bg-[#1ed760] transition-transform duration-150 ease-out pointer-events-auto group-hover:scale-105 active:scale-95"
                           >
-                            <FaPlay className="text-xl ml-1" />
+                            <Play className="w-5 h-5 ml-0.5" strokeWidth={2.2} />
                           </button>
                         </div>
                       </div>
@@ -776,7 +781,7 @@ function HomeContent({ searchQuery = "" }) {
               </div>
               {searchResults.length === 0 && (
                 <div className="text-center py-12">
-                  <FaMusic className="text-6xl text-gray-600 mx-auto mb-4" />
+                  <Music2 className="w-16 h-16 text-gray-600 mx-auto mb-4" strokeWidth={1.8} />
                   <p className="text-xl text-white mb-2">
                     No songs found matching "{search}"
                   </p>

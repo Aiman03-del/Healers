@@ -16,6 +16,7 @@
     "firebase": "^11.10.0",
     "framer-motion": "^12.23.0",
     "imagekitio-react": "^4.3.0",
+    "lucide-react": "^0.553.0",
     "react": "^19.1.0",
     "react-confetti": "^6.4.0",
     "react-device-detect": "^2.2.3",
