@@ -7,42 +7,19 @@ A modern, feature-rich music streaming web application built with React, Firebas
 ![Firebase](https://img.shields.io/badge/Firebase-11.10.0-orange)
 ![License](https://img.shields.io/badge/license-MIT-green)
 
-## ✨ Features
+## ✨ Feature Highlights
 
-### 🎧 Audio Player
-- **Full-featured audio controls**: Play, pause, skip, previous
-- **Loop modes**: No loop, loop one song, loop all
-- **Shuffle mode**: Random playback
-- **Volume control**: Adjustable audio volume
-- **Progress bar**: Seek to any position in the track
-- **Swipe gestures**: Mobile-friendly swipe controls
-- **Expandable player**: Full-screen player view on mobile
-
-### 🎵 Playlist Management
-- Create custom playlists
-- Add/remove songs from playlists
-- "Liked Songs" auto-playlist
-- Share playlists publicly
-- View playlist details
-
-### 👤 User Features
-- **Authentication**: Email/password and Google OAuth
-- **User profiles**: Personalized user profiles
-- **Role-based access**: Admin, Staff, and User roles
-- **Onboarding**: New user onboarding flow
-
-### 🎨 UI/UX
-- **Dark/Light theme**: Toggle between themes
-- **Responsive design**: Mobile, tablet, and desktop support
-- **Smooth animations**: Framer Motion animations
-- **Toast notifications**: Beautiful toast messages
-- **Confetti effects**: Success celebration animations
-
-### 🛡️ Admin Panel
-- Dashboard with statistics
-- Song management (add, edit, delete)
-- User management
-- Upload songs with cover images
+| Category | Capabilities |
+| --- | --- |
+| 🎧 Immersive Listening | Rich Web Audio player with queue control, shuffle & loop modes, volume slider, scrubbable progress bar, and mobile-first gestures. |
+| 💿 Music Discovery | Trending charts, genre-based mixes, “Made for You” recommendations, and recently played history tailored to each listener. |
+| 📚 Powerful Playlists | Create, edit, and share playlists; auto-manage “Liked Songs”; invite friends; toggle public/private access; instant socket updates. |
+| 🤝 Community Voices | Users can submit reviews with ratings; admins receive actionable notifications with Approve/Decline workflow before feedback appears publicly. |
+| 🔔 Real-time Notifications | Socket-driven alert center for playlist invites, review moderation, and system messages with quick actions and read receipts. |
+| 👥 Account & Roles | Firebase auth, Google OAuth, profile personalization, role-based gates for Admin, Staff, and Users, plus onboarding warmups. |
+| 🛡️ Admin Toolkit | Dashboard analytics, user management, CRUD for songs & playlists, media uploads with ImageKit, and instant broadcast events. |
+| 📱 PWA & Branding | Installable app with offline-ready shell, maskable icons using `healers.png`, optimized favicons, and Spotify-inspired dark theming. |
+| 🎨 Delightful UI | Responsive Tailwind layout, Framer Motion animations, confetti celebrations, theming toggle, and accessible toast feedback. |
 
 ## 🚀 Tech Stack
 
