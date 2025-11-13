@@ -1,6 +1,13 @@
 import { Link, useLocation } from 'react-router-dom';
 import { useAuth } from '../../context/AuthContext';
-import { FaPlus, FaMusic, FaChartBar, FaSignOutAlt, FaUsersCog } from "react-icons/fa";
+import {
+  FaPlus,
+  FaMusic,
+  FaChartBar,
+  FaSignOutAlt,
+  FaUsersCog,
+  FaUserCircle,
+} from "react-icons/fa";
 
 const SidebarLink = ({ to, label, icon, location }) => (
   <Link
@@ -52,6 +59,12 @@ const DashboardSidebar = ({ onLogout }) => {
               icon={<FaMusic />}
               location={location}
             />
+          <SidebarLink
+            to="/dashboard/artists"
+            label="Artists"
+            icon={<FaUserCircle />}
+            location={location}
+          />
             <SidebarLink
               to="/dashboard/statistics"
               label="Statistics"

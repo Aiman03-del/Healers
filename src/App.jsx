@@ -37,6 +37,7 @@ const TrendingPlaylists = lazy(() => import("./pages/sections/TrendingPlaylists"
 
 // Lazy load layout and routes
 const DashboardLayout = lazy(() => import("./components/layout").then(m => ({ default: m.DashboardLayout })));
+const MainLayout = lazy(() => import("./components/layout").then(m => ({ default: m.MainLayout })));
 const PrivateRoute = lazy(() => import("./Routes/PrivateRoute"));
 const RoleRoute = lazy(() => import("./Routes/RoleRoute"));
 
@@ -45,6 +46,14 @@ const AddSong = lazy(() => import("./pages/admin/AddSong"));
 const AllSongs = lazy(() => import("./pages/admin/AllSongs"));
 const ManageUsers = lazy(() => import("./pages/admin/ManageUsers"));
 const Statistics = lazy(() => import("./pages/admin/Statistics"));
+const Artists = lazy(() => import("./pages/admin/Artists"));
+const SongDetailsAdmin = lazy(() =>
+  import("./pages/admin/SongDetailsAdmin")
+);
+const Feedback = lazy(() => import("./pages/Feedback"));
+const ArtistProfileDetails = lazy(() =>
+  import("./pages/admin/ArtistProfileDetails")
+);
 
 function App() {
   const [theme, setTheme] = useState(THEMES.DARK);
@@ -140,6 +149,12 @@ function App() {
                     {/* Show statistics by default on dashboard */}
                     <Route path="add-song" element={<AddSong />} />
                     <Route path="songs" element={<AllSongs />} />
+                    <Route path="songs/:id" element={<SongDetailsAdmin />} />
+                    <Route path="artists" element={<Artists />} />
+                    <Route
+                      path="artists/:slug"
+                      element={<ArtistProfileDetails />}
+                    />
                     <Route path="statistics" element={<Statistics />} />
                     {/* Manage Users: only admin */}
                     <Route
@@ -152,6 +167,14 @@ function App() {
                     />
                   </Route>
                   <Route path="/playlists" element={<MyPlaylists />} />
+                  <Route
+                    path="/feedback"
+                    element={
+                      <MainLayout>
+                        <Feedback />
+                      </MainLayout>
+                    }
+                  />
                   <Route path="*" element={<NotFound />} />
                 </Routes>
               </PrivateRoute>

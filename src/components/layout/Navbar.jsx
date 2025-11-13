@@ -12,6 +12,7 @@ import {
   Download,
   CheckCircle2,
   Share2,
+  MessageCircle,
 } from "lucide-react";
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import logoPng from "../../assets/healers.png";
@@ -235,6 +236,13 @@ function Navbar() {
                 active={location.pathname === "/playlists"}
               />
             )}
+            {user && (
+              <NavLink
+                to="/feedback"
+                label="Feedback"
+                active={location.pathname === "/feedback"}
+              />
+            )}
           </div>
 
           {/* Share Button for non-logged users */}
@@ -315,6 +323,14 @@ function Navbar() {
                       >
                         <ListMusic className="w-4 h-4" strokeWidth={2.2} />
                         <span>My Playlists</span>
+                      </Link>
+                      <Link
+                        to="/feedback"
+                        className="flex items-center gap-3 px-4 py-2.5 text-white hover:bg-white/10 transition-colors font-medium"
+                        onClick={() => setDropdown(false)}
+                      >
+                        <MessageCircle className="w-4 h-4" strokeWidth={2.2} />
+                        <span>Feedback</span>
                       </Link>
 
                       {/* PWA Install Button in Dropdown - Always show if not installed */}
@@ -486,6 +502,21 @@ function Navbar() {
                 >
                   <ListMusic className="w-5 h-5" strokeWidth={2.2} />
                   <span className="text-base">My Playlists</span>
+                </Link>
+              )}
+
+              {user && (
+                <Link
+                  to="/feedback"
+                  onClick={() => setMobileOpen(false)}
+                  className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white font-medium ${
+                    location.pathname === "/feedback"
+                      ? "bg-white/10"
+                      : "hover:bg-white/10"
+                  }`}
+                >
+                  <MessageCircle className="w-5 h-5" strokeWidth={2.2} />
+                  <span className="text-base">Feedback</span>
                 </Link>
               )}
 

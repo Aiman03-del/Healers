@@ -1,31 +1,56 @@
 // src/pages/admin/AddSong.jsx
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { uploadToImageKit } from '../../utils/upload';
 import { toast } from 'react-hot-toast';
 import useAxios from "../../hooks/useAxios";
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import { 
   FaMusic, 
   FaImage, 
   FaUpload, 
   FaCheckCircle, 
-  FaTimesCircle,
   FaMicrophone,
   FaGuitar,
   FaCompactDisc,
   FaCloudUploadAlt
 } from 'react-icons/fa';
+import { ArtistMultiSelect } from '../../components/common';
+
+const parseArtistList = (value = '') => {
+  if (!value) return [];
+  return value
+    .replace(/\s+(feat\.?|ft\.?|featuring)\s+/gi, ',')
+    .replace(/\s+vs\.?\s+/gi, ',')
+    .replace(/\s+x\s+/gi, ',')
+    .replace(/\s+and\s+/gi, ',')
+    .replace(/&/g, ',')
+    .split(',')
+    .map((item) => item.trim())
+    .filter(Boolean);
+};
+
+const dedupeArtistsList = (artists = []) => {
+  if (!Array.isArray(artists)) return [];
+  return Array.from(
+    new Map(
+      artists
+        .map((name) => name && name.toString().trim())
+        .filter(Boolean)
+        .map((name) => [name.toLowerCase(), name])
+    ).values()
+  );
+};
 
 const AddSong = () => {
   const { user } = useAuth();
-  const { post } = useAxios();
+  const { get, post } = useAxios();
   const coverInputRef = useRef(null);
   const audioInputRef = useRef(null);
 
   const [form, setForm] = useState({
     title: '',
-    artist: '',
+    artists: [],
     genre: '',
     cover: '',
     audio: '',
@@ -37,9 +62,45 @@ const AddSong = () => {
   const [coverPreview, setCoverPreview] = useState('');
   const [audioName, setAudioName] = useState('');
   const [dragActive, setDragActive] = useState({ cover: false, audio: false });
+  const [availableArtists, setAvailableArtists] = useState([]);
+  const hasFetchedArtists = useRef(false);
+
+  useEffect(() => {
+    if (hasFetchedArtists.current) return;
+    hasFetchedArtists.current = true;
+
+    let isMounted = true;
+
+    const fetchArtists = async () => {
+      try {
+        const res = await get('/api/artists?includeSongs=false');
+        if (!isMounted) return;
+        const fetched = res?.data?.artists
+          ?.map((artist) => artist.artist)
+          .filter(Boolean);
+        if (fetched?.length) {
+        setAvailableArtists(dedupeArtistsList(fetched).sort());
+        }
+      } catch (err) {
+        console.error('Failed to load artists', err);
+      }
+    };
+
+    fetchArtists();
+    return () => {
+      isMounted = false;
+    };
+  }, [get]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
+
+  const addArtistsToAvailable = (input = []) => {
+    const candidates = Array.isArray(input) ? input : [input];
+    setAvailableArtists((prev) =>
+      dedupeArtistsList([...prev, ...candidates]).sort()
+    );
+  };
 
   // Handle cover image upload
   const handleCoverChange = async (e) => {
@@ -84,7 +145,7 @@ const AddSong = () => {
     
     // Try to extract artist and title if format is "Artist - Title"
     let extractedTitle = songNameWithoutExt;
-    let extractedArtist = form.artist; // Keep existing artist if any
+    let extractedArtist = form.artists.join(', ');
     
     if (songNameWithoutExt.includes(' - ')) {
       const parts = songNameWithoutExt.split(' - ');
@@ -94,11 +155,17 @@ const AddSong = () => {
       }
     }
     
-    // Auto-fill title (and artist if extracted)
-    setForm((prev) => ({ 
-      ...prev, 
+    const parsedArtists = parseArtistList(extractedArtist);
+    if (parsedArtists.length) {
+      addArtistsToAvailable(parsedArtists);
+    }
+
+    setForm((prev) => ({
+      ...prev,
       title: extractedTitle,
-      artist: extractedArtist || prev.artist
+      artists: parsedArtists.length
+        ? dedupeArtistsList(parsedArtists)
+        : prev.artists,
     }));
     
     setUploadingAudio(true);
@@ -154,7 +221,8 @@ const AddSong = () => {
 
     const song = {
       title: form.title,
-      artist: form.artist,
+      artist: form.artists.join(', '),
+      artists: form.artists,
       genre: genreArr.length > 0 ? genreArr : ["Unknown"],
       cover: form.cover,
       audio: form.audio,
@@ -167,7 +235,7 @@ const AddSong = () => {
       // Reset form
       setForm({
         title: '',
-        artist: '',
+        artists: [],
         genre: '',
         cover: '',
         audio: '',
@@ -388,16 +456,19 @@ const AddSong = () => {
                 <div>
                   <label className="flex items-center gap-2 mb-2 text-sm font-semibold text-white">
                     <FaMicrophone className="text-xs" />
-                    Artist
+                    Artists
                   </label>
-                  <input
-                    type="text"
-                    name="artist"
-                    value={form.artist}
-                    onChange={handleChange}
-                    placeholder="Artist Name"
-                    className="w-full p-3 sm:p-3.5 rounded-lg bg-white/10 border border-gray-700 text-white placeholder-gray-500 focus:ring-2 focus:ring-white focus:bg-white/20 focus:outline-none transition-all duration-300 text-sm sm:text-base"
-                    required
+                  <ArtistMultiSelect
+                    options={availableArtists}
+                    value={form.artists}
+                    onChange={(artists) =>
+                      setForm((prev) => ({
+                        ...prev,
+                        artists: dedupeArtistsList(artists),
+                      }))
+                    }
+                    onCreateOption={(artist) => addArtistsToAvailable([artist])}
+                    inputPlaceholder="Search or add artists"
                   />
                 </div>
               </div>
@@ -435,7 +506,7 @@ const AddSong = () => {
                 !form.cover ||
                 !form.audio ||
                 !form.title ||
-                !form.artist ||
+                form.artists.length === 0 ||
                 !form.genre
               }
               className="w-full bg-white text-black hover:scale-105 transition-all duration-300 px-4 py-3.5 sm:py-4 rounded-full font-bold text-base sm:text-lg disabled:opacity-50 disabled:cursor-not-allowed"
