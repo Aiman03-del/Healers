@@ -25,6 +25,9 @@ const Feedback = () => {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    if (submitting) {
+      return;
+    }
     if (!rating || rating < 1 || rating > 5) {
       toast.error('Please select a rating between 1 and 5');
       return;
