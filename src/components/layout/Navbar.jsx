@@ -214,6 +214,11 @@ function Navbar() {
               label="Home"
               active={location.pathname === "/"}
             />
+            <NavLink
+              to="/about"
+              label="About"
+              active={location.pathname.startsWith("/about")}
+            />
             {user &&
               (user.type === USER_ROLES.ADMIN ||
                 user.type === USER_ROLES.STAFF) && (
@@ -437,6 +442,19 @@ function Navbar() {
               >
                 <Home className="w-5 h-5" strokeWidth={2.2} />
                 <span className="text-base">Home</span>
+              </Link>
+
+              <Link
+                to="/about"
+                onClick={() => setMobileOpen(false)}
+                className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-colors text-white font-medium ${
+                  location.pathname.startsWith("/about")
+                    ? "bg-white/10"
+                    : "hover:bg-white/10"
+                }`}
+              >
+                <User className="w-5 h-5" strokeWidth={2.2} />
+                <span className="text-base">About</span>
               </Link>
 
               {user &&

@@ -1,11 +1,10 @@
-import { useEffect, useState, memo, useCallback, useMemo } from "react";
+import { useEffect, useState, memo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
-import { Pause, Play, Music2, ListMusic } from "lucide-react";
+import { Pause, Play, ListMusic } from "lucide-react";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import useAxios from "../hooks/useAxios";
-import { SearchBar } from "../components/features/search";
 import { AddToPlaylistModal } from "../components/features/playlists";
 
 // SongCard Component - Memoized to prevent unnecessary re-renders
@@ -93,7 +92,7 @@ const SongCard = memo(
 
 SongCard.displayName = 'SongCard';
 
-function HomeContent({ searchQuery = "" }) {
+function HomeContent() {
   const navigate = useNavigate();
   const {
     playSong,
@@ -110,7 +109,6 @@ function HomeContent({ searchQuery = "" }) {
   const [likedSongIds, setLikedSongIds] = useState([]);
   const [likeEffectId, setLikeEffectId] = useState(null);
   const { get, post, put } = useAxios();
-  const [search, setSearch] = useState(searchQuery);
   const [playlistModal, setPlaylistModal] = useState({
     open: false,
     songId: null,
@@ -356,19 +354,6 @@ function HomeContent({ searchQuery = "" }) {
     toast.success("Song will play next!");
   };
 
-  // Filter by search only - Memoized for performance
-  const searchResults = useMemo(() => {
-    if (!search) return [];
-    return songs.filter((song) => {
-    return (
-      song.title.toLowerCase().includes(search.toLowerCase()) ||
-      song.artist.toLowerCase().includes(search.toLowerCase()) ||
-      (song.genre &&
-        song.genre.some((g) => g.toLowerCase().includes(search.toLowerCase())))
-    );
-  });
-  }, [songs, search]);
-
   // Play random song
   const playRandomSong = () => {
     if (songs.length === 0) return;
@@ -376,13 +361,6 @@ function HomeContent({ searchQuery = "" }) {
     playSong(songs[randomIndex], randomIndex, songs);
     toast.success("Playing random song!");
   };
-
-  // Update search when searchQuery prop changes
-  useEffect(() => {
-    if (searchQuery !== undefined) {
-      setSearch(searchQuery);
-    }
-  }, [searchQuery]);
 
   return (
     <div className="space-y-8 py-6">
@@ -455,7 +433,7 @@ function HomeContent({ searchQuery = "" }) {
       ) : (
         <>
           {/* Trending Public Playlists Section */}
-          {trendingPlaylists.length > 0 && !search && (
+          {trendingPlaylists.length > 0 && (
             <section className="animate-fade-slide">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -538,7 +516,7 @@ function HomeContent({ searchQuery = "" }) {
           )}
 
           {/* Genre-Based Playlists Section */}
-          {genrePlaylists.length > 0 && !search && (
+          {genrePlaylists.length > 0 && (
             <section className="animate-fade-slide">
               <div className="flex items-center gap-3 mb-4">
                 <h2 className="text-2xl font-bold text-white">
@@ -609,7 +587,7 @@ function HomeContent({ searchQuery = "" }) {
           )}
 
           {/* For You Section (Personalized Recommendations) */}
-          {forYouSongs.length > 0 && !search && (
+          {forYouSongs.length > 0 && (
             <section className="animate-fade-slide">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -652,7 +630,7 @@ function HomeContent({ searchQuery = "" }) {
           )}
 
           {/* Recently Played Section */}
-          {recentlyPlayed.length > 0 && !search && (
+          {recentlyPlayed.length > 0 && (
             <section className="animate-fade-slide" style={{ animationDelay: "0.05s" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -688,7 +666,7 @@ function HomeContent({ searchQuery = "" }) {
           )}
 
           {/* Trending Section */}
-          {!search && trendingSongs.length > 0 && (
+          {trendingSongs.length > 0 && (
             <section className="animate-fade-slide" style={{ animationDelay: "0.1s" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -724,7 +702,7 @@ function HomeContent({ searchQuery = "" }) {
           )}
 
           {/* New Releases Section */}
-          {!search && newReleases.length > 0 && (
+          {newReleases.length > 0 && (
             <section className="animate-fade-slide" style={{ animationDelay: "0.15s" }}>
               <div className="flex items-center justify-between mb-4">
                 <div className="flex items-center gap-3">
@@ -759,39 +737,6 @@ function HomeContent({ searchQuery = "" }) {
             </section>
           )}
 
-          {/* Search Results */}
-          {search && (
-            <section className="animate-fade-slide">
-              <h2 className="text-2xl font-bold text-white mb-4">
-                Search Results ({searchResults.length})
-              </h2>
-              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
-                {searchResults.map((song, index) => (
-                  <SongCard
-                    key={song._id}
-                    song={song}
-                    index={index}
-                    songs={searchResults}
-                    currentSongId={currentSong?._id}
-                    isCurrentPlaying={isPlaying}
-                    onPlay={playSong}
-                    onPause={pauseSong}
-                  />
-                ))}
-              </div>
-              {searchResults.length === 0 && (
-                <div className="text-center py-12">
-                  <Music2 className="w-16 h-16 text-gray-600 mx-auto mb-4" strokeWidth={1.8} />
-                  <p className="text-xl text-white mb-2">
-                    No songs found matching "{search}"
-                  </p>
-                  <p className="text-sm text-gray-400">
-                    Try searching for a different song, artist, or genre
-                  </p>
-                </div>
-              )}
-            </section>
-          )}
         </>
       )}
 

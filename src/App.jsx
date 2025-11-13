@@ -9,6 +9,9 @@ import { Loading, InstallPWA } from "./components/common";
 const Login = lazy(() => import("./pages/Login").then(m => ({ default: m.Login })));
 const Register = lazy(() => import("./pages/Register"));
 const HomeLayout = lazy(() => import("./pages/HomeLayout"));
+const About = lazy(() => import("./pages/About"));
+const SongDetailsPage = lazy(() => import("./pages/SongDetailsPage"));
+const ArtistPage = lazy(() => import("./pages/ArtistPage"));
 const HomeDefault = lazy(() => import("./pages/HomeDefault"));
 const PlaylistDetails = lazy(() => import("./pages/PlaylistDetails").then(m => ({ default: m.PlaylistDetails })));
 const AdminPanel = lazy(() => import("./pages/AdminPanel").then(m => ({ default: m.AdminPanel })));
@@ -84,6 +87,9 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/onboarding" element={<Onboarding />} />
             <Route path="/forbidden" element={<Forbidden />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/songs/:id" element={<SongDetailsPage />} />
+            <Route path="/artists/:name" element={<ArtistPage />} />
             {/* Public homepage with nested routes - accessible without login */}
             <Route path="/" element={<HomeLayout />}>
               <Route index element={<HomeDefault />} />

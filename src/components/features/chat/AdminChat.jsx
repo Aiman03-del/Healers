@@ -2,7 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import useAxios from "../../../hooks/useAxios";
 import toast from "react-hot-toast";
-import { FaPaperPlane, FaMusic, FaUser, FaTimes, FaComments, FaArrowLeft, FaSearch } from "react-icons/fa";
+import { FaPaperPlane, FaUser, FaTimes, FaComments, FaArrowLeft, FaSearch, FaTrash, FaEllipsisV } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { io } from "socket.io-client";
 
@@ -10,7 +10,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 
 export const AdminChat = ({ isFloating = false }) => {
   const { user } = useAuth();
-  const { get, post, put } = useAxios();
+  const { get, post, put, del } = useAxios();
   const [conversations, setConversations] = useState([]);
   const [selectedChat, setSelectedChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -23,6 +23,9 @@ export const AdminChat = ({ isFloating = false }) => {
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [allUsers, setAllUsers] = useState([]); // Store all users/staff for client-side filtering
+  const [deleting, setDeleting] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [expandedMessageId, setExpandedMessageId] = useState(null);
   const messagesEndRef = useRef(null);
 
   // Load conversations function - memoized with useCallback
@@ -170,12 +173,40 @@ export const AdminChat = ({ isFloating = false }) => {
       );
     });
 
+    const handleMessageDeleted = ({ messageId, chatId }) => {
+      if (!messageId) return;
+      const targetId = messageId.toString();
+      const selectedChatId = selectedChat?._id
+        ? typeof selectedChat._id === "string"
+          ? selectedChat._id
+          : selectedChat._id.toString()
+        : null;
+      if (chatId && selectedChatId) {
+        const chatIdStr = typeof chatId === "string" ? chatId : chatId.toString();
+        if (chatIdStr !== selectedChatId) {
+          debouncedLoadConversations();
+          return;
+        }
+      }
+      setMessages((prev) =>
+        prev.filter(
+          (msg) => (msg._id?.toString() || msg.id?.toString()) !== targetId
+        )
+      );
+      setMenuOpenId((prev) => (prev === targetId ? null : prev));
+      setExpandedMessageId((prev) => (prev === targetId ? null : prev));
+      debouncedLoadConversations();
+    };
+
+    newSocket.on("chat:message:deleted", handleMessageDeleted);
+
     setSocket(newSocket);
 
     return () => {
       if (conversationUpdateTimeoutRef.current) {
         clearTimeout(conversationUpdateTimeoutRef.current);
       }
+      newSocket.off("chat:message:deleted", handleMessageDeleted);
       newSocket.disconnect();
     };
   }, [user?.uid, user?.type, selectedChat?._id, loadConversations]); // More specific dependencies
@@ -241,6 +272,8 @@ export const AdminChat = ({ isFloating = false }) => {
         
         return hasChanged ? newMessages : prev;
       });
+      setMenuOpenId(null);
+      setExpandedMessageId(null);
     } catch (err) {
       console.error("Failed to load messages:", err);
       toast.error("Failed to load messages");
@@ -336,12 +369,16 @@ export const AdminChat = ({ isFloating = false }) => {
 
   // Handle conversation selection
   const handleSelectConversation = (conv) => {
+    setMenuOpenId(null);
+    setExpandedMessageId(null);
     setSelectedChat(conv);
     setShowChatWindow(true);
   };
 
   // Handle back to conversation list
   const handleBackToList = () => {
+    setMenuOpenId(null);
+    setExpandedMessageId(null);
     setShowChatWindow(false);
     // Keep selectedChat for desktop view, but hide chat window on mobile
   };
@@ -368,6 +405,28 @@ export const AdminChat = ({ isFloating = false }) => {
     } catch (err) {
       console.error("Failed to update request status:", err);
       toast.error("Failed to update request status");
+    }
+  };
+
+  const handleDeleteMessage = async (messageId) => {
+    if (!messageId || deleting) return;
+    try {
+      setDeleting(true);
+      const targetId = messageId.toString();
+      await del(`/api/chat/message/${targetId}`);
+      setMessages((prev) =>
+        prev.filter(
+          (msg) => (msg._id?.toString() || msg.id?.toString()) !== targetId
+        )
+      );
+      setMenuOpenId(null);
+      setExpandedMessageId((prev) => (prev === targetId ? null : prev));
+      toast.success("Message deleted");
+    } catch (err) {
+      console.error("Failed to delete message:", err);
+      toast.error("Failed to delete message");
+    } finally {
+      setDeleting(false);
     }
   };
 
@@ -406,6 +465,183 @@ export const AdminChat = ({ isFloating = false }) => {
       month: "short",
       day: "numeric",
     });
+  };
+
+  const getStatusBadgeClasses = (status) => {
+    const normalized = (status || "").toLowerCase();
+    const base = "px-2 py-1 rounded text-xs font-semibold";
+    switch (normalized) {
+      case "approved":
+        return `${base} border border-green-400 text-green-300`;
+      case "rejected":
+        return `${base} border border-red-400 text-red-300`;
+      case "added":
+        return `${base} bg-white text-black border border-white`;
+      case "pending":
+        return `${base} border border-yellow-400 text-yellow-300`;
+      default:
+        return `${base} border border-blue-400 text-blue-300`;
+    }
+  };
+
+  const renderMessageBubble = (msg, index) => {
+    const rawId = msg._id || msg.id;
+    const messageId = rawId?.toString() || `msg-${index}`;
+    const isOwnMessage = msg.senderType === "admin";
+    const isExpanded = expandedMessageId === messageId;
+    const otherUser = selectedChat?.user;
+    const canDelete = Boolean(rawId);
+
+    const toggleExpanded = () => {
+      setExpandedMessageId((prev) => (prev === messageId ? null : messageId));
+    };
+
+    return (
+      <div
+        key={messageId}
+        className={`flex flex-col ${isOwnMessage ? "items-end" : "items-start"}`}
+      >
+        <div
+          className={`flex items-center gap-2 ${
+            isOwnMessage ? "flex-row-reverse" : ""
+          }`}
+        >
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={toggleExpanded}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                toggleExpanded();
+              }
+            }}
+            className={`relative max-w-[80%] rounded-lg p-3 overflow-hidden break-words cursor-pointer focus:outline-none ${
+              isOwnMessage ? "bg-[#1db954] text-white" : "bg-[#181818] text-gray-100"
+            }`}
+          >
+            {msg.isRequest ? (
+              <div className="space-y-2 break-words">
+                <div className="font-semibold text-sm break-words">
+                  Music Request
+                </div>
+                <div className="text-xs space-y-1 break-words">
+                  <p>
+                    <span className="font-semibold">Song:</span>{" "}
+                    {msg.requestData?.youtubeLink ? (
+                      <a
+                        href={msg.requestData.youtubeLink}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-300 hover:underline"
+                      >
+                        {msg.requestData?.songName || "View"}
+                      </a>
+                    ) : (
+                      msg.requestData?.songName
+                    )}
+                  </p>
+                  <p>
+                    <span className="font-semibold">Artist:</span>{" "}
+                    {msg.requestData?.artistName}
+                  </p>
+                  {msg.requestData?.movieName && (
+                    <p>
+                      <span className="font-semibold">Movie:</span>{" "}
+                      {msg.requestData.movieName}
+                    </p>
+                  )}
+                  <div className="mt-2 flex items-center gap-2 flex-wrap">
+                    <span className={getStatusBadgeClasses(msg.requestData?.status)}>
+                      {msg.requestData?.status || "pending"}
+                    </span>
+                    {msg.requestData?.status === "pending" && (
+                      <button
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (rawId) {
+                            handleUpdateRequestStatus(rawId.toString(), "added");
+                          }
+                        }}
+                        className="px-2 py-0.5 bg-[#1db954] hover:bg-[#1ed760] text-white text-xs rounded-full transition-colors"
+                        disabled={!rawId}
+                      >
+                        Mark as Added
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <p className="text-sm break-words whitespace-pre-wrap">
+                {msg.message}
+              </p>
+            )}
+          </div>
+          {isOwnMessage && (
+            <div className="relative flex-shrink-0">
+              <button
+                type="button"
+                className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1f1f1f] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setMenuOpenId((prev) => (prev === messageId ? null : messageId));
+                }}
+                aria-label="Open message menu"
+                disabled={!canDelete}
+              >
+                <FaEllipsisV className="text-sm" />
+              </button>
+              {menuOpenId === messageId && canDelete && (
+                <div
+                  className="absolute top-full mt-2 left-0 origin-top-right bg-[#121212] border border-gray-700 rounded-md shadow-lg overflow-hidden z-20 min-w-[140px]"
+                  onClick={(e) => e.stopPropagation()}
+                >
+                  <button
+                    type="button"
+                    className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-white/10 flex items-center gap-2"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      if (rawId) {
+                        handleDeleteMessage(rawId.toString());
+                      }
+                    }}
+                    disabled={deleting || !rawId}
+                  >
+                    <FaTrash />
+                    Delete
+                  </button>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+        <div
+          className={`flex items-center gap-2 mt-1 ${
+            isOwnMessage ? "justify-end" : "justify-start"
+          }`}
+        >
+          {isExpanded && (
+            <span className="text-[10px] text-gray-400">
+              {formatTime(msg.createdAt)}
+            </span>
+          )}
+          {isOwnMessage && msg.isRead && (
+            otherUser?.image ? (
+              <img
+                src={otherUser.image}
+                alt={otherUser.name || "Seen"}
+                className="w-4 h-4 rounded-full border border-[#1f1f1f] object-cover"
+              />
+            ) : (
+              <div className="w-4 h-4 rounded-full bg-gray-600 text-white flex items-center justify-center text-[8px]">
+                <FaUser className="text-[10px]" />
+              </div>
+            )
+          )}
+        </div>
+      </div>
+    );
   };
 
   if (!user || user.type !== "admin") {
@@ -614,7 +850,10 @@ export const AdminChat = ({ isFloating = false }) => {
                   </div>
                   
                   {/* Messages */}
-                  <div className="flex-1 overflow-y-auto p-3 space-y-2">
+                  <div
+                    className="flex-1 overflow-y-auto p-3 space-y-2"
+                    onClick={() => setMenuOpenId(null)}
+                  >
                     {loading ? (
                       <div className="text-center text-gray-400 py-4">Loading...</div>
                     ) : messages.length === 0 ? (
@@ -622,62 +861,7 @@ export const AdminChat = ({ isFloating = false }) => {
                         <p className="text-sm">No messages yet</p>
                       </div>
                     ) : (
-                      messages.map((msg, index) => {
-                        const messageId = msg._id?.toString() || msg.id?.toString() || `msg-${index}`;
-                        return (
-                          <div
-                            key={messageId}
-                            className={`flex ${msg.senderType === "admin" ? "justify-end" : "justify-start"}`}
-                          >
-                            <div
-                              className={`max-w-[80%] rounded-lg p-2 text-sm ${
-                                msg.senderType === "admin"
-                                  ? "bg-[#1db954] text-white"
-                                  : "bg-[#181818] text-gray-100"
-                              }`}
-                            >
-                              {msg.isRequest ? (
-                                <div className="space-y-1">
-                                  <div className="font-semibold text-xs flex items-center gap-1">
-                                    <FaMusic className="text-xs" />
-                                    Music Request
-                                  </div>
-                                  <div className="text-xs space-y-0.5">
-                                    <p><span className="font-semibold">Song:</span> {msg.requestData?.songName}</p>
-                                    <p><span className="font-semibold">Artist:</span> {msg.requestData?.artistName}</p>
-                                    {msg.requestData?.movieName && (
-                                      <p><span className="font-semibold">Movie:</span> {msg.requestData.movieName}</p>
-                                    )}
-                                    {msg.requestData?.youtubeLink && (
-                                      <p><span className="font-semibold">YouTube:</span> <a href={msg.requestData.youtubeLink} target="_blank" rel="noopener noreferrer" className="text-blue-300 hover:underline">Link</a></p>
-                                    )}
-                                    <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                      <span className={`px-1.5 py-0.5 rounded text-xs ${
-                                        msg.requestData?.status === "added" ? "bg-blue-500" :
-                                        msg.requestData?.status === "approved" ? "bg-green-500" :
-                                        msg.requestData?.status === "rejected" ? "bg-red-500" : "bg-yellow-500"
-                                      }`}>
-                                        {msg.requestData?.status || "pending"}
-                                      </span>
-                                      {msg.requestData?.status === "pending" && (
-                                        <button
-                                          onClick={() => handleUpdateRequestStatus(msg._id || msg.id, "added")}
-                                          className="px-2 py-0.5 bg-[#1db954] hover:bg-[#1ed760] text-white text-xs rounded-full transition-colors"
-                                        >
-                                          Mark as Added
-                                        </button>
-                                      )}
-                                    </div>
-                                  </div>
-                                </div>
-                              ) : (
-                                <p>{msg.message}</p>
-                              )}
-                              <p className="text-xs opacity-70 mt-1">{formatTime(msg.createdAt)}</p>
-                            </div>
-                          </div>
-                        );
-                      })
+                      messages.map(renderMessageBubble)
                     )}
                     <div ref={messagesEndRef} />
                   </div>
@@ -927,7 +1111,10 @@ export const AdminChat = ({ isFloating = false }) => {
                 </div>
 
                 {/* Messages */}
-                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                <div
+                  className="flex-1 overflow-y-auto p-4 space-y-3"
+                  onClick={() => setMenuOpenId(null)}
+                >
                   {loading ? (
                     <div className="text-center text-gray-400 py-8">
                       Loading messages...
@@ -938,92 +1125,7 @@ export const AdminChat = ({ isFloating = false }) => {
                       <p>No messages yet</p>
                     </div>
                   ) : (
-                    messages.map((msg, index) => {
-                      // Use unique key - combine _id with index as fallback
-                      const messageId = msg._id?.toString() || msg.id?.toString() || `msg-${index}`;
-                      return (
-                      <div
-                        key={messageId}
-                        className={`flex ${
-                          msg.senderType === "admin" ? "justify-end" : "justify-start"
-                        }`}
-                      >
-                        <div
-                          className={`max-w-[70%] rounded-lg p-3 ${
-                            msg.senderType === "admin"
-                              ? "bg-[#1db954] text-white"
-                              : "bg-[#181818] text-gray-100"
-                          }`}
-                        >
-                          {msg.isRequest ? (
-                            <div className="space-y-2">
-                              <div className="font-semibold text-sm flex items-center gap-2">
-                                <FaMusic className="text-xs" />
-                                Music Request
-                              </div>
-                              <div className="text-xs space-y-1">
-                                <p>
-                                  <span className="font-semibold">Song:</span>{" "}
-                                  {msg.requestData?.songName}
-                                </p>
-                                <p>
-                                  <span className="font-semibold">Artist:</span>{" "}
-                                  {msg.requestData?.artistName}
-                                </p>
-                                {msg.requestData?.movieName && (
-                                  <p>
-                                    <span className="font-semibold">Movie:</span>{" "}
-                                    {msg.requestData.movieName}
-                                  </p>
-                                )}
-                                {msg.requestData?.youtubeLink && (
-                                  <p>
-                                    <span className="font-semibold">YouTube:</span>{" "}
-                                    <a
-                                      href={msg.requestData.youtubeLink}
-                                      target="_blank"
-                                      rel="noopener noreferrer"
-                                      className="text-blue-300 hover:underline"
-                                    >
-                                      Link
-                                    </a>
-                                  </p>
-                                )}
-                                <div className="mt-2 flex items-center gap-2 flex-wrap">
-                                  <span
-                                    className={`px-2 py-1 rounded text-xs ${
-                                      msg.requestData?.status === "added"
-                                        ? "bg-blue-500"
-                                        : msg.requestData?.status === "approved"
-                                        ? "bg-green-500"
-                                        : msg.requestData?.status === "rejected"
-                                        ? "bg-red-500"
-                                        : "bg-yellow-500"
-                                    }`}
-                                  >
-                                    {msg.requestData?.status || "pending"}
-                                  </span>
-                                  {msg.requestData?.status === "pending" && (
-                                    <button
-                                      onClick={() => handleUpdateRequestStatus(msg._id || msg.id, "added")}
-                                      className="px-2 py-1 bg-[#1db954] hover:bg-[#1ed760] text-white text-xs rounded-full transition-colors"
-                                    >
-                                      Mark as Added
-                                    </button>
-                                  )}
-                                </div>
-                              </div>
-                            </div>
-                          ) : (
-                            <p className="text-sm">{msg.message}</p>
-                          )}
-                          <p className="text-xs opacity-70 mt-1">
-                            {formatTime(msg.createdAt)}
-                          </p>
-                        </div>
-                      </div>
-                      );
-                    })
+                    messages.map(renderMessageBubble)
                   )}
                   <div ref={messagesEndRef} />
                 </div>

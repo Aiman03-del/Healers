@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import useAxios from "../../../hooks/useAxios";
 import toast from "react-hot-toast";
-import { FaPaperPlane, FaMusic, FaUser, FaTimes } from "react-icons/fa";
+import { FaPaperPlane, FaMusic, FaUser, FaTimes, FaTrash, FaEllipsisV } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { io } from "socket.io-client";
 
@@ -10,7 +10,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000
 
 export const ChatBox = () => {
   const { user } = useAuth();
-  const { get, post } = useAxios();
+  const { get, post, del } = useAxios();
   const [isOpen, setIsOpen] = useState(false);
   const [chat, setChat] = useState(null);
   const [messages, setMessages] = useState([]);
@@ -25,6 +25,10 @@ export const ChatBox = () => {
   const [loading, setLoading] = useState(false);
   const [socket, setSocket] = useState(null);
   const [sending, setSending] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [menuOpenId, setMenuOpenId] = useState(null);
+  const [expandedMessageId, setExpandedMessageId] = useState(null);
+  const [adminProfile, setAdminProfile] = useState(null);
   const messagesEndRef = useRef(null);
   const chatContainerRef = useRef(null);
 
@@ -40,7 +44,7 @@ export const ChatBox = () => {
       newSocket.emit("join:user", user.uid);
     });
 
-    newSocket.on("chat:message", (newMessage) => {
+    const handleNewMessage = (newMessage) => {
       // Prevent duplicate messages
       setMessages((prev) => {
         const messageId = newMessage._id?.toString() || newMessage.id?.toString();
@@ -53,9 +57,9 @@ export const ChatBox = () => {
         return [...prev, newMessage];
       });
       scrollToBottom();
-    });
+    };
 
-    newSocket.on("chat:request:updated", ({ messageId, status }) => {
+    const handleRequestUpdated = ({ messageId, status }) => {
       setMessages((prev) =>
         prev.map((msg) => {
           const msgId = msg._id?.toString() || msg.id?.toString();
@@ -66,11 +70,48 @@ export const ChatBox = () => {
           return msg;
         })
       );
-    });
+    };
+
+    const handleChatDeleted = ({ chatId }) => {
+      const targetId = chatId?.toString();
+      if (!targetId) return;
+      setMenuOpenId(null);
+      setChat((prevChat) => {
+        if (prevChat?._id?.toString() === targetId) {
+          setMessages([]);
+          setIsOpen(false);
+          toast.success("Chat deleted");
+          return null;
+        }
+        return prevChat;
+      });
+    };
+
+    const handleMessageDeleted = ({ messageId }) => {
+      const targetId = messageId?.toString();
+      if (!targetId) return;
+      setMessages((prev) =>
+        prev.filter(
+          (msg) =>
+            (msg._id?.toString() || msg.id?.toString()) !== targetId
+        )
+      );
+      setMenuOpenId((prev) => (prev === targetId ? null : prev));
+      setExpandedMessageId((prev) => (prev === targetId ? null : prev));
+    };
+
+    newSocket.on("chat:message", handleNewMessage);
+    newSocket.on("chat:request:updated", handleRequestUpdated);
+    newSocket.on("chat:deleted", handleChatDeleted);
+    newSocket.on("chat:message:deleted", handleMessageDeleted);
 
     setSocket(newSocket);
 
     return () => {
+      newSocket.off("chat:message", handleNewMessage);
+      newSocket.off("chat:request:updated", handleRequestUpdated);
+      newSocket.off("chat:deleted", handleChatDeleted);
+      newSocket.off("chat:message:deleted", handleMessageDeleted);
       newSocket.disconnect();
     };
   }, [user]);
@@ -80,12 +121,34 @@ export const ChatBox = () => {
     if (isOpen && user?.uid && !chat) {
       loadChat();
     }
-  }, [isOpen, user]);
+  }, [isOpen, user, chat]);
+
+  useEffect(() => {
+    if (!isOpen) {
+      setMenuOpenId(null);
+    }
+  }, [isOpen]);
 
   // Scroll to bottom when messages change
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  const fetchAdminProfile = async (adminId) => {
+    if (!adminId) {
+      setAdminProfile(null);
+      return;
+    }
+    try {
+      const res = await get("/api/admins");
+      const admins = res?.data?.admins || [];
+      const found = admins.find((admin) => admin.uid === adminId);
+      setAdminProfile(found || null);
+    } catch (error) {
+      console.error("Failed to fetch admin profile:", error);
+      setAdminProfile(null);
+    }
+  };
 
   const loadChat = async () => {
     try {
@@ -93,6 +156,8 @@ export const ChatBox = () => {
       const res = await get("/api/chat/user");
       setChat(res.data.chat);
       setMessages(res.data.messages || []);
+      setExpandedMessageId(null);
+      await fetchAdminProfile(res.data.chat?.adminId);
       
       if (socket && res.data.chat) {
         socket.emit("join:chat", res.data.chat._id);
@@ -151,11 +216,51 @@ export const ChatBox = () => {
     }
   };
 
+  const handleDeleteMessage = async (messageId) => {
+    if (!messageId || deleting) return;
+    try {
+      setDeleting(true);
+      const targetId = messageId.toString();
+      await del(`/api/chat/message/${targetId}`);
+      setMessages((prev) =>
+        prev.filter(
+          (msg) =>
+            (msg._id?.toString() || msg.id?.toString()) !== targetId
+        )
+      );
+      setMenuOpenId(null);
+      setExpandedMessageId((prev) => (prev === targetId ? null : prev));
+      toast.success("Message deleted");
+    } catch (err) {
+      console.error("Failed to delete message:", err);
+      toast.error("Failed to delete message");
+    } finally {
+      setDeleting(false);
+    }
+  };
+
   const formatTime = (date) => {
     return new Date(date).toLocaleTimeString("en-US", {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const getStatusBadgeClasses = (status) => {
+    const normalized = (status || "").toLowerCase();
+    const base = "px-2 py-1 rounded text-xs font-semibold";
+    switch (normalized) {
+      case "approved":
+        return `${base} border border-green-400 text-green-300`;
+      case "rejected":
+        return `${base} border border-red-400 text-red-300`;
+      case "added":
+        return `${base} bg-white text-black border border-white`;
+      case "pending":
+        return `${base} border border-yellow-400 text-yellow-300`;
+      default:
+        return `${base} border border-blue-400 text-blue-300`;
+    }
   };
 
   if (!user) return null;
@@ -191,6 +296,7 @@ export const ChatBox = () => {
               <button
                 onClick={() => setIsOpen(false)}
                 className="text-gray-400 hover:text-white transition-colors"
+                aria-label="Close chat"
               >
                 <FaTimes />
               </button>
@@ -199,7 +305,8 @@ export const ChatBox = () => {
             {/* Messages */}
             <div
               ref={chatContainerRef}
-              className="flex-1 overflow-y-auto p-4 space-y-3"
+              className="flex-1 overflow-y-auto overflow-x-hidden p-4 space-y-3"
+              onClick={() => setMenuOpenId(null)}
             >
               {loading ? (
                 <div className="text-center text-gray-400 py-8">
@@ -212,81 +319,148 @@ export const ChatBox = () => {
                 </div>
               ) : (
                 messages.map((msg, index) => {
-                  // Use unique key - combine _id with index as fallback
-                  const messageId = msg._id?.toString() || msg.id?.toString() || `msg-${index}`;
+                  const messageId =
+                    msg._id?.toString() || msg.id?.toString() || `msg-${index}`;
+                  const isOwnMessage = msg.senderId === user.uid;
+                  const isExpanded = expandedMessageId === messageId;
                   return (
-                  <div
-                    key={messageId}
-                    className={`flex ${
-                      msg.senderId === user.uid ? "justify-end" : "justify-start"
-                    }`}
-                  >
                     <div
-                      className={`max-w-[80%] rounded-lg p-3 ${
-                        msg.senderId === user.uid
-                          ? "bg-[#1db954] text-white"
-                          : "bg-[#181818] text-gray-100"
+                      key={messageId}
+                      className={`flex flex-col ${
+                        isOwnMessage ? "items-end" : "items-start"
                       }`}
                     >
-                      {msg.isRequest ? (
-                        <div className="space-y-2">
-                          <div className="font-semibold text-sm flex items-center gap-2">
-                            <FaMusic className="text-xs" />
-                            Music Request
-                          </div>
-                          <div className="text-xs space-y-1">
-                            <p>
-                              <span className="font-semibold">Song:</span>{" "}
-                              {msg.requestData?.songName}
-                            </p>
-                            <p>
-                              <span className="font-semibold">Artist:</span>{" "}
-                              {msg.requestData?.artistName}
-                            </p>
-                            {msg.requestData?.movieName && (
-                              <p>
-                                <span className="font-semibold">Movie:</span>{" "}
-                                {msg.requestData.movieName}
-                              </p>
-                            )}
-                            {msg.requestData?.youtubeLink && (
-                              <p>
-                                <span className="font-semibold">YouTube:</span>{" "}
-                                <a
-                                  href={msg.requestData.youtubeLink}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="text-blue-300 hover:underline"
-                                >
-                                  Link
-                                </a>
-                              </p>
-                            )}
-                            <div className="mt-2">
-                              <span
-                                className={`px-2 py-1 rounded text-xs ${
-                                  msg.requestData?.status === "added"
-                                    ? "bg-blue-500"
-                                    : msg.requestData?.status === "approved"
-                                    ? "bg-green-500"
-                                    : msg.requestData?.status === "rejected"
-                                    ? "bg-red-500"
-                                    : "bg-yellow-500"
-                                }`}
-                              >
-                                {msg.requestData?.status || "pending"}
-                              </span>
+                      <div
+                        className={`flex items-center gap-2 ${
+                          isOwnMessage ? "flex-row-reverse" : ""
+                        }`}
+                      >
+                        <div
+                          role="button"
+                          tabIndex={0}
+                          onClick={() =>
+                            setExpandedMessageId((prev) =>
+                              prev === messageId ? null : messageId
+                            )
+                          }
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" || e.key === " ") {
+                              e.preventDefault();
+                              setExpandedMessageId((prev) =>
+                                prev === messageId ? null : messageId
+                              );
+                            }
+                          }}
+                          className={`relative max-w-[80%] rounded-lg p-3 overflow-hidden break-words cursor-pointer focus:outline-none ${
+                            isOwnMessage
+                              ? "bg-[#1db954] text-white"
+                              : "bg-[#181818] text-gray-100"
+                          }`}
+                        >
+                          {msg.isRequest ? (
+                            <div className="space-y-2 break-words">
+                              <div className="font-semibold text-sm break-words">
+                                Music Request
+                              </div>
+                              <div className="text-xs space-y-1 break-words">
+                                <p>
+                                  <span className="font-semibold">Song:</span>{" "}
+                                  {msg.requestData?.youtubeLink ? (
+                                    <a
+                                      href={msg.requestData.youtubeLink}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="text-blue-300 hover:underline"
+                                    >
+                                      {msg.requestData?.songName || "View"}
+                                    </a>
+                                  ) : (
+                                    msg.requestData?.songName
+                                  )}
+                                </p>
+                                <p>
+                                  <span className="font-semibold">Artist:</span>{" "}
+                                  {msg.requestData?.artistName}
+                                </p>
+                                {msg.requestData?.movieName && (
+                                  <p>
+                                    <span className="font-semibold">Movie:</span>{" "}
+                                    {msg.requestData.movieName}
+                                  </p>
+                                )}
+                                <div className="mt-2">
+                                  <span className={getStatusBadgeClasses(msg.requestData?.status)}>
+                                    {msg.requestData?.status || "pending"}
+                                  </span>
+                                </div>
+                              </div>
                             </div>
-                          </div>
+                          ) : (
+                            <p className="text-sm break-words whitespace-pre-wrap">
+                              {msg.message}
+                            </p>
+                          )}
                         </div>
-                      ) : (
-                        <p className="text-sm">{msg.message}</p>
-                      )}
-                      <p className="text-xs opacity-70 mt-1">
-                        {formatTime(msg.createdAt)}
-                      </p>
+                        {isOwnMessage && (
+                          <div className="relative flex-shrink-0">
+                            <button
+                              type="button"
+                              className="flex h-8 w-8 items-center justify-center rounded-full bg-[#1f1f1f] text-white/80 hover:text-white hover:bg-white/10 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setMenuOpenId((prev) => (prev === messageId ? null : messageId));
+                              }}
+                              aria-label="Open message menu"
+                            >
+                              <FaEllipsisV className="text-sm" />
+                            </button>
+                            {menuOpenId === messageId && (
+                              <div
+                                className={`absolute top-full mt-2 left-0 origin-top-right bg-[#121212] border border-gray-700 rounded-md shadow-lg overflow-hidden z-20 min-w-[140px]`}
+                                onClick={(e) => e.stopPropagation()}
+                              >
+                                <button
+                                  type="button"
+                                  className="w-full px-4 py-2 text-left text-sm text-red-400 hover:bg-white/10 flex items-center gap-2"
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleDeleteMessage(messageId);
+                                  }}
+                                  disabled={deleting}
+                                >
+                                  <FaTrash />
+                                  Delete
+                                </button>
+                              </div>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`flex items-center gap-2 mt-1 ${
+                          isOwnMessage ? "justify-end" : "justify-start"
+                        }`}
+                      >
+                        {isExpanded && (
+                          <span className="text-[10px] text-gray-400">
+                            {formatTime(msg.createdAt)}
+                          </span>
+                        )}
+                        {isOwnMessage && msg.isRead && (
+                          adminProfile?.image ? (
+                            <img
+                              src={adminProfile.image}
+                              alt={adminProfile.name || "Seen"}
+                              className="w-4 h-4 rounded-full border border-[#1f1f1f] object-cover"
+                            />
+                          ) : (
+                            <div className="w-4 h-4 rounded-full bg-gray-600 text-white flex items-center justify-center text-[8px]">
+                              <FaUser className="text-[10px]" />
+                            </div>
+                          )
+                        )}
+                      </div>
                     </div>
-                  </div>
                   );
                 })
               )}
