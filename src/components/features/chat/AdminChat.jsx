@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback } from "react";
+import { useState, useEffect, useRef, useCallback, Fragment } from "react";
 import { useAuth } from "../../../context/AuthContext";
 import useAxios from "../../../hooks/useAxios";
 import toast from "react-hot-toast";
@@ -7,6 +7,47 @@ import { motion, AnimatePresence } from "framer-motion";
 import { io } from "socket.io-client";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || "http://localhost:5000";
+
+const linkifyMessage = (text) => {
+  if (!text) return null;
+
+  const urlRegex = /(https?:\/\/[^\s]+)/gi;
+  const parts = [];
+  let lastIndex = 0;
+
+  text.replace(urlRegex, (match, index) => {
+    if (index > lastIndex) {
+      parts.push({ type: "text", value: text.slice(lastIndex, index) });
+    }
+    parts.push({ type: "link", value: match });
+    lastIndex = index + match.length;
+    return match;
+  });
+
+  if (lastIndex < text.length) {
+    parts.push({ type: "text", value: text.slice(lastIndex) });
+  }
+
+  if (parts.length === 0) {
+    return text;
+  }
+
+  return parts.map((part, idx) =>
+    part.type === "link" ? (
+      <a
+        key={`msg-link-${idx}`}
+        href={part.value}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="text-blue-300 underline break-words"
+      >
+        {part.value}
+      </a>
+    ) : (
+      <Fragment key={`msg-text-${idx}`}>{part.value}</Fragment>
+    )
+  );
+};
 
 export const AdminChat = ({ isFloating = false }) => {
   const { user } = useAuth();
@@ -573,9 +614,9 @@ export const AdminChat = ({ isFloating = false }) => {
                 </div>
               </div>
             ) : (
-              <p className="text-sm break-words whitespace-pre-wrap">
-                {msg.message}
-              </p>
+              <div className="text-sm break-words whitespace-pre-wrap">
+                {linkifyMessage(msg.message)}
+              </div>
             )}
           </div>
           {isOwnMessage && (
