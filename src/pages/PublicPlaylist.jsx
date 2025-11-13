@@ -44,7 +44,7 @@ const PublicPlaylist = () => {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        toast.success("Thanks for sharing! 🎉");
+        toast.success("Thanks for sharing!");
         return;
       }
     } catch (error) {
@@ -57,7 +57,7 @@ const PublicPlaylist = () => {
 
     try {
       await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-      toast.success("Link copied to clipboard! 📋");
+      toast.success("Link copied to clipboard!");
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     } catch (clipboardError) {

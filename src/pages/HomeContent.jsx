@@ -2,10 +2,12 @@ import { useEffect, useState, memo, useCallback } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { useAudio } from "../context/AudioContext";
 import { Pause, Play, ListMusic } from "lucide-react";
+import { FaStar } from "react-icons/fa";
 import { useAuth } from "../context/AuthContext";
 import toast from "react-hot-toast";
 import useAxios from "../hooks/useAxios";
 import { AddToPlaylistModal } from "../components/features/playlists";
+import { avatarFromEmail } from "../utils/avatarFromEmail";
 
 // SongCard Component - Memoized to prevent unnecessary re-renders
 const SongCard = memo(
@@ -123,6 +125,34 @@ function HomeContent() {
   const [trendingPlaylists, setTrendingPlaylists] = useState([]);
   const [isPersonalized, setIsPersonalized] = useState(false);
   const [genrePlaylists, setGenrePlaylists] = useState([]);
+  const [reviews, setReviews] = useState([]);
+  const [reviewsLoading, setReviewsLoading] = useState(true);
+
+  const extractReviewerName = (review) =>
+    review?.user?.name || review?.name || review?.author || review?.email || "Anonymous listener";
+
+  const formatReviewDate = (value) => {
+    if (!value) return "Just now";
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) {
+      return "Recently";
+    }
+    return date.toLocaleDateString("en-US", {
+      month: "short",
+      day: "numeric",
+      year: "numeric",
+    });
+  };
+
+const renderRatingStars = (value, sizeClass = "text-xs") => {
+    const rating = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+    return Array.from({ length: 5 }, (_, idx) => (
+      <FaStar
+        key={idx}
+      className={`${sizeClass} ${idx < rating ? "text-yellow-400" : "text-gray-600"}`}
+      />
+    ));
+  };
 
   // ⚡ Fetch critical data first, then load others progressively
   useEffect(() => {
@@ -208,7 +238,26 @@ function HomeContent() {
     };
     
     fetchUserData();
-  }, [user, songs]);
+  }, [user, get, songs]);
+
+  useEffect(() => {
+    const fetchReviews = async () => {
+      try {
+        const res = await get("/api/reviews?limit=6").catch(() => ({
+          data: { reviews: [] },
+        }));
+        const incoming = Array.isArray(res.data?.reviews) ? res.data.reviews : [];
+        setReviews(incoming);
+      } catch (error) {
+        console.error("Failed to load reviews:", error);
+        setReviews([]);
+      } finally {
+        setReviewsLoading(false);
+      }
+    };
+
+    fetchReviews();
+  }, [get]);
 
   useEffect(() => {
     if (playlistModal.open && user?.uid) {
@@ -428,6 +477,21 @@ function HomeContent() {
             </div>
           ))}
         </div>
+          </div>
+
+          {/* Skeleton for Reviews */}
+          <div className="space-y-4">
+            <div className="h-8 w-56 bg-gray-800 rounded animate-pulse" />
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+              {[...Array(3)].map((_, i) => (
+                <div key={i} className="bg-[#181818] rounded-2xl p-4 sm:p-5 animate-pulse">
+                  <div className="h-4 w-1/3 bg-gray-700 rounded mb-3" />
+                  <div className="h-3 w-2/3 bg-gray-700 rounded mb-2" />
+                  <div className="h-3 w-full bg-gray-800 rounded mb-2" />
+                  <div className="h-3 w-5/6 bg-gray-800 rounded" />
+                </div>
+              ))}
+            </div>
           </div>
         </>
       ) : (
@@ -737,6 +801,91 @@ function HomeContent() {
             </section>
           )}
 
+          {/* Community Feedback Section */}
+          <section className="animate-fade-slide" style={{ animationDelay: "0.2s" }}>
+            <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-3 mb-4">
+              <div>
+                <h2 className="text-2xl font-bold text-white">Community Voices</h2>
+                <p className="text-sm text-gray-400 mt-1">
+                  What listeners are saying about Healers
+                </p>
+              </div>
+              <Link
+                to="/feedback"
+                className="inline-flex items-center justify-center px-4 py-2 rounded-full bg-white text-black font-semibold text-sm hover:bg-gray-200 transition"
+              >
+                Share your feedback
+              </Link>
+            </div>
+
+            {reviewsLoading ? (
+              <div className="bg-[#181818] border border-gray-800 rounded-2xl p-6 text-sm text-gray-400">
+                Gathering the latest reviews...
+              </div>
+            ) : reviews.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                {reviews.map((review, idx) => {
+                  const reviewerName = extractReviewerName(review);
+                  const reviewDate = formatReviewDate(review?.createdAt || review?.updatedAt || review?.date);
+                    const comment = review?.comment || review?.feedback || review?.message || "";
+                  const rating = review?.rating ?? review?.stars ?? review?.score ?? 0;
+                  const ratingValue = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
+                  const reviewer = review?.user || {};
+                  const reviewerEmail = reviewer.email || review.userEmail || "";
+                  const avatarUrl = reviewer.image || avatarFromEmail(reviewerEmail) || "/healers.webp";
+
+                  return (
+                    <article
+                      key={review?._id || review?.id || idx}
+                      className="bg-[#181818] border border-gray-800 rounded-2xl p-5 flex flex-col gap-3 hover:border-gray-700 transition-colors"
+                    >
+                      <div className="flex items-start justify-between gap-3">
+                        <div className="flex items-center gap-3">
+                          <div className="w-12 h-12 rounded-full overflow-hidden bg-[#1f1f1f] border border-gray-800 flex-shrink-0">
+                            <img
+                              src={avatarUrl}
+                              alt={reviewerName}
+                              className="w-full h-full object-cover"
+                              onError={(e) => {
+                                e.target.src = "/healers.webp";
+                                e.target.onerror = null;
+                              }}
+                              loading={idx < 3 ? "eager" : "lazy"}
+                              decoding="async"
+                            />
+                          </div>
+                          <div>
+                            <p className="text-sm font-semibold text-white truncate max-w-[10rem] sm:max-w-[14rem]">
+                              {reviewerName}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-0.5">{reviewDate}</p>
+                          </div>
+                        </div>
+                        <div className="flex flex-col items-end gap-1">
+                          <div className="flex items-center gap-1">
+                            {renderRatingStars(rating, "text-sm sm:text-base")}
+                          </div>
+                          <span className="text-xs text-gray-400 font-medium">
+                            {ratingValue}/5
+                          </span>
+                        </div>
+                      </div>
+                      {comment && (
+                        <p className="text-sm text-gray-200 leading-relaxed whitespace-pre-line max-h-32 overflow-hidden">
+                          {comment}
+                        </p>
+                      )}
+                    </article>
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="bg-[#181818] border border-gray-800 rounded-2xl p-6 text-sm text-gray-400">
+                No feedback yet. Be the first to share your thoughts!
+              </div>
+            )}
+          </section>
+ 
         </>
       )}
 

@@ -14,6 +14,9 @@ const GUEST_SONG_LIMIT = 6;
 const GUEST_SONGS_KEY = 'guest_played_songs';
 const GUEST_LAST_SONG_KEY = 'guest_last_song_id';
 
+const getGuestLimitMessage = () =>
+  `Guest listeners can play up to ${GUEST_SONG_LIMIT} songs. Log in to keep listening!`;
+
 const getGuestSongCount = () => {
   try {
     const count = localStorage.getItem(GUEST_SONGS_KEY);
@@ -102,13 +105,9 @@ export function AudioProvider({ children }) {
       
       // If it's a new song (different from last played), check limit
       if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
-        toast.error(
-          `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
-          {
-            duration: 4000,
-            icon: '🔒',
-          }
-        );
+        toast.error(getGuestLimitMessage(), {
+          duration: 4000,
+        });
         return; // Prevent playing
       }
     }
@@ -160,13 +159,9 @@ export function AudioProvider({ children }) {
         const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
         
         if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
-          toast.error(
-            `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
-            {
-              duration: 4000,
-              icon: '🔒',
-            }
-          );
+          toast.error(getGuestLimitMessage(), {
+            duration: 4000,
+          });
           setIsPlaying(false);
           return;
         }
@@ -180,13 +175,9 @@ export function AudioProvider({ children }) {
         const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
         
         if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
-          toast.error(
-            `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
-            {
-              duration: 4000,
-              icon: '🔒',
-            }
-          );
+          toast.error(getGuestLimitMessage(), {
+            duration: 4000,
+          });
           setIsPlaying(false);
           return;
         }
@@ -220,13 +211,9 @@ export function AudioProvider({ children }) {
           const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
           
           if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
-            toast.error(
-              `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
-              {
-                duration: 4000,
-                icon: '🔒',
-              }
-            );
+            toast.error(getGuestLimitMessage(), {
+              duration: 4000,
+            });
             return;
           }
         }
@@ -287,13 +274,9 @@ export function AudioProvider({ children }) {
       const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
       
       if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
-        toast.error(
-          `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
-          {
-            duration: 4000,
-            icon: '🔒',
-          }
-        );
+        toast.error(getGuestLimitMessage(), {
+          duration: 4000,
+        });
         return;
       }
     }
@@ -337,13 +320,9 @@ export function AudioProvider({ children }) {
       const lastSongId = localStorage.getItem(GUEST_LAST_SONG_KEY);
       
       if (lastSongId !== songId && currentCount >= GUEST_SONG_LIMIT) {
-        toast.error(
-          `আপনি সর্বোচ্চ ${GUEST_SONG_LIMIT}টি গান শুনতে পারবেন। আরও গান শুনতে লগইন করুন!`,
-          {
-            duration: 4000,
-            icon: '🔒',
-          }
-        );
+        toast.error(getGuestLimitMessage(), {
+          duration: 4000,
+        });
         return;
       }
     }

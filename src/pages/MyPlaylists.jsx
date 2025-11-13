@@ -71,10 +71,10 @@ const MyPlaylists = () => {
               toast.dismiss(t.id);
               try {
                 await del(`/api/playlists/${id}?uid=${user.uid}`);
-                toast.success(<span className="flex items-center gap-2"><FaCheckCircle className="text-green-500" />Deleted!</span>);
+                toast.success("Playlist deleted successfully.");
                 fetchPlaylists();
               } catch {
-                toast.error(<span className="flex items-center gap-2"><FaRegSadTear className="text-red-400" />Not authorized!</span>);
+                toast.error("Not authorized to delete this playlist.");
               }
             }}
             className="ml-2 sm:ml-4 px-2 sm:px-3 py-1 bg-red-600 text-white text-xs sm:text-sm rounded hover:bg-red-700 transition"

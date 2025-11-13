@@ -130,7 +130,6 @@ export function AuthProvider({ children }) {
   const logout = async () => {
     await signOut(auth);
     toast(TOAST_MESSAGES.LOGOUT, {
-      icon: "👋",
       style: { background: "#a21caf", color: "#fff" },
     });
     setUser(null);

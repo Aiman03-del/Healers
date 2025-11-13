@@ -230,7 +230,7 @@ const AddSong = () => {
 
     try {
       const res = await post('/api/songs', song);
-      toast.success('🎉 Song added successfully!');
+      toast.success('Song added successfully!');
       
       // Reset form
       setForm({
@@ -365,7 +365,7 @@ const AddSong = () => {
                   Audio File
                 </label>
                 <p className="text-xs text-gray-500">
-                  💡 Tip: Name as "Artist - Title.mp3" for auto-fill
+                  💡 Tip: Name as "Artist - Title" for auto-fill
                 </p>
                 
                 <div

@@ -1,12 +1,83 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { FaBell, FaTimes, FaCheck, FaCheckDouble, FaMusic } from "react-icons/fa";
+import { FaBell, FaTimes, FaCheck, FaCheckDouble, FaMusic, FaStar } from "react-icons/fa";
 import { BiSolidPlaylist } from "react-icons/bi";
 import toast from "react-hot-toast";
 import { useAuth } from "../../../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import useAxios from "../../../hooks/useAxios";
 import io from "socket.io-client";
+import { avatarFromEmail } from "../../../utils/avatarFromEmail";
+
+const containsBengaliCharacters = (text = "") => /[ঀ-৿]/.test(text);
+
+const DEFAULT_COPY_BY_TYPE = {
+  review: {
+    title: "New review received",
+    message: "A listener just left a new review.",
+  },
+  review_new: {
+    title: "New review received",
+    message: "A listener just left a new review.",
+  },
+  "review:new": {
+    title: "New review received",
+    message: "A listener just left a new review.",
+  },
+  feedback: {
+    title: "New feedback received",
+    message: "Someone just shared fresh feedback.",
+  },
+};
+
+const PATTERN_MAPPINGS = [
+  {
+    keywords: ["নতুন রিভিউ এসেছে"],
+    title: "New review received",
+    message: "A listener just left a new review.",
+  },
+];
+
+const getDefaultCopy = (notification = {}) => {
+  const copy = DEFAULT_COPY_BY_TYPE[notification.type];
+  if (copy) return copy;
+  return {
+    title: "New notification",
+    message: "You have a new update on Healers.",
+  };
+};
+
+const normalizeNotification = (notification = {}) => {
+  const normalized = { ...notification };
+  const { title = "", message = "" } = notification;
+
+  for (const { keywords, title: mappedTitle, message: mappedMessage } of PATTERN_MAPPINGS) {
+    const matched = keywords.some((keyword) =>
+      (title && title.includes(keyword)) || (message && message.includes(keyword))
+    );
+
+    if (matched) {
+      if (mappedTitle) normalized.title = mappedTitle;
+      if (mappedMessage) normalized.message = mappedMessage;
+      return normalized;
+    }
+  }
+
+  const shouldReplaceTitle = containsBengaliCharacters(title);
+  const shouldReplaceMessage = containsBengaliCharacters(message);
+
+  if (shouldReplaceTitle || shouldReplaceMessage) {
+    const defaults = getDefaultCopy(notification);
+    if (shouldReplaceTitle) {
+      normalized.title = defaults.title;
+    }
+    if (shouldReplaceMessage) {
+      normalized.message = defaults.message;
+    }
+  }
+
+  return normalized;
+};
 
 const NotificationCenter = () => {
   const { user } = useAuth();
@@ -16,6 +87,7 @@ const NotificationCenter = () => {
   const [notifications, setNotifications] = useState([]);
   const [unreadCount, setUnreadCount] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [reviewActionLoading, setReviewActionLoading] = useState({});
   const panelRef = useRef();
   const socketRef = useRef(null);
 
@@ -25,7 +97,7 @@ const NotificationCenter = () => {
     setLoading(true);
     try {
       const res = await get(`/api/notifications/${user.uid}`);
-      setNotifications(res.data.notifications || []);
+      setNotifications((res.data.notifications || []).map(normalizeNotification));
       setUnreadCount(res.data.unreadCount || 0);
     } catch (error) {
       console.error("Failed to fetch notifications:", error);
@@ -49,14 +121,15 @@ const NotificationCenter = () => {
     // Listen for new notifications
     socket.on("notification:new", (notification) => {
       console.log("New notification received:", notification);
-      setNotifications(prev => [notification, ...prev]);
+      const normalized = normalizeNotification(notification);
+      setNotifications(prev => [normalized, ...prev]);
       setUnreadCount(prev => prev + 1);
       
       // Show toast
       toast.success(
         <div className="flex items-center gap-2">
           <FaBell className="text-yellow-400" />
-          <span>{notification.title}</span>
+          <span>{normalized.title}</span>
         </div>,
         { duration: 4000 }
       );
@@ -112,6 +185,57 @@ const NotificationCenter = () => {
       toast.success("All marked as read");
     } catch (error) {
       toast.error("Failed to mark all as read");
+    }
+  };
+
+  const renderRatingStars = (value) => {
+    const rating = Math.max(0, Math.min(5, Math.round(Number(value) || 0)));
+    return Array.from({ length: 5 }, (_, idx) => (
+      <FaStar
+        key={idx}
+        className={`text-[10px] ${idx < rating ? "text-yellow-400" : "text-gray-600"}`}
+      />
+    ));
+  };
+
+  const handleReviewDecision = async (notification, nextStatus) => {
+    const reviewId = notification?.metadata?.reviewId;
+    if (!reviewId) {
+      toast.error("Missing review reference");
+      return;
+    }
+
+    setReviewActionLoading((prev) => ({ ...prev, [reviewId]: true }));
+    try {
+      await put(`/api/reviews/${reviewId}/status`, { status: nextStatus });
+      toast.success(
+        nextStatus === "approved" ? "Review approved" : "Review declined"
+      );
+
+      if (!notification.isRead) {
+        await markAsRead(notification._id);
+      }
+
+      setNotifications((prev) =>
+        prev.map((n) =>
+          n._id === notification._id
+            ? {
+                ...n,
+                isRead: true,
+                metadata: { ...(n.metadata || {}), reviewStatus: nextStatus },
+              }
+            : n
+        )
+      );
+    } catch (error) {
+      console.error("Failed to update review status:", error);
+      toast.error("Failed to update review status");
+    } finally {
+      setReviewActionLoading((prev) => {
+        const updated = { ...prev };
+        delete updated[reviewId];
+        return updated;
+      });
     }
   };
 
@@ -198,6 +322,8 @@ const NotificationCenter = () => {
         return <FaCheck className="text-[#1db954]" />;
       case "song_added":
         return <FaMusic className="text-[#1db954]" />;
+      case "review_submitted":
+        return <FaStar className="text-yellow-400" />;
       default:
         return <FaMusic className="text-gray-400" />;
     }
@@ -270,41 +396,133 @@ const NotificationCenter = () => {
                 </div>
               ) : (
                 <div className="divide-y divide-gray-700">
-                  {notifications.map((notif) => (
-                    <motion.div
-                      key={notif._id}
-                      initial={{ opacity: 0, x: -10 }}
-                      animate={{ opacity: 1, x: 0 }}
-                      className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
-                        !notif.isRead ? "bg-white/5" : ""
-                      }`}
-                      onClick={() => handleNotificationClick(notif)}
-                    >
-                      <div className="flex gap-3">
-                        <div className="flex-shrink-0 text-2xl">
-                          {getNotificationIcon(notif.type)}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <div className="flex items-start justify-between gap-2">
-                            <h4 className={`font-semibold text-sm ${
-                              !notif.isRead ? "text-white" : "text-gray-300"
-                            }`}>
-                              {notif.title}
-                            </h4>
-                            {!notif.isRead && (
-                              <span className="w-2 h-2 rounded-full bg-[#1db954] flex-shrink-0 mt-1" />
+                  {notifications.map((notif) => {
+                    const isReviewNotification = notif.type === "review_submitted";
+                    const reviewId = notif?.metadata?.reviewId;
+                    const reviewStatus = notif?.metadata?.reviewStatus;
+                    const isReviewHandled = isReviewNotification && Boolean(reviewStatus);
+                    const isActionLoading = Boolean(reviewId && reviewActionLoading[reviewId]);
+                      const reviewRating = isReviewNotification ? notif?.metadata?.rating : null;
+                      const reviewerName = isReviewNotification
+                        ? notif?.metadata?.userName ||
+                          notif?.metadata?.userEmail ||
+                          "Anonymous listener"
+                        : "";
+                      const reviewerEmail = isReviewNotification ? notif?.metadata?.userEmail || "" : "";
+                      const reviewerImage = isReviewNotification ? notif?.metadata?.userImage || "" : "";
+                      const reviewComment = isReviewNotification ? notif?.metadata?.comment || "" : "";
+                      const avatarUrl =
+                        reviewerImage || (reviewerEmail ? avatarFromEmail(reviewerEmail) : "/healers.webp");
+
+                    return (
+                      <motion.div
+                        key={notif._id}
+                        initial={{ opacity: 0, x: -10 }}
+                        animate={{ opacity: 1, x: 0 }}
+                        className={`p-4 hover:bg-white/10 transition-colors cursor-pointer ${
+                          !notif.isRead ? "bg-white/5" : ""
+                        }`}
+                        onClick={() => handleNotificationClick(notif)}
+                      >
+                        <div className="flex gap-3">
+                          <div className="flex-shrink-0 text-2xl">
+                            {getNotificationIcon(notif.type)}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-start justify-between gap-2">
+                              <h4 className={`font-semibold text-sm ${
+                                !notif.isRead ? "text-white" : "text-gray-300"
+                              }`}>
+                                {notif.title}
+                              </h4>
+                              {!notif.isRead && (
+                                <span className="w-2 h-2 rounded-full bg-[#1db954] flex-shrink-0 mt-1" />
+                              )}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">
+                              {notif.message}
+                            </p>
+                            <p className="text-xs text-gray-500 mt-2">
+                              {new Date(notif.createdAt).toLocaleString()}
+                            </p>
+                            {isReviewNotification && (
+                              <div className="mt-3 flex gap-3">
+                                <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1f1f1f] border border-gray-700 flex-shrink-0">
+                                  <img
+                                    src={avatarUrl || "/healers.webp"}
+                                    alt={reviewerName}
+                                    className="w-full h-full object-cover"
+                                    onError={(e) => {
+                                      e.target.src = "/healers.webp";
+                                      e.target.onerror = null;
+                                    }}
+                                    loading="lazy"
+                                  />
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-semibold text-white truncate">
+                                    {reviewerName}
+                                  </p>
+                                  <div className="flex items-center gap-2 text-xs text-gray-400 mt-1">
+                                    <div className="flex items-center gap-1">
+                                      {renderRatingStars(reviewRating)}
+                                    </div>
+                                    {reviewRating ? (
+                                      <span className="font-semibold text-gray-300">
+                                        {Math.round(Number(reviewRating) || 0)}/5
+                                      </span>
+                                    ) : (
+                                      <span>No rating</span>
+                                    )}
+                                  </div>
+                                  {reviewComment && (
+                                    <p className="text-xs text-gray-400 mt-2 line-clamp-3">
+                                      {reviewComment}
+                                    </p>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+                            {isReviewNotification && isReviewHandled && (
+                              <span
+                                className={`inline-flex items-center gap-1 text-xs font-semibold mt-2 px-2 py-1 rounded-full ${
+                                  reviewStatus === "approved"
+                                    ? "bg-green-500/20 text-green-300"
+                                    : "bg-red-500/20 text-red-300"
+                                }`}
+                              >
+                                {reviewStatus === "approved" ? "Approved" : "Declined"}
+                              </span>
+                            )}
+                            {isReviewNotification && !isReviewHandled && (
+                              <div className="flex items-center gap-2 mt-3">
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReviewDecision(notif, "approved");
+                                  }}
+                                  disabled={!reviewId || isActionLoading}
+                                  className="px-3 py-1.5 rounded-full bg-[#1db954] text-black text-xs font-semibold hover:bg-[#1ed760] transition disabled:opacity-60"
+                                >
+                                  Approve
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    handleReviewDecision(notif, "rejected");
+                                  }}
+                                  disabled={!reviewId || isActionLoading}
+                                  className="px-3 py-1.5 rounded-full bg-gray-700 text-white text-xs font-semibold hover:bg-gray-600 transition disabled:opacity-60"
+                                >
+                                  Decline
+                                </button>
+                              </div>
                             )}
                           </div>
-                          <p className="text-xs text-gray-400 mt-1">
-                            {notif.message}
-                          </p>
-                          <p className="text-xs text-gray-500 mt-2">
-                            {new Date(notif.createdAt).toLocaleString()}
-                          </p>
                         </div>
-                      </div>
-                    </motion.div>
-                  ))}
+                      </motion.div>
+                    );
+                  })}
                 </div>
               )}
             </div>

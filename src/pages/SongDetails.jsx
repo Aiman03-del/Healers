@@ -52,7 +52,7 @@ export default function SongDetails({
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        toast.success('Thanks for sharing! 🎉');
+        toast.success('Thanks for sharing!');
         return;
       }
     } catch (error) {
@@ -65,7 +65,7 @@ export default function SongDetails({
 
     try {
       await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-      toast.success('Song link copied to clipboard! 📋');
+      toast.success('Song link copied to clipboard!');
     } catch (clipboardError) {
       console.error('Failed to copy share link', clipboardError);
       toast.error('Unable to share right now');

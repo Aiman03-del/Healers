@@ -119,7 +119,7 @@ export default function Onboarding() {
 
     try {
       await put(`/api/users/${user.uid}/preferences`, preferences);
-      toast.success("🎉 Profile setup complete!");
+      toast.success("Profile setup complete!");
       navigate("/");
     } catch (err) {
       toast.error("Failed to save preferences");

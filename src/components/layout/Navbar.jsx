@@ -70,7 +70,7 @@ function Navbar() {
   const handleInstallClick = async () => {
     // Show confirmation dialog
     const confirmed = window.confirm(
-      'আপনি কি Healers App টি আপনার ডিভাইসে ইনস্টল করতে চান?\n\nইনস্টল করলে আপনি:\n• অফলাইন ব্যবহার করতে পারবেন\n• হোম স্ক্রিন থেকে সরাসরি অ্যাক্সেস করতে পারবেন\n• দ্রুত লোডিং পাবেন'
+      'Would you like to install the Healers app on your device?\n\nOnce installed you can:\n• Listen offline\n• Launch directly from your home screen\n• Enjoy faster loading'
     );
 
     if (!confirmed) {
@@ -89,12 +89,12 @@ function Navbar() {
       
       // Wait for user response
       const { outcome } = await deferredPrompt.userChoice;
-      
+
       if (outcome === 'accepted') {
-        toast.success('🎉 App installed successfully!');
+        toast.success('App installed successfully.');
         setIsInstalled(true);
       } else {
-        toast('Installation cancelled', { icon: '' });
+        toast('Installation cancelled.');
       }
       
       // Clear the prompt
@@ -110,7 +110,7 @@ function Navbar() {
   const handleShareClick = async () => {
     const shareData = {
       title: 'Healers - Music Streaming',
-      text: '🎵 Check out Healers - Your personal music streaming platform for healing through music! Listen to unlimited songs, create playlists, and discover new music. 🎧✨',
+      text: 'Check out Healers - your personal music streaming platform for healing through music. Listen to unlimited songs, create playlists, and discover new music.',
       url: window.location.origin,
     };
 
@@ -118,11 +118,11 @@ function Navbar() {
       // Check if Web Share API is supported
       if (navigator.share) {
         await navigator.share(shareData);
-        toast.success('Thanks for sharing! 🎉');
+        toast.success('Thanks for sharing!');
       } else {
         // Fallback: Copy to clipboard
         await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
-        toast.success('Link copied to clipboard! 📋');
+        toast.success('Link copied to clipboard!');
       }
     } catch (err) {
       // User cancelled or error occurred
@@ -130,7 +130,7 @@ function Navbar() {
         // Fallback: Copy to clipboard
         try {
           await navigator.clipboard.writeText(window.location.origin);
-          toast.success('Link copied to clipboard! 📋');
+          toast.success('Link copied to clipboard!');
         } catch {
           toast.error('Failed to share');
         }

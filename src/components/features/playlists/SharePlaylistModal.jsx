@@ -81,7 +81,7 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
     try {
       if (navigator.share) {
         await navigator.share(shareData);
-        toast.success("Thanks for sharing! 🎉");
+        toast.success("Thanks for sharing!");
         return;
       }
     } catch (error) {

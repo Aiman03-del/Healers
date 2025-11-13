@@ -70,9 +70,9 @@ export const PlaylistDetails = () => {
                   ...prev,
                   songs: prev.songs.filter((s) => s._id !== songId),
                 }));
-                toast(<span className="flex items-center gap-2"><FaCheckCircle className="text-green-500" />Removed!</span>);
+                toast.success("Song removed from playlist.");
               } catch {
-                toast.error(<span className="flex items-center gap-2"><FaRegSadTear className="text-red-400" />Not authorized!</span>);
+                toast.error("You are not authorized to perform this action.");
               }
             }}
             className="ml-4 px-3 py-1 bg-red-600 text-white rounded hover:bg-red-700 transition"

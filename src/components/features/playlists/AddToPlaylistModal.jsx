@@ -35,20 +35,20 @@ const AddToPlaylistModal = ({ songId, onClose }) => {
     try {
       const res = await put(`/api/playlists/${playlistId}/add`, { songId });
       if (res.data.message === "Already added" || res.data.message === "Song already in playlist") {
-        toast.error("⚠️ Song already in this playlist");
+        toast.error("Song already in this playlist");
       } else {
         toast.success("Song added to playlist!");
       }
       onClose();
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Failed to add song to playlist";
-      toast.error(` ${errorMessage}`);
+      toast.error(errorMessage);
     }
   }, [put, songId, onClose]);
 
   const handleCreateAndAdd = useCallback(async () => {
     if (!newPlaylistName.trim()) {
-      toast.error("⚠️ Please enter a playlist name");
+      toast.error("Please enter a playlist name");
       return;
     }
     try {
