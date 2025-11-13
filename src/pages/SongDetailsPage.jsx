@@ -91,12 +91,12 @@ export default function SongDetailsPage() {
               <>
                 <div className="mx-auto w-60 shrink-0 overflow-hidden rounded-3xl border border-white/10 bg-[#1a1a1a] shadow-2xl lg:mx-0">
                   <img
-                    src={song.cover || "/healers.webp"}
+                    src={song.cover || "/healers.png"}
                     alt={song.title}
                     className="w-full h-full object-cover"
                     loading="eager"
                     onError={(e) => {
-                      e.target.src = "/healers.webp";
+                      e.target.src = "/healers.png";
                       e.target.onerror = null;
                     }}
                   />
@@ -254,12 +254,12 @@ export default function SongDetailsPage() {
                       className="flex items-center gap-4 rounded-3xl border border-white/5 bg-[#181818] p-4 text-left transition hover:border-white/10 hover:bg-[#1f1f1f]"
                     >
                       <img
-                        src={item.cover || "/healers.webp"}
+                        src={item.cover || "/healers.png"}
                         alt={item.title}
                         className="h-16 w-16 rounded-2xl object-cover"
                         loading="lazy"
                         onError={(e) => {
-                          e.target.src = "/healers.webp";
+                          e.target.src = "/healers.png";
                           e.target.onerror = null;
                         }}
                       />

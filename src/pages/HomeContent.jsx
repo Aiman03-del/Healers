@@ -34,7 +34,7 @@ const SongCard = memo(
           {/* Album Cover */}
           <div className="relative w-full aspect-square mb-4">
             <img
-              src={song.cover || "/healers.webp"}
+              src={song.cover || "/healers.png"}
               alt={song.title}
               className="w-full h-full object-cover rounded bg-[#1a1a1a]"
               loading={shouldEagerLoad ? "eager" : "lazy"}
@@ -43,7 +43,7 @@ const SongCard = memo(
               width={320}
               height={320}
               onError={(e) => {
-                e.target.src = "/healers.webp";
+                e.target.src = "/healers.png";
                 e.target.onerror = null;
               }}
             />
@@ -537,7 +537,7 @@ const renderRatingStars = (value, sizeClass = "text-xs") => {
                             width={320}
                             height={320}
                             onError={(e) => {
-                              e.target.src = "/healers.webp";
+                              e.target.src = "/healers.png";
                               e.target.onerror = null;
                             }}
                           />
@@ -619,7 +619,7 @@ const renderRatingStars = (value, sizeClass = "text-xs") => {
                           width={320}
                           height={320}
                           onError={(e) => {
-                            e.target.src = "/healers.webp";
+                            e.target.src = "/healers.png";
                             e.target.onerror = null;
                           }}
                         />
@@ -832,7 +832,7 @@ const renderRatingStars = (value, sizeClass = "text-xs") => {
                   const ratingValue = Math.max(0, Math.min(5, Math.round(Number(rating) || 0)));
                   const reviewer = review?.user || {};
                   const reviewerEmail = reviewer.email || review.userEmail || "";
-                  const avatarUrl = reviewer.image || avatarFromEmail(reviewerEmail) || "/healers.webp";
+                  const avatarUrl = reviewer.image || avatarFromEmail(reviewerEmail) || "/healers.png";
 
                   return (
                     <article
@@ -847,7 +847,7 @@ const renderRatingStars = (value, sizeClass = "text-xs") => {
                               alt={reviewerName}
                               className="w-full h-full object-cover"
                               onError={(e) => {
-                                e.target.src = "/healers.webp";
+                                e.target.src = "/healers.png";
                                 e.target.onerror = null;
                               }}
                               loading={idx < 3 ? "eager" : "lazy"}

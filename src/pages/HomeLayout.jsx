@@ -145,12 +145,12 @@ export default function HomeLayout() {
                         onClick={() => handleSuggestionSelect(song)}
                       >
                         <img
-                          src={song.cover || "/healers.webp"}
+                          src={song.cover || "/healers.png"}
                           alt={song.title}
                           className="h-10 w-10 rounded object-cover"
                           loading="lazy"
                           onError={(e) => {
-                            e.target.src = "/healers.webp";
+                            e.target.src = "/healers.png";
                             e.target.onerror = null;
                           }}
                         />

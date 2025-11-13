@@ -99,42 +99,41 @@ const InstallPWA = () => {
   }
 
   return (
-    <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-4 md:bottom-4 md:max-w-md z-50 animate-slide-up">
-      <div className="bg-gradient-to-r from-violet-600 to-purple-600 text-white rounded-2xl shadow-2xl p-4 backdrop-blur-lg">
-        <div className="flex items-start justify-between gap-3">
-          <div className="flex items-center gap-3 flex-1">
-            <div className="bg-white/20 p-3 rounded-xl">
-              <Download className="w-6 h-6" strokeWidth={2.2} />
-            </div>
-            <div className="flex-1">
-              <h3 className="font-bold text-lg mb-1">
-                Install Healers App
-              </h3>
-              <p className="text-sm text-white/90">
-                Install the app on your phone and use it offline!
+    <div className="fixed bottom-20 left-4 right-4 md:left-auto md:right-6 md:bottom-6 md:max-w-sm z-50 animate-slide-up">
+      <div className="rounded-3xl border border-white/10 bg-[#181818] shadow-[0_20px_40px_rgba(0,0,0,0.35)] p-5 text-white">
+        <div className="flex items-start gap-4">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1db954]/10 text-[#1db954]">
+            <Download className="h-6 w-6" strokeWidth={2.1} />
+          </div>
+          <div className="flex-1 space-y-2">
+            <div>
+              <p className="text-xs uppercase tracking-[0.25em] text-[#1db954]">Get the app</p>
+              <h3 className="mt-1 text-lg font-semibold">Install Healers</h3>
+              <p className="mt-1 text-sm text-gray-400">
+                Save Healers to your device for offline listening and quicker launches.
               </p>
+            </div>
+            <div className="flex flex-wrap gap-3">
+              <button
+                onClick={handleInstallClick}
+                className="inline-flex items-center justify-center rounded-full bg-[#1db954] px-5 py-2 text-sm font-semibold text-black transition hover:bg-[#1ed760] focus:outline-none focus:ring-2 focus:ring-[#1db954]/60 focus:ring-offset-2 focus:ring-offset-[#181818]"
+              >
+                Install now
+              </button>
+              <button
+                onClick={handleDismiss}
+                className="text-sm font-medium text-gray-300 transition hover:text-white"
+              >
+                Maybe later
+              </button>
             </div>
           </div>
           <button
             onClick={handleDismiss}
-            className="text-white/70 hover:text-white transition-colors"
-            aria-label="Dismiss"
+            className="text-gray-500 transition hover:text-white"
+            aria-label="Dismiss install banner"
           >
-            <X className="w-5 h-5" strokeWidth={2.2} />
-          </button>
-        </div>
-        <div className="mt-4 flex gap-2">
-          <button
-            onClick={handleInstallClick}
-            className="flex-1 bg-white text-violet-600 font-semibold py-2.5 px-4 rounded-lg hover:bg-white/90 transition-transform duration-150 ease-out hover:scale-105 active:scale-95"
-          >
-            Install Now
-          </button>
-          <button
-            onClick={handleDismiss}
-            className="px-4 py-2.5 text-white/90 hover:text-white font-medium transition-colors"
-          >
-            Later
+            <X className="h-5 w-5" strokeWidth={2.2} />
           </button>
         </div>
       </div>

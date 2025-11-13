@@ -28,12 +28,12 @@ function ArtistSongCard({ song, isCurrent, isPlaying, onPlay, onPause, onOpenDet
         aria-label={isCurrent && isPlaying ? "Pause playback" : "Play track"}
       >
         <img
-          src={song.cover || "/healers.webp"}
+          src={song.cover || "/healers.png"}
           alt={song.title}
           className="h-full w-full object-cover"
           loading="lazy"
           onError={(e) => {
-            e.target.src = "/healers.webp";
+            e.target.src = "/healers.png";
             e.target.onerror = null;
           }}
         />

@@ -16,7 +16,7 @@ import {
 } from "lucide-react";
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import logoPng from "../../assets/healers.png";
-import logoWebp from "../../assets/healers.webp";
+import logoWebp from "../../assets/healers.png";
 import { USER_ROLES, THEMES } from "../../constants";
 import toast from "react-hot-toast";
 

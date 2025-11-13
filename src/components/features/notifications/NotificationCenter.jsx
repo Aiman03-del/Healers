@@ -411,8 +411,8 @@ const NotificationCenter = () => {
                       const reviewerEmail = isReviewNotification ? notif?.metadata?.userEmail || "" : "";
                       const reviewerImage = isReviewNotification ? notif?.metadata?.userImage || "" : "";
                       const reviewComment = isReviewNotification ? notif?.metadata?.comment || "" : "";
-                      const avatarUrl =
-                        reviewerImage || (reviewerEmail ? avatarFromEmail(reviewerEmail) : "/healers.webp");
+      const avatarUrl =
+        reviewerImage || (reviewerEmail ? avatarFromEmail(reviewerEmail) : "/healers.png");
 
                     return (
                       <motion.div
@@ -448,12 +448,12 @@ const NotificationCenter = () => {
                             {isReviewNotification && (
                               <div className="mt-3 flex gap-3">
                                 <div className="w-10 h-10 rounded-full overflow-hidden bg-[#1f1f1f] border border-gray-700 flex-shrink-0">
-                                  <img
-                                    src={avatarUrl || "/healers.webp"}
+                    <img
+                      src={avatarUrl || "/healers.png"}
                                     alt={reviewerName}
                                     className="w-full h-full object-cover"
                                     onError={(e) => {
-                                      e.target.src = "/healers.webp";
+                        e.target.src = "/healers.png";
                                       e.target.onerror = null;
                                     }}
                                     loading="lazy"

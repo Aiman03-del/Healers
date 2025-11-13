@@ -30,29 +30,36 @@ class ErrorBoundary extends React.Component {
   render() {
     if (this.state.hasError) {
       return (
-        <div className="min-h-screen bg-gradient-to-br from-purple-900 via-fuchsia-900 to-black flex items-center justify-center px-4">
-          <div className="max-w-md w-full bg-white/10 backdrop-blur-md rounded-2xl shadow-2xl p-8 border border-purple-500/30">
-            <div className="text-center">
-              <div className="text-6xl text-red-400 mb-4">
-                <svg className="mx-auto w-24 h-24" fill="currentColor" viewBox="0 0 20 20">
-                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                </svg>
+        <div className="min-h-screen bg-[#0d0d0d] flex items-center justify-center px-4">
+          <div className="max-w-md w-full rounded-3xl border border-white/10 bg-[#181818] shadow-[0_20px_40px_rgba(0,0,0,0.35)] p-8">
+            <div className="flex flex-col items-center text-center gap-6">
+              <div className="relative">
+                <div className="absolute inset-0 rounded-full bg-[#1db954]/20 blur-xl" />
+                <div className="relative flex h-24 w-24 items-center justify-center rounded-full bg-[#121212] border border-white/10">
+                  <svg className="h-12 w-12 text-[#1db954]" fill="currentColor" viewBox="0 0 20 20">
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10A8 8 0 112 10a8 8 0 0116 0zM9 6a1 1 0 012 0v4a1 1 0 01-2 0V6zm1 8a1 1 0 100 2 1 1 0 000-2z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                </div>
               </div>
-              <h1 className="text-3xl font-bold text-white mb-2">
-                Oops! Something went wrong
-              </h1>
-              <p className="text-purple-200 mb-6">
-                We're sorry for the inconvenience. The application encountered an unexpected error.
-              </p>
-              
-              {process.env.NODE_ENV === 'development' && this.state.error && (
-                <details className="mb-6 text-left bg-black/30 rounded-lg p-4 max-h-64 overflow-auto">
-                  <summary className="cursor-pointer text-purple-300 font-semibold mb-2">
-                    Error Details (Development Only)
+              <div>
+                <h1 className="text-3xl font-bold text-white">Something went wrong</h1>
+                <p className="mt-2 text-sm text-gray-400">
+                  We hit a snag while playing your vibe. Let’s hop back and try again.
+                </p>
+              </div>
+
+              {process.env.NODE_ENV === "development" && this.state.error && (
+                <details className="w-full rounded-2xl border border-white/10 bg-black/40 p-4 text-left text-sm text-gray-300">
+                  <summary className="cursor-pointer select-none text-[#1db954] font-semibold">
+                    Error details (dev)
                   </summary>
-                  <div className="text-sm text-red-300 font-mono">
-                    <p className="font-bold mb-2">{this.state.error.toString()}</p>
-                    <pre className="whitespace-pre-wrap text-xs">
+                  <div className="mt-3 space-y-3 font-mono text-xs">
+                    <p className="font-semibold text-red-400">{this.state.error.toString()}</p>
+                    <pre className="whitespace-pre-wrap leading-relaxed text-gray-400">
                       {this.state.errorInfo?.componentStack}
                     </pre>
                   </div>
@@ -61,7 +68,7 @@ class ErrorBoundary extends React.Component {
 
               <button
                 onClick={this.handleReset}
-                className="w-full bg-gradient-to-r from-purple-600 to-fuchsia-600 hover:from-purple-700 hover:to-fuchsia-700 text-white font-semibold py-3 px-6 rounded-lg transition-all duration-200 shadow-lg hover:shadow-xl"
+                className="inline-flex w-full items-center justify-center gap-2 rounded-full bg-[#1db954] px-6 py-3 text-sm font-semibold text-black transition hover:bg-[#1ed760] focus:outline-none focus:ring-2 focus:ring-[#1db954]/60 focus:ring-offset-2 focus:ring-offset-[#181818]"
               >
                 Return to Home
               </button>
