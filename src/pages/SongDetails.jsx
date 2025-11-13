@@ -1,15 +1,13 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import {
-  FaPlay, FaPause, FaHeart, FaChevronDown,
-  FaStepBackward, FaStepForward, FaShareAlt
+import { 
+  FaPlay, FaPause, FaHeart, FaChevronDown, 
+  FaStepBackward, FaStepForward, FaShareAlt 
 } from 'react-icons/fa';
 import { BiSolidPlaylist } from 'react-icons/bi';
 import { MdLoop, MdRepeatOne, MdShuffle } from 'react-icons/md';
 import { useAudio } from '../context/AudioContext';
 import { AddToPlaylistModal } from '../components/features/playlists';
-import { slugify } from '../utils/slugify';
 
 export default function SongDetails({ 
   song, 
@@ -37,12 +35,10 @@ export default function SongDetails({
 
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [showModal, setShowModal] = useState(false);
-  const navigate = useNavigate();
 
   if (!song) return null;
 
   const { _id: songId, title, artist, shareUrl } = song;
-  const artistSlug = slugify(artist);
 
   const handleShare = async () => {
     const shareLink = shareUrl || `${window.location.origin}/songs/${songId ?? ''}`;
@@ -173,13 +169,9 @@ export default function SongDetails({
                   </motion.button>
                 </div>
               </div>
-              <button
-                className="text-left text-xs xs:text-sm sm:text-base md:text-lg text-gray-400 hover:text-white hover:underline cursor-pointer truncate w-full"
-                onClick={() => artistSlug && navigate(`/artists/${artistSlug}`)}
-                disabled={!artistSlug}
-              >
-                {song.artist}
-              </button>
+              <p className="text-xs xs:text-sm sm:text-base md:text-lg text-gray-400 hover:text-white hover:underline cursor-pointer truncate w-full">
+                  {song.artist}
+                </p>
                 <div className="flex flex-wrap items-center justify-start gap-1 xs:gap-1.5 sm:gap-2 w-full">
                   {song.genre?.length > 0 &&
                     song.genre.map((g, i) => (
