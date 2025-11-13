@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   FaPlay, FaPause, FaHeart, FaChevronDown, 
-  FaStepBackward, FaStepForward 
+  FaStepBackward, FaStepForward, FaShareAlt 
 } from 'react-icons/fa';
 import { BiSolidPlaylist } from 'react-icons/bi';
 import { MdLoop, MdRepeatOne, MdShuffle } from 'react-icons/md';
@@ -36,14 +36,46 @@ export default function SongDetails({
   const [isLiked, setIsLiked] = useState(initialLiked);
   const [showModal, setShowModal] = useState(false);
 
+  if (!song) return null;
+
+  const { _id: songId, title, artist, shareUrl } = song;
+
+  const handleShare = async () => {
+    const shareLink = shareUrl || `${window.location.origin}/songs/${songId ?? ''}`;
+    const shareText = `Listen to "${title}" by ${artist}`;
+
+    if (navigator.share) {
+      try {
+        await navigator.share({
+          title,
+          text: shareText,
+          url: shareLink,
+        });
+        return;
+      } catch (error) {
+        console.error('Sharing failed', error);
+      }
+    }
+
+    if (navigator.clipboard && window.isSecureContext) {
+      try {
+        await navigator.clipboard.writeText(shareLink);
+        alert('Link copied to clipboard');
+        return;
+      } catch (error) {
+        console.error('Failed to copy share link', error);
+      }
+    }
+
+    window.prompt('Copy this song link', shareLink);
+  };
+
   const formatTime = (seconds) => {
     if (isNaN(seconds)) return '0:00';
     const m = Math.floor(seconds / 60);
     const s = Math.floor(seconds % 60);
     return `${m}:${s < 10 ? '0' : ''}${s}`;
   };
-
-  if (!song) return null;
 
   return (
     <motion.div
@@ -140,12 +172,12 @@ export default function SongDetails({
               <p className="text-xs xs:text-sm sm:text-base md:text-lg text-gray-400 hover:text-white hover:underline cursor-pointer truncate w-full">
                   {song.artist}
                 </p>
-                {song.genre && song.genre.length > 0 && (
                 <div className="flex flex-wrap items-center justify-start gap-1 xs:gap-1.5 sm:gap-2 w-full">
-                    {song.genre.map((g, i) => (
+                  {song.genre?.length > 0 &&
+                    song.genre.map((g, i) => (
                       <span
                         key={i}
-                      className="px-1.5 xs:px-2 sm:px-2.5 md:px-3 py-0.5 xs:py-0.5 sm:py-1 rounded-full bg-gray-800 text-gray-300 text-[10px] xs:text-xs sm:text-sm font-medium border border-gray-700"
+                        className="px-1.5 xs:px-2 sm:px-2.5 md:px-3 py-0.5 xs:py-0.5 sm:py-1 rounded-full bg-gray-800 text-gray-300 text-[10px] xs:text-xs sm:text-sm font-medium border border-gray-700"
                       >
                         {g}
                       </span>
@@ -160,8 +192,16 @@ export default function SongDetails({
                   >
                     <BiSolidPlaylist className="text-sm xs:text-base sm:text-lg md:text-xl" />
                   </motion.button>
+                  <motion.button
+                    whileHover={{ scale: 1.1 }}
+                    whileTap={{ scale: 0.9 }}
+                    onClick={handleShare}
+                    className="rounded-full p-1 xs:p-1.5 sm:p-2 text-gray-400 hover:text-white transition-all"
+                    aria-label="Share Song"
+                  >
+                    <FaShareAlt className="text-sm xs:text-base sm:text-lg md:text-xl" />
+                  </motion.button>
                 </div>
-              )}
             </div>
 
             {/* Playback Controls - Center on Desktop, Middle on Mobile */}

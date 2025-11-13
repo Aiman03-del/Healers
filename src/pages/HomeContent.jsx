@@ -37,7 +37,7 @@ const SongCard = memo(
               alt={song.title}
               className="w-full h-full object-cover rounded bg-[#1a1a1a]"
               loading={shouldEagerLoad ? "eager" : "lazy"}
-              fetchpriority={shouldPrioritize ? "high" : "auto"}
+              fetchPriority={shouldPrioritize ? "high" : "auto"}
               decoding="async"
               width={320}
               height={320}
@@ -490,7 +490,7 @@ function HomeContent({ searchQuery = "" }) {
                             alt={playlist.name}
                             className="w-full h-full object-cover rounded bg-[#1a1a1a]"
                             loading={idx < 2 ? "eager" : "lazy"}
-                            fetchpriority={idx === 0 ? "high" : "auto"}
+                            fetchPriority={idx === 0 ? "high" : "auto"}
                             decoding="async"
                             width={320}
                             height={320}
@@ -572,7 +572,7 @@ function HomeContent({ searchQuery = "" }) {
                           alt={playlist.name}
                           className="w-full h-full object-cover rounded bg-[#1a1a1a]"
                           loading={idx < 2 ? "eager" : "lazy"}
-                          fetchpriority={idx === 0 ? "high" : "auto"}
+                          fetchPriority={idx === 0 ? "high" : "auto"}
                           decoding="async"
                           width={320}
                           height={320}

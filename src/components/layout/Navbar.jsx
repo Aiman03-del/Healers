@@ -189,7 +189,7 @@ function Navbar() {
                 alt="Healers"
                 className="w-10 h-10 object-cover rounded-full relative z-10 bg-[#1a1a1a]"
                 loading="eager"
-                fetchpriority="high"
+                fetchPriority="high"
                 decoding="async"
                 width={40}
                 height={40}
