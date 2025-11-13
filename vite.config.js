@@ -11,7 +11,7 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       injectRegister: 'auto',
-      includeAssets: ['healers.png', 'pwa-192x192.png', 'favicon.ico'],
+      includeAssets: ['healers.png', 'favicon.ico'],
       manifest: {
         name: 'Healers - Music Streaming',
         short_name: 'Healers',
@@ -48,7 +48,7 @@ export default defineConfig({
             purpose: 'any'
           },
           {
-            src: '/pwa-192x192.png',
+            src: '/healers.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any'
@@ -78,7 +78,7 @@ export default defineConfig({
             purpose: 'maskable'
           },
           {
-            src: '/pwa-192x192.png',
+            src: '/healers.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'maskable'

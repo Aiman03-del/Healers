@@ -34,7 +34,7 @@
       "purpose": "any"
     },
     {
-      "src": "/pwa-192x192.png",
+      "src": "/healers.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any"
@@ -64,7 +64,7 @@
       "purpose": "maskable"
     },
     {
-      "src": "/pwa-192x192.png",
+      "src": "/healers.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "maskable"

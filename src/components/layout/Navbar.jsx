@@ -16,7 +16,6 @@ import {
 } from "lucide-react";
 import React, { useState, useRef, useEffect, Suspense } from "react";
 import logoPng from "../../assets/healers.png";
-import logoWebp from "../../assets/healers.png";
 import { USER_ROLES, THEMES } from "../../constants";
 import toast from "react-hot-toast";
 
@@ -183,7 +182,6 @@ function Navbar() {
         <Link to="/" className="flex items-center gap-3 group">
           <div className="relative transition-transform duration-150 ease-out group-hover:scale-105 active:scale-95">
             <picture>
-              <source srcSet={logoWebp} type="image/webp" />
               <source srcSet={logoPng} type="image/png" />
               <img
                 src={logoPng}
