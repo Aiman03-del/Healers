@@ -69,13 +69,38 @@ const SharePlaylistModal = ({ playlist, onClose, onUpdate }) => {
     setSending(false);
   };
 
-  // Copy public link
-  const handleCopyLink = () => {
+  // Share or copy public link with metadata
+  const handleCopyLink = async () => {
     const publicLink = `${window.location.origin}/public/playlist/${playlist._id}`;
-    navigator.clipboard.writeText(publicLink);
-    toast.success("Link copied to clipboard!");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+    const shareData = {
+      title: `${playlist.name} • Healers Playlist`,
+      text: `Listen to the "${playlist.name}" playlist on Healers. Curated by ${playlist.createdBy?.name || 'Healers'}.`,
+      url: publicLink,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success("Thanks for sharing! 🎉");
+        return;
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Web Share failed", error);
+      } else {
+        return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+      toast.success("Link copied to clipboard!");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (clipboardError) {
+      console.error("Clipboard write failed", clipboardError);
+      toast.error("Unable to share right now");
+    }
   };
 
   return (

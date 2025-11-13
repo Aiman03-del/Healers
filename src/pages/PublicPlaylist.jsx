@@ -31,11 +31,39 @@ const PublicPlaylist = () => {
       });
   }, [id]);
 
-  const handleShare = () => {
-    navigator.clipboard.writeText(window.location.href);
-    toast.success("Link copied to clipboard!");
-    setCopied(true);
-    setTimeout(() => setCopied(false), 2000);
+  const handleShare = async () => {
+    if (!playlist) return;
+
+    const shareUrl = window.location.href;
+    const shareData = {
+      title: `${playlist.name} • Healers Playlist`,
+      text: `Listen to the "${playlist.name}" playlist on Healers and enjoy ${playlist.songs?.length || 0} curated tracks.`,
+      url: shareUrl,
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success("Thanks for sharing! 🎉");
+        return;
+      }
+    } catch (error) {
+      if (error.name !== "AbortError") {
+        console.error("Web Share failed, falling back to clipboard", error);
+      } else {
+        return;
+      }
+    }
+
+    try {
+      await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+      toast.success("Link copied to clipboard! 📋");
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    } catch (clipboardError) {
+      console.error("Clipboard write failed", clipboardError);
+      toast.error("Unable to share right now");
+    }
   };
 
   const handleDownload = () => {

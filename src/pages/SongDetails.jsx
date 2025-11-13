@@ -8,6 +8,7 @@ import { BiSolidPlaylist } from 'react-icons/bi';
 import { MdLoop, MdRepeatOne, MdShuffle } from 'react-icons/md';
 import { useAudio } from '../context/AudioContext';
 import { AddToPlaylistModal } from '../components/features/playlists';
+import toast from 'react-hot-toast';
 
 export default function SongDetails({ 
   song, 
@@ -42,32 +43,33 @@ export default function SongDetails({
 
   const handleShare = async () => {
     const shareLink = shareUrl || `${window.location.origin}/songs/${songId ?? ''}`;
-    const shareText = `Listen to "${title}" by ${artist}`;
+    const shareData = {
+      title: `${title} • Healers`,
+      text: `Listen to "${title}" by ${artist} on Healers.`,
+      url: shareLink,
+    };
 
-    if (navigator.share) {
-      try {
-        await navigator.share({
-          title,
-          text: shareText,
-          url: shareLink,
-        });
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+        toast.success('Thanks for sharing! 🎉');
         return;
-      } catch (error) {
-        console.error('Sharing failed', error);
+      }
+    } catch (error) {
+      if (error.name !== 'AbortError') {
+        console.error('Sharing via Web Share API failed', error);
+      } else {
+        return;
       }
     }
 
-    if (navigator.clipboard && window.isSecureContext) {
-      try {
-        await navigator.clipboard.writeText(shareLink);
-        alert('Link copied to clipboard');
-        return;
-      } catch (error) {
-        console.error('Failed to copy share link', error);
-      }
+    try {
+      await navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+      toast.success('Song link copied to clipboard! 📋');
+    } catch (clipboardError) {
+      console.error('Failed to copy share link', clipboardError);
+      toast.error('Unable to share right now');
     }
-
-    window.prompt('Copy this song link', shareLink);
   };
 
   const formatTime = (seconds) => {
